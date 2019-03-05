@@ -10,10 +10,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from homeassistant.components.switch import SwitchDevice
-from custom_components.blueiris import (SIGNAL_UPDATE_BLUEIRIS, DATA_BLUEIRIS,
-                                        DOMAIN, CONF_PROFILE, ATTR_ADMIN_PROFILE,
-                                        CONF_USERNAME, CONF_PASSWORD,
-                                        CONF_PROFILE_ARMED, CONF_PROFILE_UNARMED)
+from . import (DOMAIN, DATA_BLUEIRIS, SIGNAL_UPDATE_BLUEIRIS)
 
 _LOGGER = logging.getLogger(__name__)
 

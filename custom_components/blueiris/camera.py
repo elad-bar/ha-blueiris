@@ -8,7 +8,7 @@ import asyncio
 import logging
 
 from homeassistant.components.camera.mjpeg import (MjpegCamera)
-from custom_components.blueiris import (DOMAIN, DATA_BLUEIRIS)
+from . import (DOMAIN, DATA_BLUEIRIS)
 
 DEPENDENCIES = [DOMAIN]
 
@@ -34,7 +34,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
 
         _LOGGER.info('Camera created: {}'.format(bi_camera))
     
-    async_add_entities(bi_camera_list)
+    async_add_entities(bi_camera_list, True)
 
 
 class BlueIrisCamera(MjpegCamera):

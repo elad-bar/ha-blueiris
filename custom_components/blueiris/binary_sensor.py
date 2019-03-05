@@ -13,7 +13,7 @@ from homeassistant.components.mqtt import (MqttAvailability, CONF_PAYLOAD_AVAILA
                                            CONF_QOS, CONF_PAYLOAD_NOT_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE,
                                            DEFAULT_QOS)
 
-from custom_components.blueiris import (DOMAIN, DATA_BLUEIRIS, CONF_MQTT_WATCHDOG, CONF_MQTT_MOTION)
+from . import (DOMAIN, DATA_BLUEIRIS, CONF_MQTT_WATCHDOG, CONF_MQTT_MOTION)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
             
             _LOGGER.info('BlueIris Motion Binary Sensor created: {}'.format(bi_motion_binary_sensor))
     
-    async_add_entities(bi_binary_sensor_list)
+    async_add_entities(bi_binary_sensor_list, True)
 
 
 class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
