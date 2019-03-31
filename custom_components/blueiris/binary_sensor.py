@@ -13,16 +13,9 @@ from homeassistant.components.mqtt import (MqttAvailability, CONF_PAYLOAD_AVAILA
                                            CONF_QOS, CONF_PAYLOAD_NOT_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE,
                                            DEFAULT_QOS)
 
-from . import (DOMAIN, DATA_BLUEIRIS, CONF_MQTT_WATCHDOG, CONF_MQTT_MOTION)
+from .const import *
 
 _LOGGER = logging.getLogger(__name__)
-
-DEFAULT_PAYLOAD_OFF = 'OFF'
-DEFAULT_PAYLOAD_ON = 'ON'
-DEFAULT_FORCE_UPDATE = False
-
-DEVICE_CLASS_CONNECTIVITY = 'connectivity'
-DEVICE_CLASS_MOTION = 'motion'
 
 DEPENDENCIES = [DOMAIN, 'mqtt']
 
@@ -59,7 +52,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
             payload_on = DEFAULT_PAYLOAD_OFF
             payload_off = DEFAULT_PAYLOAD_ON
 
-            binary_sensor_name = 'BI {} {}'.format(name, device_class)
+            binary_sensor_name = f'{name} {device_class}'
 
             bi_watchdog_binary_sensor = BlueIrisBinarySensor(binary_sensor_name, state_topic, device_class,
                                                              force_update, payload_on, payload_off,
@@ -67,7 +60,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
         
             bi_binary_sensor_list.append(bi_watchdog_binary_sensor)
 
-            _LOGGER.info('BlueIris Watchdog Binary Sensor created: {}'.format(bi_watchdog_binary_sensor))
+            _LOGGER.info(f'BlueIris Watchdog Binary Sensor created: {bi_watchdog_binary_sensor}')
 
         if motion_topic is not None:
             state_topic = motion_topic
@@ -75,7 +68,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
             payload_on = DEFAULT_PAYLOAD_ON
             payload_off = DEFAULT_PAYLOAD_OFF
 
-            binary_sensor_name = 'BI {} {}'.format(name, device_class)
+            binary_sensor_name = f'{name} {device_class}'
 
             bi_motion_binary_sensor = BlueIrisBinarySensor(binary_sensor_name, state_topic, device_class,
                                                            force_update, payload_on, payload_off,
@@ -83,14 +76,13 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
         
             bi_binary_sensor_list.append(bi_motion_binary_sensor)
             
-            _LOGGER.info('BlueIris Motion Binary Sensor created: {}'.format(bi_motion_binary_sensor))
+            _LOGGER.info(f'BlueIris Motion Binary Sensor created: {bi_motion_binary_sensor}')
     
     async_add_entities(bi_binary_sensor_list, True)
 
 
 class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
-
     def __init__(self, name, state_topic, device_class, force_update, payload_on, payload_off,
                  mqtt_availability_config):
         """Initialize the MQTT binary sensor."""
@@ -110,16 +102,14 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
         yield from super().async_added_to_hass()
 
         @callback
-        def state_message_received(topic, payload, qos):
+        def state_message_received(message):
             """Handle a new received MQTT state message."""
-            if payload == self._payload_on:
+            if message.payload == self._payload_on:
                 self._state = True
-            elif payload == self._payload_off:
+            elif message.payload == self._payload_off:
                 self._state = False
             else:  # Payload is not for this entity
-                _LOGGER.warning('No matching payload found'
-                                ' for entity: %s with state_topic: %s',
-                                self._name, self._state_topic)
+                _LOGGER.warning(f'No matching payload found for {self._name} with state_topic: {self._state_topic}')
                 return
 
             self.async_schedule_update_ha_state()

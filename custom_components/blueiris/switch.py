@@ -10,12 +10,11 @@ from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from homeassistant.components.switch import SwitchDevice
-from . import (DOMAIN, DATA_BLUEIRIS, SIGNAL_UPDATE_BLUEIRIS)
+from .const import *
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = [DOMAIN]
-DEFAULT_ICON = 'mdi:alarm-light'
 
 
 @asyncio.coroutine
