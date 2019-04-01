@@ -13,6 +13,7 @@ from homeassistant.const import (
     CONF_USERNAME, CONF_SSL, CONF_ID)
 from homeassistant.helpers import config_validation as cv
 
+from .const import VERSION
 from .const import *
 from .blue_iris_data import BlueIrisData
 from .home_assistant import BlueIrisHomeAssistant
