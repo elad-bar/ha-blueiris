@@ -6,15 +6,15 @@
         "visit_repo": "https://github.com/elad-bar/ha-blueiris",
         "changelog": "https://github.com/elad-bar/ha-blueiris/releases/latest",
         "resources": [
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/binary_sensor.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/blue_iris_api.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/blue_iris_data.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/camera.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/const.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/home_assistant.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/input_select.py",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/services.yaml",
-            "https://https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/witch.py"
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/binary_sensor.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/blue_iris_api.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/blue_iris_data.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/camera.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/const.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/home_assistant.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/input_select.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/services.yaml",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/witch.py"
         ]
     }
 }
