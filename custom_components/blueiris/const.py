@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+VERSION = '1.0.0'
+
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
 DEFAULT_NAME = 'Blue Iris'
