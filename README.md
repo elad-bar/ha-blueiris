@@ -10,6 +10,7 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 * Support HLS Streams instead of H264.
 * Support SSL with self-signed certificate.
 
+
 ## Configuration
 
 ### Blue Iris API Configuration
@@ -106,3 +107,5 @@ custom_updater:
   component_urls:
     - https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/blueiris.json
 ```
+## Contributors
+<a href="https://github.com/darkgrue">@darkgrue</a> 
