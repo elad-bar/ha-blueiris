@@ -18,7 +18,8 @@ DEPENDENCIES = [DOMAIN]
 
 
 @asyncio.coroutine
-def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+def async_setup_platform(hass, config, async_add_entities,
+                         discovery_info=None):
     """Set up the Blue Iris switch platform."""
     bi_data = hass.data.get(DATA_BLUEIRIS)
 
@@ -38,7 +39,7 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
         self._bi_data = bi_data
 
-        self._name = 'BI Alerts'
+        self._name = "BI Alerts"
         self._state = False
 
     @property
@@ -48,7 +49,8 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        async_dispatcher_connect(self.hass, SIGNAL_UPDATE_BLUEIRIS, self._update_callback)
+        async_dispatcher_connect(self.hass, SIGNAL_UPDATE_BLUEIRIS,
+                                 self._update_callback)
 
     @callback
     def _update_callback(self):

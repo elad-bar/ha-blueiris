@@ -27,8 +27,10 @@ CAMERA_SCHEMA = vol.Schema({
 })
 
 PROFILE_SCHEMA = vol.Schema({
-    vol.Required(CONF_PROFILE_ARMED): vol.All(vol.Coerce(int), vol.Range(min=-1, max=7)),
-    vol.Required(CONF_PROFILE_UNARMED): vol.All(vol.Coerce(int), vol.Range(min=-1, max=7)),
+    vol.Required(CONF_PROFILE_ARMED): vol.All(vol.Coerce(int),
+                                              vol.Range(min=-1, max=7)),
+    vol.Required(CONF_PROFILE_UNARMED): vol.All(vol.Coerce(int),
+                                                vol.Range(min=-1, max=7)),
 })
 
 CONFIG_SCHEMA = vol.Schema({
@@ -66,16 +68,17 @@ def setup(hass, config):
 
         ha = BlueIrisHomeAssistant(hass, scan_interval)
 
-        bi_data = BlueIrisData(host, port, cameras, username, password, ssl, exclude, profile)
+        bi_data = BlueIrisData(host, port, cameras, username, password, ssl,
+                               exclude, profile)
 
         hass.data[DATA_BLUEIRIS] = bi_data
 
         configuration_errors = bi_data.get_configuration_errors()
 
         if configuration_errors is not None:
-            all_errors = '<br /> - '.join(configuration_errors)
-            error_message = f'<b>Errors while loading configuration:</b><br /> {all_errors}'
-
+            all_errors = "<br /> - ".join(configuration_errors)
+            error_message = f("<b>Errors while loading configuration:</b>"
+                              "<br />{all_errors}")
             ha.notify_error_message(error_message)
         else:
             ha.initialize(bi_data.update)
