@@ -3,23 +3,24 @@ Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/camera.blueiris/
 """
+import asyncio
+import logging
+
 import aiohttp
 import async_timeout
 import requests
 from requests.auth import HTTPDigestAuth
 
-from homeassistant.const import (CONF_NAME, CONF_AUTHENTICATION,
-                                 CONF_VERIFY_SSL)
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.util.async_ import run_coroutine_threadsafe
-from homeassistant.components.camera import (DEFAULT_CONTENT_TYPE,
-                                             SUPPORT_STREAM, Camera)
+from homeassistant.const import (
+    CONF_NAME, CONF_USERNAME, CONF_PASSWORD, CONF_AUTHENTICATION,
+    HTTP_BASIC_AUTHENTICATION, HTTP_DIGEST_AUTHENTICATION, CONF_VERIFY_SSL)
+from homeassistant.components.camera import (
+    DEFAULT_CONTENT_TYPE, SUPPORT_STREAM, Camera)
 from homeassistant.components.generic.camera import (
     CONF_LIMIT_REFETCH_TO_URL_CHANGE, CONF_FRAMERATE, CONF_CONTENT_TYPE,
     CONF_STREAM_SOURCE, CONF_STILL_IMAGE_URL)
-
-import asyncio
-import logging
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.util.async_ import run_coroutine_threadsafe
 
 from .const import *
 
@@ -141,10 +142,10 @@ class BlueIrisCamera(Camera):
             self._last_url = self._still_image_url
 
         except asyncio.TimeoutError:
-            _LOGGER.error(f'Timeout getting image from: {self._name}')
+            _LOGGER.error(f"Timeout getting image from: {self._name}")
 
         except aiohttp.ClientError as err:
-            _LOGGER.error(f'Error getting new camera image: {err}')
+            _LOGGER.error(f"Error getting new camera image: {err}")
 
         return self._last_image
 
