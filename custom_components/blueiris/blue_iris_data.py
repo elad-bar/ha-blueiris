@@ -1,7 +1,8 @@
 import logging
 
 from homeassistant.const import (CONF_ROOM, CONF_NAME, CONF_ID)
-from homeassistant.components.generic.camera import (CONF_STREAM_SOURCE, CONF_STILL_IMAGE_URL)
+from homeassistant.components.generic.camera import (CONF_STREAM_SOURCE,
+                                                     CONF_STILL_IMAGE_URL)
 
 from .const import *
 from .blue_iris_api import BlueIrisApi
@@ -12,15 +13,13 @@ _LOGGER = logging.getLogger(__name__)
 class BlueIrisData:
     """The Class for handling the data retrieval."""
 
-    def __init__(self, host, port, cameras, username, password, ssl, exclude, profiles):
+    def __init__(self, host, port, cameras, username, password, ssl, exclude,
+                 profiles):
         """Initialize the data object."""
         self._was_initialized = False
 
         self._configuration_errors = None
-        self._configurations = {
-                CONF_CAMERAS: {},
-                CONF_PROFILE: {}
-            }
+        self._configurations = {CONF_CAMERAS: {}, CONF_PROFILE: {}}
 
         self._is_armed = False
         self._is_arming_allowed = False
@@ -52,20 +51,23 @@ class BlueIrisData:
         if self._configuration_errors is None:
             self._configuration_errors = []
 
-        self._configuration_errors.append(f'WARN - {message}')
+        self._configuration_errors.append(f"WARN - {message}")
         _LOGGER.warning(message)
 
     def log_error(self, message):
         if self._configuration_errors is None:
             self._configuration_errors = []
 
-        self._configuration_errors.append(f'ERROR - {message}')
+        self._configuration_errors.append(f"ERROR - {message}")
         _LOGGER.error(message)
 
     def set_camera_list(self, cameras, exclude):
         for system_camera in SYSTEM_CAMERA_CONFIG:
             if system_camera in cameras:
-                self.log_warn(f'System camera cannot be added, please remove camera: {system_camera}')
+                self.log_warn(
+                    f("System camera cannot be added, please remove camera:"
+                      " {system_camera}")
+                )
 
             if exclude is None or system_camera not in exclude:
                 camera = {
@@ -81,13 +83,16 @@ class BlueIrisData:
     def set_profiles(self, profiles):
         if profiles is not None:
             if self._credentials is None:
-                self.log_error('Cannot set profile of Blue Iris without administrator credentials')
+                self.log_error("Cannot set profile of Blue Iris without"
+                               " administrator credentials")
                 return
 
             self._profile_armed = profiles.get(CONF_PROFILE_ARMED)
             self._profile_unarmed = profiles.get(CONF_PROFILE_UNARMED)
 
-            self._is_arming_allowed = bool(self._profile_armed is not None and self._profile_unarmed is not None)
+            self._is_arming_allowed = bool(
+                self._profile_armed is not None and
+                self._profile_unarmed is not None)
 
     def set_blue_iris_urls(self, host, port, ssl, username, password):
         self._credentials = ''
@@ -104,8 +109,10 @@ class BlueIrisData:
         camera_name = camera.get(CONF_NAME, camera_id)
         camera_room = camera.get(CONF_ROOM)
 
-        camera_still_url = self._image_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
-        camera_source = self._stream_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
+        camera_still_url = self._image_url.replace(CAMERA_ID_PLACEHOLDER,
+                                                   camera_id)
+        camera_source = self._stream_url.replace(CAMERA_ID_PLACEHOLDER,
+                                                 camera_id)
 
         camera_details = {
             CONF_NAME: f'BI {camera_name}',
@@ -114,7 +121,9 @@ class BlueIrisData:
             CONF_STREAM_SOURCE: camera_source,
         }
 
-        _LOGGER.debug(f'Blue Iris camera configuration loaded, details: {camera_details}')
+        _LOGGER.debug(
+            f"Blue Iris camera configuration loaded, details: {camera_details}"
+        )
         self._configurations[CONF_CAMERAS][camera_id] = camera_details
 
     def get_all_cameras(self):
@@ -125,7 +134,8 @@ class BlueIrisData:
 
     def update_blue_iris_profile(self, arm):
         if not self._is_arming_allowed:
-            _LOGGER.warning('Configuration not support Arming Blue Iris')
+            _LOGGER.warning(
+                "Configuration not does not support Arming Blue Iris")
             return
 
         profile = self._profile_unarmed
@@ -139,7 +149,8 @@ class BlueIrisData:
 
     def get_arm_state(self):
         if not self._is_arming_allowed:
-            _LOGGER.warning('Configuration not support get Arming State from Blue Iris')
+            _LOGGER.warning("Configuration does not support get Arming State"
+                            " from Blue Iris")
             return
 
         data = self._api.get_data()

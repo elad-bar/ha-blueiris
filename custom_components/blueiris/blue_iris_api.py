@@ -16,22 +16,24 @@ class BlueIrisApi:
 
     def __init__(self, base_url, username, password):
         """Initialize the data object."""
-        args = f'base_url: {base_url}, username: {username}, password: {password}'
+        args = f("base_url: {base_url}, username: {username},"
+                 " password: {password}")
 
-        _LOGGER.debug(f'BlueIrisData initialization with following configuration: {args}')
+        _LOGGER.debug(f("BlueIrisData initialization with following"
+                        " configuration: {args}"))
 
         self._auth = HTTPBasicAuth(username, password)
         self._admin_url = f'{base_url}/admin'
 
     def update_blue_iris_profile(self, profile):
-        request_data = f'?profile={profile}&lock=2'
+        request_data = f"?profile={profile}&lock=2"
 
         self.call_blue_iris_admin(request_data)
 
     def get_data(self):
         response = self.call_blue_iris_admin(None)
 
-        _LOGGER.debug(f'Status of Blue Iris: {response}')
+        _LOGGER.debug(f"Status of Blue Iris: {response}")
 
         return response
 
@@ -44,16 +46,18 @@ class BlueIrisApi:
 
             url = f'{self._admin_url}{request_data}'
 
-            _LOGGER.debug(f'Request to Blue Iris sent to: {url}')
+            _LOGGER.debug(f"Request to Blue Iris sent to: {url}")
             r = requests.get(url, auth=self._auth, timeout=5, verify=False)
             response = r.text
 
             if BLUEIRIS_AUTH_ERROR in response:
-                _LOGGER.warning('Username and password are incorrect')
+                _LOGGER.warning("Username and password are incorrect")
 
         except urllib.error.HTTPError as e:
-            _LOGGER.error(f'Failed to get response from Blue Iris due to HTTP Error: {str(e)}')
+            _LOGGER.error(f("Failed to get response from Blue Iris due to HTTP"
+                            " Error: {str(e)}"))
         except Exception as ex:
-            _LOGGER.error(f'Failed to get response from Blue Iris due to unexpected error: {str(ex)}')
+            _LOGGER.error(f("Failed to get response from Blue Iris due to"
+                            " unexpected error: {str(ex)}"))
 
         return response

@@ -1,7 +1,7 @@
 {
     "domain": "blueiris",
     "name": "Integration with Blue Iris NVR",
-    "documentation": "https://github.com/elad-bar/ha-custom-components/blob/master/BlueIris.md",
+    "documentation": "https://github.com/elad-bar/ha-blueiris",
     "dependencies": ["mqtt"],
     "codeowners": ["@elad-bar"],
     "requirements": []

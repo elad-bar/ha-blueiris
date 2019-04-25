@@ -1,10 +1,15 @@
+"""
+Support for Blue Iris.
+For more details about this platform, please refer to the documentation at
+https://home-assistant.io/components/switch.blueiris/
+"""
 from datetime import timedelta
 
 VERSION = '1.0.5'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
-DEFAULT_NAME = 'Blue Iris'
+DEFAULT_NAME = "Blue Iris"
 SIGNAL_UPDATE_BLUEIRIS = f'updates_{DOMAIN}'
 
 ATTR_ADMIN_PROFILE = 'Profile'
@@ -13,7 +18,7 @@ ATTR_SYSTEM_CAMERA_ALL_ID = 'Index'
 ATTR_SYSTEM_CAMERA_CYCLE_NAME = 'Cycle'
 ATTR_SYSTEM_CAMERA_CYCLE_ID = '@Index'
 
-BLUEIRIS_AUTH_ERROR = 'Authorization required'
+BLUEIRIS_AUTH_ERROR = "Authorization required"
 
 SYSTEM_CAMERA_CONFIG = {
     ATTR_SYSTEM_CAMERA_ALL_NAME: ATTR_SYSTEM_CAMERA_ALL_ID,
@@ -40,8 +45,8 @@ SCAN_INTERVAL = timedelta(seconds=60)
 IMAGE_TIMEOUT = timedelta(seconds=5)
 
 PROTOCOLS = {
-    True: "https",
-    False: "http"
+    True: 'https',
+    False: 'http'
 }
 
 DEFAULT_PAYLOAD_OFF = 'OFF'

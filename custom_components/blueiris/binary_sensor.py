@@ -22,7 +22,8 @@ DEPENDENCIES = [DOMAIN, 'mqtt']
 
 
 @asyncio.coroutine
-def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+def async_setup_platform(hass, config, async_add_entities,
+                         discovery_info=None):
     """Set up the Blue Iris binary sensor."""
     bi_data = hass.data.get(DATA_BLUEIRIS)
 
@@ -72,7 +73,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
                     payload_on = DEFAULT_PAYLOAD_ON
                     payload_off = DEFAULT_PAYLOAD_OFF
 
-                binary_sensor_name = '{} {}'.format(name, t.lower())
+                binary_sensor_name = "{} {}".format(name, t.lower())
 
                 bi_motion_binary_sensor = BlueIrisBinarySensor(
                     binary_sensor_name, state_topic, device_class,
@@ -82,7 +83,7 @@ def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
                 bi_binary_sensor_list.append(bi_motion_binary_sensor)
 
                 _LOGGER.debug("Blue Iris binary Sensor created: %s %s",
-                             bi_motion_binary_sensor, state_topic)
+                              bi_motion_binary_sensor, state_topic)
 
     # Add component entities asynchronously.
     async_add_entities(bi_binary_sensor_list, True)
@@ -101,7 +102,7 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
         self._payload_on = payload_on
         self._payload_off = payload_off
         self._force_update = force_update
-        
+
     @asyncio.coroutine
     def async_added_to_hass(self):
         """Subscribe MQTT events."""
@@ -115,11 +116,11 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
             elif message.payload == self._payload_off:
                 self._state = False
             else:
-               """Payload is not for this entity."""
-               _LOGGER.warning("No matching payload found for entity: <%s>"
+                """Payload is not for this entity."""
+                _LOGGER.warning("No matching payload found for entity: <%s>"
                                 " with state_topic: %s",
                                 self._name, self._state_topic)
-               return
+                return
 
             self.async_schedule_update_ha_state()
 

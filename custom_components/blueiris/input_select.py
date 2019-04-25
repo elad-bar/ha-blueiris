@@ -1,11 +1,16 @@
-"""Support to select an option from a list."""
+"""
+Support to select an cast source/target option from a list.
+For more details about this platform, please refer to the documentation at
+https://home-assistant.io/components/switch.blueiris/
+"""
 import logging
 
 from homeassistant.helpers.entity_component import EntityComponent
-from homeassistant.components.input_select import (InputSelect, SERVICE_SELECT_OPTION, SERVICE_SELECT_OPTION_SCHEMA,
-                                                   SERVICE_SELECT_NEXT, SERVICE_SELECT_NEXT_SCHEMA,
-                                                   SERVICE_SELECT_PREVIOUS, SERVICE_SELECT_PREVIOUS_SCHEMA,
-                                                   SERVICE_SET_OPTIONS, SERVICE_SET_OPTIONS_SCHEMA)
+from homeassistant.components.input_select import (
+    InputSelect, SERVICE_SELECT_OPTION, SERVICE_SELECT_OPTION_SCHEMA,
+    SERVICE_SELECT_NEXT, SERVICE_SELECT_NEXT_SCHEMA, SERVICE_SELECT_PREVIOUS,
+    SERVICE_SELECT_PREVIOUS_SCHEMA, SERVICE_SET_OPTIONS,
+    SERVICE_SET_OPTIONS_SCHEMA)
 from homeassistant.components.input_select import DOMAIN as INPUT_SELECT_DOMAIN
 from homeassistant.components.media_player.const import SUPPORT_PLAY_MEDIA
 
@@ -31,25 +36,20 @@ async def async_setup(hass, config, async_add_entities, discovery_info=None):
 
     async_add_entities([camera_input_select, cast_input_select], True)
 
-    component.async_register_entity_service(
-        SERVICE_SELECT_OPTION, SERVICE_SELECT_OPTION_SCHEMA,
-        'async_select_option'
-    )
+    component.async_register_entity_service(SERVICE_SELECT_OPTION,
+                                            SERVICE_SELECT_OPTION_SCHEMA,
+                                            'async_select_option')
 
     component.async_register_entity_service(
         SERVICE_SELECT_NEXT, SERVICE_SELECT_NEXT_SCHEMA,
-        lambda entity, call: entity.async_offset_index(1)
-    )
+        lambda entity, call: entity.async_offset_index(1))
 
     component.async_register_entity_service(
         SERVICE_SELECT_PREVIOUS, SERVICE_SELECT_PREVIOUS_SCHEMA,
-        lambda entity, call: entity.async_offset_index(-1)
-    )
+        lambda entity, call: entity.async_offset_index(-1))
 
     component.async_register_entity_service(
-        SERVICE_SET_OPTIONS, SERVICE_SET_OPTIONS_SCHEMA,
-        'async_set_options'
-    )
+        SERVICE_SET_OPTIONS, SERVICE_SET_OPTIONS_SCHEMA, 'async_set_options')
 
     return True
 
@@ -66,14 +66,15 @@ class BlueIrisCameraInputSelect(InputSelect):
             camera_id = camera.get(CONF_ID)
             self._camera_list[camera_name] = camera_id
 
-        self.entity_id = f'{INPUT_SELECT_DOMAIN}.blue_iris_camera_list'
-        self._name = 'Blue Iris Camera List'
+        self.entity_id = f"{INPUT_SELECT_DOMAIN}.blue_iris_camera_list"
+        self._name = "Blue Iris Camera List"
         self._current_option = ATTR_SYSTEM_CAMERA_ALL_NAME
         self._options = self._camera_list.keys()
         self._icon = 'mdi:cctv'
         self._bi = bi
 
-        super().__init__(self.entity_id, self._name, self._current_option, self._options, self._icon)
+        super().__init__(self.entity_id, self._name, self._current_option,
+                         self._options, self._icon)
 
     @property
     def state_attributes(self):
@@ -84,7 +85,7 @@ class BlueIrisCameraInputSelect(InputSelect):
         if self.state in self._camera_list:
             bi_camera_id = self._camera_list[self.state]
 
-            current_url = f'{self._bi}/mjpg/{bi_camera_id}/video.mjpg'
+            current_url = f"{self._bi}/mjpg/{bi_camera_id}/video.mjpg"
 
         attrs['current_url'] = current_url
 
@@ -108,8 +109,10 @@ class BlueIrisCastInputSelect(InputSelect):
             media_player_attributes = media_player.attributes
 
             if ATTR_SUPPORTED_FEATURES in media_player_attributes:
-                supported_features = media_player_attributes.get(ATTR_SUPPORTED_FEATURES)
-                is_play_media_supported = bool(supported_features & SUPPORT_PLAY_MEDIA)
+                supported_features = media_player_attributes.get(
+                    ATTR_SUPPORTED_FEATURES)
+                is_play_media_supported = bool(
+                    supported_features & SUPPORT_PLAY_MEDIA)
 
                 if is_play_media_supported:
                     self._cast_list[media_player_name] = media_player_id
@@ -117,10 +120,11 @@ class BlueIrisCastInputSelect(InputSelect):
                     if self._current_option is None:
                         self._current_option = media_player_name
 
-        self.entity_id = f'{INPUT_SELECT_DOMAIN}.blue_iris_cast_list'
-        self._name = 'Blue Iris Cast List'
+        self.entity_id = f"{INPUT_SELECT_DOMAIN}.blue_iris_cast_list"
+        self._name = "Blue Iris Cast List"
         self._current_option = self._cast_list.keys()[0]
         self._options = self._cast_list.keys()
         self._icon = 'mdi:cctv'
 
-        super().__init__(self.entity_id, self._name, self._current_option, self._options, self._icon)
+        super().__init__(self.entity_id, self._name, self._current_option,
+                         self._options, self._icon)
