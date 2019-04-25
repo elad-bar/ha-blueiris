@@ -31,8 +31,8 @@ class BlueIrisHomeAssistant:
         self._hass.bus.listen_once(EVENT_HOMEASSISTANT_START, bi_refresh)
 
     def notify_error(self, ex, line_number):
-        _LOGGER.error(f("Error while initializing {DOMAIN}, exception: {ex},"
-                        " Line: {line_number}"))
+        _LOGGER.error(f"Error while initializing {DOMAIN}, exception: {ex},"
+                      " Line: {line_number}")
 
         self._hass.components.persistent_notification.create(
             f"Error: {ex}<br /> You will need to restart hass after fixing.",
@@ -43,7 +43,7 @@ class BlueIrisHomeAssistant:
         _LOGGER.error(f"Error while initializing {DOMAIN}, Error: {message}")
 
         self._hass.components.persistent_notification.create(
-            f("Error: {message}<br /> You will need to restart hass after"
-              " fixing."),
+            (f"Error: {message}<br /> You will need to restart hass after"
+             " fixing."),
             title=NOTIFICATION_TITLE,
             notification_id=NOTIFICATION_ID)
