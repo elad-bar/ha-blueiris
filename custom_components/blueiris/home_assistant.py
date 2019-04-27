@@ -1,7 +1,7 @@
 """
 Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
-https://home-assistant.io/components/switch.blueiris/
+https://home-assistant.io/components/blueiris/
 """
 import logging
 
