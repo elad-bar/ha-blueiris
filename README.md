@@ -186,6 +186,8 @@ Things to check:
 - Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
 - Do you have the [MQTT Integration configured](https://www.home-assistant.io/addons/mosquitto/#home-assistant-configuration)? It's not sufficient to just install/start the broker. Make sure to check the `Enable discovery` box when you configure the integration.
   
+  ![Integrations MQTT](/docs/images/ha-integrations_mqtt.png)
+  
   ![Integrations MQTT Configure](/docs/images/ha-integrations_mqtt_configure.png)
 
 
