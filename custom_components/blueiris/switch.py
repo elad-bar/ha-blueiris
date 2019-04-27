@@ -39,7 +39,8 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
         self._bi_data = bi_data
 
-        self._name = "BI Alerts"
+        self._name = 'blueiris_alerts'
+        self._friendly_name = "Blue Iris Arm / Disarm"
         self._state = False
 
     @property
