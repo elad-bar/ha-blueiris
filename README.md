@@ -13,6 +13,7 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 ## Configuration
 
+
 ### Blue Iris API Configuration
 
 If you intent to use any of the Blue Iris REST API commands (such as profile switching), it's recommended you create a separate Administrator user for Home Assitant to connect to, and limit access to LAN only.  Use this username and password in your Home Assistant configuration (shown in the next section). This keeps any accesses or limitations you may wish to set on Home Assistant separate from the primary Administrator.
@@ -69,6 +70,89 @@ switch:
   - platform: blueiris
 ```
 
+### Lovelace UI Configuration
+
+```
+# Example ui-lovelace.yaml view entry
+title: Blue Iris
+icon: mdi:eye
+
+cards:
+  - type: custom:vertical-stack-in-card
+    cards:
+      # System cameras
+      - type: horizontal-stack
+        cards:
+          - type: custom:vertical-stack-in-card
+            cards:
+              - type: picture-entity
+                entity: camera.all
+                name: All
+                show_state: false
+          - type: custom:vertical-stack-in-card
+            cards:
+              - type: picture-entity
+                entity: camera.cycle
+                name: Cycle
+                show_state: false
+      # Blue Iris Armed / Disarm Profiles
+      - type: entities
+        title: Blue Iris
+        show_header_toggle: false
+        entities:
+          - entity: switch.blueiris_alerts
+            name: Arm / Disarm
+
+  # Front Door camera
+  - type: custom:vertical-stack-in-card
+    cards:
+      - type: picture-entity
+        entity: camera.front_door
+        name: Front Door
+        show_state: false
+      - type: glance
+        entities:           
+          - entity: binary_sensor.front_door_motion
+            name: Motion
+          - entity: binary_sensor.front_door_audio
+            name: Audio
+          - entity: binary_sensor.front_door_watchdog
+            name: Watchdog
+
+  # Front Drive camera
+  - type: custom:vertical-stack-in-card
+    cards:
+      - type: picture-entity
+        entity: camera.front_drive
+        name: Front Drive
+        show_state: false
+      - type: glance
+        entities:
+          - entity: binary_sensor.front_drive_motion
+            name: Motion
+          - entity: binary_sensor.front_drive_audio
+            name: Audio
+          - entity: binary_sensor.front_drive_watchdog
+            name: Watchdog  
+
+  # Garage camera
+  - type: custom:vertical-stack-in-card
+    cards:
+      - type: picture-entity
+        entity: camera.garage
+        name: Garage
+        show_state: false
+      - type: glance
+        entities:
+          - entity: binary_sensor.garage_motion
+            name: Motion
+          - entity: binary_sensor.garage_audio
+            name: Audio
+          - entity: binary_sensor.garage_watchdog
+            name: Watchdog
+```
+
+
 ### Blue Iris MQTT Configuration
 
 In order to support the MQTT binary sensors for the camera, some additional configuration needs to be performed on both Home Assistant and Blue Iris:
@@ -76,7 +160,8 @@ In order to support the MQTT binary sensors for the camera, some additional conf
 Assuming you are using the built-in MQTT server or the add-on Mosquitto broker, in the Home Assistant `Configuration | Users panel`, create a new user for Blue Iris to connect to the MQTT broker with. This user may be placed in the Users Group, to limit the scope of its access, since it is only required to connect to the MQTT broker. Otherwise, create a user appropriate for Blue Iris in your chosen MQTT broker.
 
 In the Blue Iris Options panel, on the `Digital IO and IoT` tab under `MQTT`, select `"Configure..."` and enter the host and port of the Home Assistant MQTT server, and the username and password created for the Blue Iris user.
-**NOTE:** Do not press the "Test" button, it will crash Blue Iris, and is intended to test MQTT connections to the Blue Iris MQTT broker.
+
+**NOTE:** Do not press the "Test" button, it is intended to test MQTT connections to (not from) the Blue Iris MQTT broker and will crash Blue Iris.
 
 ![Blue Iris Edit MQTT Server](/docs/images/bi-edit_mqtt_server.png)
 
@@ -89,9 +174,19 @@ In the `Configure Web or MQTT Alert` dialog, set the options as shown below. The
 ![Blue Iris MQTT Alert](/docs/images/bi-alerts_mqtt.png)
 
 Similarly, configure the connectivity alert for the camera by going to the `Watchdog` tab and selecting `"Configure Watchdog Alerts"`. On the `Alerts` tab, check `"Post to a web address or MQTT server"` and then select `"Configure..."`. In the `Configure Web or MQTT Alert` dialog, set the options again (same as for Alerts).
+
 **NOTE:** Even though connectivity is down when the Watchdog is triggered, the MQTT payload is still `ON`. The meaning is inverted in the component logic in order to keep the configuration straightforward.
 
 ![Blue Iris Watchdog](/docs/images/bi-watchdog.png)
+
+
+### Troubleshooting MQTT
+
+Things to check:
+- Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
+- Do you have the [MQTT Integration configured](https://www.home-assistant.io/addons/mosquitto/#home-assistant-configuration)? It's not sufficient to just install/start the broker. Make sure to check the `Enable discovery` box when you configure the integration.
+  
+  ![Integrations MQTT Configure](/docs/images/ha-integrations_mqtt_configure.png)
 
 
 ## Track Updates
@@ -107,5 +202,7 @@ custom_updater:
   component_urls:
     - https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/blueiris.json
 ```
+
+
 ## Contributors
 <a href="https://github.com/darkgrue">@darkgrue</a> 
