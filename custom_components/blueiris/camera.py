@@ -43,7 +43,7 @@ def async_setup_platform(hass, config, async_add_entities,
     bi_camera_list = []
     for camera_id in cameras:
         camera = cameras[camera_id]
-        _LOGGER.debug(f'Processing new camera: {camera}')
+        _LOGGER.debug(f"Processing new camera: {camera}")
 
         device_info = {
             CONF_NAME: camera[CONF_NAME],
@@ -52,13 +52,13 @@ def async_setup_platform(hass, config, async_add_entities,
             CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,
             CONF_FRAMERATE: 2,
             CONF_VERIFY_SSL: False,
-            CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE
+            CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
         }
 
         bi_camera = BlueIrisCamera(hass, device_info)
         bi_camera_list.append(bi_camera)
 
-        _LOGGER.debug(f'Camera created: {bi_camera}')
+        _LOGGER.debug(f"Camera created: {bi_camera}")
 
     async_add_entities(bi_camera_list, True)
 
