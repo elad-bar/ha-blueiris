@@ -239,6 +239,8 @@ input_select:
     initial: Living Room Display
     icon: mdi:cast
 
+# https://www.home-assistant.io/components/script/
+script:
   execute_cast_dropdown:
     alias: Press to execute
     sequence:
@@ -253,17 +255,17 @@ input_select:
             {% endif %}
           media_content_id: >
             {% if is_state('input_select.camera_dropdown', 'Front Door') %}
-              http://{BI_HOST}:{BI_PORT}/h264/CAM4/video.m3u8
+              http://192.168.0.10:8081/mjpg/CAM4/video.mjpg
             {% elif is_state('input_select.camera_dropdown', 'Front Drive') %}
-              http://{BI_HOST}:{BI_PORT}/h264/CAM5/video.m3u8
+              http://192.168.0.10:8081/mjpg/CAM5/video.mjpg
             {% elif is_state('input_select.camera_dropdown', 'Garage') %}
-              http://{BI_HOST}:{BI_PORT}/h264/CAM6/video.m3u8
+              http://192.168.0.10:8081/mjpg/CAM6/video.mjpg
             {% elif is_state('input_select.camera_dropdown', 'Cycle Cameras') %}
-              http://{BI_HOST}:{BI_PORT}/h264/@index?/video.m3u8
+              http://192.168.0.10:8081/mjpg/@index?/video.mjpg
             {% elif is_state('input_select.camera_dropdown', 'All Cameras') %}
-              http://{BI_HOST}:{BI_PORT}/h264/index?/video.m3u8
+              http://192.168.0.10:8081/mjpg/index?/video.mjpg
             {% endif %}
-          media_content_type: 'application/x-mpegurl'
+          media_content_type: 'image/jpg'
 ```
 
 
