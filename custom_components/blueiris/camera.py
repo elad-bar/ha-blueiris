@@ -51,8 +51,8 @@ def async_setup_platform(hass, config, async_add_entities,
             CONF_STREAM_SOURCE: camera[CONF_STREAM_SOURCE],
             CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,
             CONF_FRAMERATE: 2,
-            CONF_VERIFY_SSL: False,
             CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
+            CONF_VERIFY_SSL: False,
         }
 
         bi_camera = BlueIrisCamera(hass, device_info)
@@ -64,7 +64,7 @@ def async_setup_platform(hass, config, async_add_entities,
 
 
 class BlueIrisCamera(Camera):
-    """A generic implementation of an IP camera."""
+    """An implementation of a Blue Iris IP camera."""
 
     def turn_off(self):
         pass
@@ -82,9 +82,8 @@ class BlueIrisCamera(Camera):
         """Initialize a generic camera."""
         super().__init__()
 
-        self.hass = hass
         self._authentication = device_info.get(CONF_AUTHENTICATION)
-        self._name = device_info.get(CONF_NAME)
+        self._name = device_info[CONF_NAME]
         self._still_image_url = device_info[CONF_STILL_IMAGE_URL]
         self._stream_source = device_info[CONF_STREAM_SOURCE]
         self._limit_refetch = device_info[CONF_LIMIT_REFETCH_TO_URL_CHANGE]
