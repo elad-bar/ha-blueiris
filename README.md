@@ -23,6 +23,25 @@ If you intent to use any of the Blue Iris REST API commands (such as profile swi
 ![Blue Iris Edit User](/docs/images/bi-edit_user.png)
 
 
+### Blue Iris Web Server Configuration
+
+Enable the Blue Iris Web Server. Select the  `Advanced...` button to proceed to the next step.
+
+![Blue Iris Web Server](/docs/images/bi-web_server.png)
+
+Set Authentication to be `Non-LAN only`. Leave `Use secure session keys and login page` unchecked. The secure session option uses `HTTP_DIGEST_AUTHENTICATION`, which isn't fully supported throughout the Home Assistant codebase yet. Also, in the case you want to use Casting and/or Streaming, some media player devices don't support using authentication.
+
+![Blue Iris Web Server Advanced](/docs/images/bi-web_server_advanced.png)
+
+Configure the Encoding settings so they’re compatible for Chromecast devices: `H.264` video, `AAC` audio, and `Resize output frame width x height` should be set to `1920 x 1080`:
+
+![Blue Iris Encoder Options](/docs/images/bi-web_server_encoder.png)
+
+Finally, enable re-encoding. Set `Hardware accelerated decode (restart)` to a setting appropriate to your hardware (e.g. `Intel(R)+VideoPostPRoc`).
+
+![Blue Iris Cameras Options](/docs/images/bi-cameras.png)
+
+
 ### Home Assistant Configuration
 
 ```
