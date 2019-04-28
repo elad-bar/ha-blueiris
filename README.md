@@ -13,6 +13,8 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 ## Configuration
 
+Basic configuration of the Component follows:
+
 
 ### Blue Iris API Configuration
 
@@ -26,47 +28,61 @@ If you intent to use any of the Blue Iris REST API commands (such as profile swi
 ```
 # Example configuration.yaml entry
 blueiris:
-  # Hostname or IP of Blue Iris WebServer
   host: !secret blueiris_host
-  # Port of Blue Iris WebServer
   port: !secret blueiris_port
+  # [optional] Blue Iris admin username and password
+  username: !secret blueiris_admin_username
+  password: !secret blueiris_admin_password
   # [optional] Blue Iris profile numbers - will create switch if defined
   #   -1 is Default profile
   #   0 is Inactive profile
-  #   1-7 profile set range     
+  #   1-7 profile range
   profile:
     # armed profile number
-    armed: !secret blueiris_profile_armed
+    armed: -1
     # unarmed profile number
-    unarmed: !secret blueiris_profile_unarmed
-  # [optional] Blue Iris admin username and password - required to arm / unarm
-  username: !secret blueiris_api_username
-  password: !secret blueiris_api_password
+    unarmed: 3
   # List of camera objects
-  camera:
-    # Camera short name in Blue Iris
-    - id: Kitchen
+  camera: 
+      # Camera short name in Blue Iris
+    - id: Cam4
       # [optional] Name of the camera for display
-      name: 'Kitchen Camera'
+      name: 'Front Door'
       # [optional] Room name (adds as attribute)
-      room: Ground Floor
-
-# Camera
-# https://www.home-assistant.io/components/camera
-camera:
-  # Creates cameras according to the camera defined in the platform.
-  - platform: blueiris
+      room: 'Front Door'
+      # BlueIris camera's short name
+    - id: Cam5
+      # name of the camera for display
+      name: 'Front Drive'
+      # Room name (adds as attribute)
+      room: 'Front Drive'
+      # BlueIris camera's short name
+    - id: Cam6
+      # name of the camera for display
+      name: 'Garage'
+      # Room name (adds as attribute)
+      room: 'Garage'
 
 # Binary Sensor
 # https://www.home-assistant.io/components/binary_sensor/
 binary_sensor:
-  # Creates binary sensors (MOTION, AUDIO, EXTERNAL, WATCHDOG) per-camera.
+  # Creates binary sensors according cameras defined in the platform
   - platform: blueiris
+
+# Camera
+# https://www.home-assistant.io/components/camera
+camera:
+  # Creates cameras according to those defined in the platform
+  - platform: blueiris
+
+# Stream
+# https://www.home-assistant.io/components/stream
+stream:
 
 # Switch
 # https://www.home-assistant.io/components/switch
 switch:
-  # Creates switch to arm and disarm Blue Iris.
+  # Creates switch to arm and disarm BlueIris (available only when profiles and admin password are provided)
   - platform: blueiris
 ```
 
@@ -180,7 +196,7 @@ Similarly, configure the connectivity alert for the camera by going to the `Watc
 ![Blue Iris Watchdog](/docs/images/bi-watchdog.png)
 
 
-### Troubleshooting MQTT
+#### Troubleshooting MQTT
 
 Things to check:
 - Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
@@ -189,6 +205,80 @@ Things to check:
   ![Integrations MQTT](/docs/images/ha-integrations_mqtt.png)
   
   ![Integrations MQTT Configure](/docs/images/ha-integrations_mqtt_configure.png)
+
+
+## Casting
+
+Currently the Stream Component is a bit ragged to use to cast Blue Iris video streams, which don't need proxying.
+
+**NOTE:** programmatic creation of `input_select` groups are still on the development plan. Until then, casting can be manually configured.
+
+
+### Home Assistant Configuration
+
+```
+# Example configuration.yaml entry
+# NOTE: replace {BI_HOST}:{BI_PORT} with the Blue Iris server IP and Port
+# https://www.home-assistant.io/components/input_select/
+input_select:
+  camera_dropdown:
+    name: Cast camera
+    options:
+      - All Cameras
+      - Cycle Cameras
+      - Front Door
+      - Front Drive
+      - Garage
+    initial: All Cameras
+    icon: mdi:camera
+  cast_to_screen_dropdown:
+    name: To Screen
+    options:
+      - Entryway Display
+      - Living Room Display
+    initial: Living Room Display
+    icon: mdi:cast
+
+  execute_cast_dropdown:
+    alias: Press to execute
+    sequence:
+      # https://www.home-assistant.io/components/media_player/
+      - service: media_player.play_media
+        data_template:
+          entity_id: >
+            {% if is_state('input_select.cast_to_screen_dropdown', 'Entryway Display') %}
+              media_player.entryway_display
+            {% elif is_state('input_select.cast_to_screen_dropdown', 'Living Room Display') %}
+              media_player.living_room_display
+            {% endif %}
+          media_content_id: >
+            {% if is_state('input_select.camera_dropdown', 'Front Door') %}
+              http://{BI_HOST}:{BI_PORT}/h264/CAM4/video.m3u8
+            {% elif is_state('input_select.camera_dropdown', 'Front Drive') %}
+              http://{BI_HOST}:{BI_PORT}/h264/CAM5/video.m3u8
+            {% elif is_state('input_select.camera_dropdown', 'Garage') %}
+              http://{BI_HOST}:{BI_PORT}/h264/CAM6/video.m3u8
+            {% elif is_state('input_select.camera_dropdown', 'Cycle Cameras') %}
+              http://{BI_HOST}:{BI_PORT}/h264/@index?/video.m3u8
+            {% elif is_state('input_select.camera_dropdown', 'All Cameras') %}
+              http://{BI_HOST}:{BI_PORT}/h264/index?/video.m3u8
+            {% endif %}
+          media_content_type: 'application/x-mpegurl'
+```
+
+
+### Lovelace UI Configuration
+
+```
+# Example ui-lovelace.yaml view entry
+  - type: entities
+    title: Cast Camera to Screen
+    show_header_toggle: false
+    entities:
+      - entity: input_select.camera_dropdown
+      - entity: input_select.cast_to_screen_dropdown
+      - entity: script.execute_cast_dropdown
+```
 
 
 ## Track Updates
