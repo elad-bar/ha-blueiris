@@ -102,23 +102,18 @@ class BlueIrisData:
         self._base_url = f'{PROTOCOLS[ssl]}://{self._credentials}{host}:{port}'
 
         self._image_url = f'{self._base_url}/image/[camera_id]?q=100&s=100'
-        self._stream_url = f'{self._base_url}/livestream.htm?cam=[camera_id]'
+        self._stream_url = f'{self._base_url}/h264/[camera_id]/temp.m3u8'
 
     def add_camera(self, camera):
         camera_id = camera.get(CONF_ID)
-        camera_name = camera.get(CONF_NAME, camera_id)
-        camera_room = camera.get(CONF_ROOM)
-
-        camera_still_url = self._image_url.replace(CAMERA_ID_PLACEHOLDER,
-                                                   camera_id)
-        camera_source = self._stream_url.replace(CAMERA_ID_PLACEHOLDER,
-                                                 camera_id)
 
         camera_details = {
-            CONF_NAME: f'BI {camera_name}',
-            CONF_ROOM: camera_room,
-            CONF_STILL_IMAGE_URL: camera_still_url,
-            CONF_STREAM_SOURCE: camera_source,
+            CONF_NAME: camera.get(CONF_NAME, camera_id),
+            CONF_ROOM: camera.get(CONF_ROOM),
+            CONF_STILL_IMAGE_URL: self._image_url.replace(
+                CAMERA_ID_PLACEHOLDER, camera_id),
+            CONF_STREAM_SOURCE: self._stream_url.replace(
+                CAMERA_ID_PLACEHOLDER, camera_id),
         }
 
         _LOGGER.debug(
