@@ -8,12 +8,11 @@ import logging
 
 import aiohttp
 import async_timeout
-import requests
 from requests.auth import HTTPDigestAuth
 
-from homeassistant.const import (
-    CONF_NAME, CONF_USERNAME, CONF_PASSWORD, CONF_AUTHENTICATION,
-    HTTP_BASIC_AUTHENTICATION, HTTP_DIGEST_AUTHENTICATION, CONF_VERIFY_SSL)
+from homeassistant.const import (CONF_NAME, CONF_AUTHENTICATION,
+                                 HTTP_DIGEST_AUTHENTICATION,
+                                 CONF_VERIFY_SSL)
 from homeassistant.components.camera import (
     DEFAULT_CONTENT_TYPE, SUPPORT_STREAM, Camera)
 from homeassistant.components.generic.camera import (

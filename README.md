@@ -10,7 +10,6 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 * Support HLS Streams instead of H264.
 * Support SSL with self-signed certificate.
 
-
 ## Configuration
 
 Basic configuration of the Component follows:
@@ -300,6 +299,12 @@ script:
       - entity: input_select.cast_to_screen_dropdown
       - entity: script.execute_cast_dropdown
 ```
+
+### Auto-generate configurations:
+`blueiris.generate_advanced_configurations` service will create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml:
+* input select (drop-downs)
+* script to cast based on the selection
+* UI of all the components created by BlueIris based on the description above
 
 
 ## Track Updates

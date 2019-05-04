@@ -5,7 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
-VERSION = '1.0.7'
+VERSION = '1.0.8'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
@@ -41,6 +41,8 @@ DEFAULT_ICON = 'mdi:alarm-light'
 CAMERA_ID_PLACEHOLDER = '[camera_id]'
 
 SCAN_INTERVAL = timedelta(seconds=60)
+
+ATTR_FRIENDLY_NAME = 'friendly_name'
 
 IMAGE_TIMEOUT = timedelta(seconds=5)
 
