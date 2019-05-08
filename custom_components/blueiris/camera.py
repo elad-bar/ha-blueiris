@@ -9,6 +9,7 @@ import logging
 import aiohttp
 import async_timeout
 from requests.auth import HTTPDigestAuth
+from homeassistant.util.async_ import run_coroutine_threadsafe
 
 from homeassistant.const import (CONF_NAME, CONF_AUTHENTICATION,
                                  HTTP_DIGEST_AUTHENTICATION,
@@ -19,7 +20,6 @@ from homeassistant.components.generic.camera import (
     CONF_LIMIT_REFETCH_TO_URL_CHANGE, CONF_FRAMERATE, CONF_CONTENT_TYPE,
     CONF_STREAM_SOURCE, CONF_STILL_IMAGE_URL)
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.util.async_ import run_coroutine_threadsafe
 
 from .const import *
 
@@ -81,6 +81,7 @@ class BlueIrisCamera(Camera):
         """Initialize a generic camera."""
         super().__init__()
 
+        self._hass = hass
         self._authentication = device_info.get(CONF_AUTHENTICATION)
         self._name = device_info[CONF_NAME]
         self._still_image_url = device_info[CONF_STILL_IMAGE_URL]
@@ -104,6 +105,8 @@ class BlueIrisCamera(Camera):
 
         self._last_url = None
         self._last_image = None
+        self._session = async_get_clientsession(
+            self.hass, verify_ssl=self.verify_ssl)
 
     @property
     def supported_features(self):
@@ -115,6 +118,10 @@ class BlueIrisCamera(Camera):
         """Return the interval between frames of the MJPEG stream."""
         return self._frame_interval
 
+    @property
+    def was_url_changed(self):
+        return self._still_image_url != self._last_url
+
     def camera_image(self):
         """Return bytes of camera image."""
         return run_coroutine_threadsafe(
@@ -122,16 +129,13 @@ class BlueIrisCamera(Camera):
 
     async def async_camera_image(self):
         """Return a still image response from the camera."""
-        if self._still_image_url == self._last_url and self._limit_refetch:
+        if not self.was_url_changed and self._limit_refetch:
             return self._last_image
 
         try:
-            session = async_get_clientsession(
-                self.hass, verify_ssl=self.verify_ssl)
-
             with async_timeout.timeout(
                     IMAGE_TIMEOUT.seconds, loop=self.hass.loop):
-                response = await session.get(
+                response = await self._session.get(
                     self._still_image_url, auth=self._auth)
 
                 self._last_image = await response.read()
