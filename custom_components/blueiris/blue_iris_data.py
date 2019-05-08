@@ -14,9 +14,10 @@ class BlueIrisData:
     """The Class for handling the data retrieval."""
 
     def __init__(self, host, port, cameras, username, password, ssl, exclude,
-                 profiles):
+                 profiles, scan_interval):
         """Initialize the data object."""
         self._was_initialized = False
+        self._scan_interval = scan_interval
 
         self._configuration_errors = None
         self._configurations = {CONF_CAMERAS: {}, CONF_PROFILE: {}}
@@ -39,6 +40,10 @@ class BlueIrisData:
 
         if self._is_arming_allowed:
             self._api = BlueIrisApi(self.base_url, username, password)
+
+    @property
+    def scan_interval(self):
+        return self._scan_interval
 
     @property
     def base_url(self):

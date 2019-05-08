@@ -9,7 +9,7 @@ import logging
 import aiohttp
 import async_timeout
 from requests.auth import HTTPDigestAuth
-from homeassistant.util.async_ import run_coroutine_threadsafe
+from homeassistant.helpers.event import track_time_interval
 
 from homeassistant.const import (CONF_NAME, CONF_AUTHENTICATION,
                                  HTTP_DIGEST_AUTHENTICATION,
@@ -52,6 +52,7 @@ def async_setup_platform(hass, config, async_add_entities,
             CONF_FRAMERATE: 2,
             CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
             CONF_VERIFY_SSL: False,
+            SCAN_INTERVAL: bi_data.scan_interval
         }
 
         bi_camera = BlueIrisCamera(hass, device_info)
@@ -91,6 +92,7 @@ class BlueIrisCamera(Camera):
         self._supported_features = SUPPORT_STREAM if self._stream_source else 0
         self.content_type = device_info[CONF_CONTENT_TYPE]
         self.verify_ssl = device_info[CONF_VERIFY_SSL]
+        self._scan_interval = device_info[SCAN_INTERVAL]
 
         username = None
         password = None
@@ -108,6 +110,13 @@ class BlueIrisCamera(Camera):
         self._session = async_get_clientsession(
             self.hass, verify_ssl=self.verify_ssl)
 
+        async def update_camera_image(event_time):
+            """Call BlueIris to refresh information."""
+            _LOGGER.debug(f"Updating {DOMAIN} component at {event_time}")
+            await self.async_update_camera_image()
+
+        track_time_interval(self._hass, update_camera_image, self._scan_interval)
+
     @property
     def supported_features(self):
         """Return supported features for this camera."""
@@ -124,31 +133,26 @@ class BlueIrisCamera(Camera):
 
     def camera_image(self):
         """Return bytes of camera image."""
-        return run_coroutine_threadsafe(
-            self.async_camera_image(), self.hass.loop).result()
+        return self._last_image
 
-    async def async_camera_image(self):
+    async def async_update_camera_image(self):
         """Return a still image response from the camera."""
-        if not self.was_url_changed and self._limit_refetch:
-            return self._last_image
-
         try:
-            with async_timeout.timeout(
-                    IMAGE_TIMEOUT.seconds, loop=self.hass.loop):
-                response = await self._session.get(
-                    self._still_image_url, auth=self._auth)
+            if self.was_url_changed or not self._limit_refetch:
+                with async_timeout.timeout(
+                        IMAGE_TIMEOUT.seconds, loop=self.hass.loop):
+                    response = await self._session.get(
+                        self._still_image_url, auth=self._auth)
 
-                self._last_image = await response.read()
+                    self._last_image = await response.read()
 
-            self._last_url = self._still_image_url
+                self._last_url = self._still_image_url
 
         except asyncio.TimeoutError:
             _LOGGER.error(f"Timeout getting image from: {self._name}")
 
         except aiohttp.ClientError as err:
             _LOGGER.error(f"Error getting new camera image: {err}")
-
-        return self._last_image
 
     @property
     def name(self):
