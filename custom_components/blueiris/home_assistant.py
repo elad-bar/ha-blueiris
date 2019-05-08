@@ -72,6 +72,8 @@ class BlueIrisHomeAssistant:
 
         ui_lovelace = f"{UI_LOVELACE}\n{camera_ui_list}"
 
+        _LOGGER.info(f'Script: {ui_lovelace}')
+
         return ui_lovelace
 
     @staticmethod
@@ -97,6 +99,8 @@ class BlueIrisHomeAssistant:
             replace('[camera_conditions]',
                     camera_condition)
 
+        _LOGGER.info(f'Script: {script}')
+
         return script
 
     @staticmethod
@@ -111,9 +115,9 @@ class BlueIrisHomeAssistant:
         if is_media_player:
             input_select = "input_select.cast_to_screen_dropdown"
 
-        script_condition = ""
-        f"            {{% {if_statement} is_state('{input_select}', '{match}') %}}"
-        f"              {value}"
+        script_condition = '' \
+            f'            {{% {if_statement} is_state(\'{input_select}\', \'{match}\') %}}' \
+            f'              {value}'
 
         return script_condition
 
@@ -126,6 +130,8 @@ class BlueIrisHomeAssistant:
                                             cast_to_screen_dropdown_options). \
             replace('[camera_dropdown_options]',
                     camera_dropdown_options)
+
+        _LOGGER.info(f'Script: {input_select}')
 
         return input_select
 
@@ -234,4 +240,4 @@ class BlueIrisHomeAssistant:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f'Failed to log EdgeOS data, Error: {ex}, Line: {line_number}')
+            _LOGGER.error(f'Failed to log BI data, Error: {ex}, Line: {line_number}')
