@@ -5,7 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
-VERSION = '1.0.8'
+VERSION = '1.0.9'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
