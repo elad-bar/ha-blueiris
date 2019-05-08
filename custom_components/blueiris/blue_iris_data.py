@@ -64,10 +64,9 @@ class BlueIrisData:
     def set_camera_list(self, cameras, exclude):
         for system_camera in SYSTEM_CAMERA_CONFIG:
             if system_camera in cameras:
-                self.log_warn(
-                    f("System camera cannot be added, please remove camera:"
-                      " {system_camera}")
-                )
+                self.log_warn(f"System camera cannot be added, " 
+                              f"please remove camera:" 
+                              f" {system_camera}")
 
             if exclude is None or system_camera not in exclude:
                 camera = {
