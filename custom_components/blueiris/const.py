@@ -5,7 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
-VERSION = '1.0.13'
+VERSION = '1.0.14'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
@@ -62,8 +62,7 @@ CONFIG_OPTIONS = 'options'
 CONFIG_CONDITIONS = 'conditions'
 CONFIG_ITEMS = 'items'
 
-UI_LOVELACE = '' \
-              '# Example ui-lovelace.yaml view entry\n' \
+UI_LOVELACE = '# Example ui-lovelace.yaml view entry\n' \
               'title: Blue Iris\n' \
               'icon: mdi:eye\n' \
               'cards:\n' \
@@ -85,8 +84,7 @@ UI_LOVELACE = '' \
               '            name: Arm / Disarm\n' \
               '      # System cameras\n'
 
-UI_LOVELACE_SYSTEM_CAMERA = "" \
-                            "      - type: horizontal-stack\n" \
+UI_LOVELACE_SYSTEM_CAMERA = "      - type: horizontal-stack\n" \
                             "        cards:\n" \
                             "          - type: custom:vertical-stack-in-card\n" \
                             "            cards:\n" \
@@ -95,8 +93,7 @@ UI_LOVELACE_SYSTEM_CAMERA = "" \
                             "                name: [camera_name]\n" \
                             "                show_state: false\n"
 
-UI_LOVELACE_REGULAR_CAMERA = "" \
-                             "  # [camera_name]\n" \
+UI_LOVELACE_REGULAR_CAMERA = "  # [camera_name]\n" \
                              "  - type: custom:vertical-stack-in-card\n" \
                              "    cards: \n" \
                              "      - type: picture-entity\n" \
@@ -112,8 +109,7 @@ UI_LOVELACE_REGULAR_CAMERA = "" \
                              "          - entity: binary_sensor.[camera_id]_watchdog\n" \
                              "            name: Watchdog\n"
 
-INPUT_SELECT = "" \
-               "input_select:\n" \
+INPUT_SELECT = "input_select:\n" \
                "  cast_to_screen_dropdown: \n" \
                "    icon: mdi:cast\n" \
                "    name: Media Player \n" \
@@ -128,8 +124,7 @@ INPUT_SELECT = "" \
 
 INPUT_SELECT_OPTION = "      - [item]"
 
-SCRIPT = '' \
-         'script:\n' \
+SCRIPT = 'script:\n' \
          '  execute_cast_dropdown:\n' \
          '    alias: Press to execute\n' \
          '    sequence:\n' \
@@ -137,8 +132,8 @@ SCRIPT = '' \
          '        data_template:\n' \
          '          media_content_type: \'image/jpg\'\n' \
          '          entity_id: >\n' \
-         '            [media_player_conditions]\n' \
-         '            {{% endif %}}\n' \
+         '            {% set media_players = {[media_player_conditions]} %}\n' \
+         '            {{media_players[states.input_select.cast_to_screen_dropdown.state]}}\n' \
          '          media_content_id: >\n' \
-         '            [camera_conditions]\n' \
-         '            {{% endif %}}\n'
+         '            {% set camera_list = {[camera_conditions]} %}\n' \
+         '            {{camera_list[states.input_select.camera_dropdown.state]}}\n'

@@ -91,8 +91,8 @@ class BlueIrisHomeAssistant:
 
     @staticmethod
     def build_script(camera_conditions, media_player_conditions):
-        media_player_condition = '\n'.join(media_player_conditions)
-        camera_condition = '\n'.join(camera_conditions)
+        media_player_condition = ', '.join(media_player_conditions)
+        camera_condition = ', '.join(camera_conditions)
 
         script = SCRIPT.replace('[media_player_conditions]',
                                 media_player_condition). \
@@ -104,20 +104,8 @@ class BlueIrisHomeAssistant:
         return script
 
     @staticmethod
-    def get_script_condition(is_media_player, is_first, match, value):
-        if_statement = 'elif'
-
-        if is_first:
-            if_statement = 'if'
-
-        input_select = "input_select.camera_dropdown"
-
-        if is_media_player:
-            input_select = "input_select.cast_to_screen_dropdown"
-
-        script_condition = '' \
-            f'            {{% {if_statement} is_state(\'{input_select}\', \'{match}\') %}}' \
-            f'              {value}'
+    def get_script_condition(match, value):
+        script_condition = f'"{match}": "{value}"'
 
         return script_condition
 
@@ -155,9 +143,7 @@ class BlueIrisHomeAssistant:
             if is_first:
                 is_first = False
 
-            media_player_condition = self.get_script_condition(True,
-                                                               is_first,
-                                                               name,
+            media_player_condition = self.get_script_condition(name,
                                                                entity_id)
 
             media_player_conditions.append(media_player_condition)
@@ -186,9 +172,7 @@ class BlueIrisHomeAssistant:
             if is_first:
                 is_first = False
 
-            camera_condition = self.get_script_condition(False,
-                                                         is_first,
-                                                         camera_name,
+            camera_condition = self.get_script_condition(camera_name,
                                                          camera_stream_source)
 
             camera_conditions.append(camera_condition)
