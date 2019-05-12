@@ -17,10 +17,10 @@ class BlueIrisApi:
     def __init__(self, base_url, username, password):
         """Initialize the data object."""
         args = (f"base_url: {base_url}, username: {username},"
-                " password: {password}")
+                f" password: {password}")
 
-        _LOGGER.debug(f"BlueIrisData initialization with following"
-                      " configuration: {args}")
+        _LOGGER.debug("BlueIrisData initialization with following"
+                      f" configuration: {args}")
 
         self._auth = HTTPBasicAuth(username, password)
         self._admin_url = f'{base_url}/admin'
@@ -47,6 +47,7 @@ class BlueIrisApi:
             url = f'{self._admin_url}{request_data}'
 
             _LOGGER.debug(f"Request to Blue Iris sent to: {url}")
+
             r = requests.get(url, auth=self._auth, timeout=5, verify=False)
             response = r.text
 
@@ -54,10 +55,10 @@ class BlueIrisApi:
                 _LOGGER.warning("Username and password are incorrect")
 
         except urllib.error.HTTPError as e:
-            _LOGGER.error(f"Failed to get response from Blue Iris due to HTTP"
-                          " Error: {str(e)}")
+            _LOGGER.error("Failed to get response from Blue Iris due to HTTP"
+                          f" Error: {str(e)}")
         except Exception as ex:
-            _LOGGER.error(f"Failed to get response from Blue Iris due to"
-                          " unexpected error: {str(ex)}")
+            _LOGGER.error("Failed to get response from Blue Iris due to"
+                          f" unexpected error: {str(ex)}")
 
         return response
