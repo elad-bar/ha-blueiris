@@ -70,8 +70,7 @@ class BlueIrisData:
         for system_camera in SYSTEM_CAMERA_CONFIG:
             if system_camera in cameras:
                 self.log_warn(f"System camera cannot be added, " 
-                              f"please remove camera:" 
-                              f" {system_camera}")
+                              f"please remove camera: {system_camera}")
 
             if exclude is None or system_camera not in exclude:
                 camera = {
@@ -87,8 +86,7 @@ class BlueIrisData:
     def set_profiles(self, profiles):
         if profiles is not None:
             if self._credentials is None:
-                self.log_error("Cannot set profile of Blue Iris without"
-                               " administrator credentials")
+                self.log_error("Profile state requires admin credentials")
                 return
 
             self._profile_armed = profiles.get(CONF_PROFILE_ARMED)
@@ -120,9 +118,8 @@ class BlueIrisData:
                 CAMERA_ID_PLACEHOLDER, camera_id),
         }
 
-        _LOGGER.debug(
-            f"Blue Iris camera configuration loaded, details: {camera_details}"
-        )
+        _LOGGER.debug(f"Blue Iris camera loaded, details: {camera_details}")
+
         self._configurations[CONF_CAMERAS][camera_id] = camera_details
 
     def get_all_cameras(self):
@@ -133,8 +130,7 @@ class BlueIrisData:
 
     def update_blue_iris_profile(self, arm):
         if not self._is_arming_allowed:
-            _LOGGER.warning(
-                "Configuration not does not support Arming Blue Iris")
+            _LOGGER.warning("No support for set arm state")
             return
 
         profile = self._profile_unarmed
@@ -148,12 +144,16 @@ class BlueIrisData:
 
     def get_arm_state(self):
         if not self._is_arming_allowed:
-            _LOGGER.warning("Configuration does not support get Arming State"
-                            " from Blue Iris")
+            _LOGGER.warning("No support to get armed state")
             return
 
         data = self._api.get_data()
-        state = f'profile={self._profile_armed}' in data
+        state = False
+
+        if data is None:
+            _LOGGER.warning("Failed to get profile")
+        else:
+            state = f'profile={self._profile_armed}' in data
 
         return state
 
