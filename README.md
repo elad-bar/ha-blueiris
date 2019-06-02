@@ -206,8 +206,8 @@ For each camera you wish to monitor, select `"Camera properties..."` and on the 
 
 In the `Configure Web or MQTT Alert` dialog, set the options as shown below. The MQTT topic should be `BlueIris/&CAM/&TYPE` for all cameras. Blue Iris will replace the macros with the correct camera short name and the alert type. Enter `ON` for the payload when triggered, and `OFF` for when trigger is reset. Make sure to check `Alert again when trigger is reset` to that Home Assistant gets notified when the alert ends.
 
-**NOTE:** Blue Iris appends the motion zone that triggered to the `&TYPE` macro (e.g. "MOTION_A"). The Component will only create a binary sensor for the "MOTION_A" topic (i.e. for a single motion trigger zone). If you need to utilize multiple motion zones, you may:
-  - Set the topic without using a macro (e.g. "BlueIris/&CAM/MOTION_A"); this will cause `AUDIO` and `EXTERNAL` events to trigger as `MOTION_A` events (but will fix all problems with motion zones).
+**NOTE:** Blue Iris appends the motion zone that triggered to the `&TYPE` macro (e.g. "MOTION_A"). The Component will only automatically create a binary sensor for the "MOTION_A" topic (i.e. for a single motion trigger zone). If you need to utilize multiple motion zones, you may:
+  - Set the topic without using a macro (e.g. "BlueIris/&CAM/MOTION_A"); this will cause `AUDIO` and `EXTERNAL` events to also trigger as `MOTION_A` events (but will fix all problems with motion zones).
   - Manually create additional sensors and automation in your Home Assistant configuration to process the additional MQTT topics.
 
 ![Blue Iris MQTT Alert](/docs/images/bi-alerts_mqtt.png)
