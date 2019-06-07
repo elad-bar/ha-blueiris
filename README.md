@@ -1,9 +1,9 @@
 # BlueIris
 
-
 ## Description
 
 Integration with Blue Iris Video Security Software. Creates the following components:
+
 * Camera - per-camera defined.
 * MQTT Binary Sensors (MOTION, AUDIO, EXTERNAL, WATCHDOG) - per-camera defined. The MQTT topic configured in Blue Iris should be `BlueIris/&CAM/&TYPE` for all cameras. Blue Iris will replace the macros with the correct camera short name and the alert type. Enter `ON` for the payload when triggered, and `OFF` for when trigger is reset. Make sure to check `Alert again when trigger is reset` to that Home Assistant gets notified when the alert ends.
 * Switch (Arm / Unarmed) - only when profiles and admin username and password are provided.
@@ -14,13 +14,11 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 Basic configuration of the Component follows:
 
-
 ### Blue Iris API Configuration
 
 If you intent to use any of the Blue Iris REST API commands (such as profile switching), it's recommended you create a separate Administrator user for Home Assitant to connect to, and limit access to LAN only.  Use this username and password in your Home Assistant configuration (shown in the next section). This keeps any accesses or limitations you may wish to set on Home Assistant separate from the primary Administrator.
 
 ![Blue Iris Edit User](/docs/images/bi-edit_user.png)
-
 
 ### Blue Iris Web Server Configuration
 
@@ -40,10 +38,9 @@ Finally, enable re-encoding. Set `Hardware accelerated decode (restart)` to a se
 
 ![Blue Iris Cameras Options](/docs/images/bi-cameras.png)
 
-
 ### Home Assistant Configuration
 
-```
+```YAML
 # Example configuration.yaml entry
 blueiris:
   host: !secret blueiris_host
@@ -61,7 +58,7 @@ blueiris:
     # unarmed profile number
     unarmed: 3
   # List of camera objects
-  camera: 
+  camera:
       # Camera short name in Blue Iris
     - id: Cam4
       # [optional] Name of the camera for display
@@ -106,7 +103,7 @@ switch:
 
 ### Lovelace UI Configuration
 
-```
+```YAML
 # Example ui-lovelace.yaml view entry
 title: Blue Iris
 icon: mdi:eye
@@ -145,7 +142,7 @@ cards:
         name: Front Door
         show_state: false
       - type: glance
-        entities:           
+        entities:
           - entity: binary_sensor.front_door_motion
             name: Motion
           - entity: binary_sensor.front_door_audio
@@ -186,7 +183,6 @@ cards:
             name: Watchdog
 ```
 
-
 ### Blue Iris MQTT Configuration
 
 In order to support the MQTT binary sensors for the camera, some additional configuration needs to be performed on both Home Assistant and Blue Iris:
@@ -205,6 +201,11 @@ For each camera you wish to monitor, select `"Camera properties..."` and on the 
 
 In the `Configure Web or MQTT Alert` dialog, set the options as shown below. The MQTT topic should be `BlueIris/&CAM/&TYPE` for all cameras. Blue Iris will replace the macros with the correct camera short name and the alert type. Enter `ON` for the payload when triggered, and `OFF` for when trigger is reset. Make sure to check `Alert again when trigger is reset` to that Home Assistant gets notified when the alert ends.
 
+**NOTE:** Blue Iris appends the motion zone that triggered to the `&TYPE` macro (e.g. "MOTION_A"). The Component will only automatically create a binary sensor for the "MOTION_A" topic (i.e. for a single motion trigger zone). If you need to utilize multiple motion zones, you may:
+
+* Set the topic without using a macro (e.g. "BlueIris/&CAM/MOTION_A"); this will cause `AUDIO` and `EXTERNAL` events to also trigger as `MOTION_A` events (but will fix all problems with motion zones).
+* Manually create additional sensors and automation in your Home Assistant configuration to process the additional MQTT topics.
+
 ![Blue Iris MQTT Alert](/docs/images/bi-alerts_mqtt.png)
 
 Similarly, configure the connectivity alert for the camera by going to the `Watchdog` tab and selecting `"Configure Watchdog Alerts"`. On the `Alerts` tab, check `"Post to a web address or MQTT server"` and then select `"Configure..."`. In the `Configure Web or MQTT Alert` dialog, set the options again (same as for Alerts).
@@ -213,17 +214,16 @@ Similarly, configure the connectivity alert for the camera by going to the `Watc
 
 ![Blue Iris Watchdog](/docs/images/bi-watchdog.png)
 
-
 #### Troubleshooting MQTT
 
 Things to check:
-- Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
-- Do you have the [MQTT Integration configured](https://www.home-assistant.io/addons/mosquitto/#home-assistant-configuration)? It's not sufficient to just install/start the broker. Make sure to check the `Enable discovery` box when you configure the integration.
+
+* Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
+* Do you have the [MQTT Integration configured](https://www.home-assistant.io/addons/mosquitto/#home-assistant-configuration)? It's not sufficient to just install/start the broker. Make sure to check the `Enable discovery` box when you configure the integration.
   
   ![Integrations MQTT](/docs/images/ha-integrations_mqtt.png)
   
   ![Integrations MQTT Configure](/docs/images/ha-integrations_mqtt_configure.png)
-
 
 ## Casting
 
@@ -231,10 +231,9 @@ Currently the Stream Component is a bit ragged to use to cast Blue Iris video st
 
 **NOTE:** programmatic creation of `input_select` groups are still on the development plan. Until then, casting can be manually configured.
 
+### Home Assistant MQTT Configuration
 
-### Home Assistant Configuration
-
-```
+```YAML
 # Example configuration.yaml entry
 # NOTE: replace {BI_HOST}:{BI_PORT} with the Blue Iris server IP and Port
 # https://www.home-assistant.io/components/input_select/
@@ -286,10 +285,9 @@ script:
           media_content_type: 'image/jpg'
 ```
 
+### Lovelace UI Casting Configuration
 
-### Lovelace UI Configuration
-
-```
+```YAML
 # Example ui-lovelace.yaml view entry
   - type: entities
     title: Cast Camera to Screen
@@ -306,14 +304,13 @@ script:
 * script to cast based on the selection
 * UI of all the components created by BlueIris based on the description above
 
-
 ## Track Updates
 
 This custom card can be tracked with the help of custom-updater.
 
 In your configuration.yaml
 
-```
+```YAML
 custom_updater:
   track:
     - components
@@ -321,6 +318,6 @@ custom_updater:
     - https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/blueiris.json
 ```
 
-
 ## Contributors
-<a href="https://github.com/darkgrue">@darkgrue</a> 
+
+<a href="https://github.com/darkgrue">@darkgrue</a>
