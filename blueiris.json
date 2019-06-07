@@ -1,6 +1,6 @@
 {
     "blueiris": {
-        "version": "1.0.5",
+        "version": "1.0.15",
         "local_location": "/custom_components/blueiris/__init__.py",
         "remote_location": "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/__init__.py",
         "visit_repo": "https://github.com/elad-bar/ha-blueiris",
@@ -12,9 +12,9 @@
             "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/camera.py",
             "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/const.py",
             "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/home_assistant.py",
-            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/input_select.py",
             "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/services.yaml",
-            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/switch.py"
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/switch.py",
+            "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/manifest.json"
         ]
     }
 }

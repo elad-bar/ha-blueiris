@@ -5,7 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
-VERSION = '1.0.5'
+VERSION = '1.0.15'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
@@ -42,6 +42,8 @@ CAMERA_ID_PLACEHOLDER = '[camera_id]'
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
+ATTR_FRIENDLY_NAME = 'friendly_name'
+
 IMAGE_TIMEOUT = timedelta(seconds=5)
 
 PROTOCOLS = {
@@ -55,3 +57,83 @@ DEFAULT_FORCE_UPDATE = False
 
 DEVICE_CLASS_CONNECTIVITY = 'connectivity'
 DEVICE_CLASS_MOTION = 'motion'
+
+CONFIG_OPTIONS = 'options'
+CONFIG_CONDITIONS = 'conditions'
+CONFIG_ITEMS = 'items'
+
+UI_LOVELACE = '# Example ui-lovelace.yaml view entry\n' \
+              'title: Blue Iris\n' \
+              'icon: mdi:eye\n' \
+              'cards:\n' \
+              '  - type: entities\n' \
+              '    title: Cast Camera to Screen\n' \
+              '    show_header_toggle: false\n' \
+              '    entities:\n' \
+              '      - entity: input_select.camera_dropdown\n' \
+              '      - entity: input_select.cast_to_screen_dropdown\n' \
+              '      - entity: script.execute_cast_dropdown\n' \
+              '  - type: custom:vertical-stack-in-card\n' \
+              '    cards:\n' \
+              '      # Blue Iris Armed / Disarm Profiles\n' \
+              '      - type: entities\n' \
+              '        title: Blue Iris\n' \
+              '        show_header_toggle: false\n' \
+              '        entities:\n' \
+              '          - entity: switch.blueiris_alerts\n' \
+              '            name: Arm / Disarm\n' \
+              '      # System cameras\n'
+
+UI_LOVELACE_SYSTEM_CAMERA = "      - type: horizontal-stack\n" \
+                            "        cards:\n" \
+                            "          - type: custom:vertical-stack-in-card\n" \
+                            "            cards:\n" \
+                            "              - type: picture-entity\n" \
+                            "                entity: camera.[camera_id]\n" \
+                            "                name: [camera_name]\n" \
+                            "                show_state: false\n"
+
+UI_LOVELACE_REGULAR_CAMERA = "  # [camera_name]\n" \
+                             "  - type: custom:vertical-stack-in-card\n" \
+                             "    cards: \n" \
+                             "      - type: picture-entity\n" \
+                             "        entity: camera.[camera_id]\n" \
+                             "        name: [camera_name]\n" \
+                             "        show_state: false\n" \
+                             "      - type: glance\n" \
+                             "        entities: \n" \
+                             "          - entity: binary_sensor.[camera_id]_motion\n" \
+                             "            name: Motion\n" \
+                             "          - entity: binary_sensor.[camera_id]_audio\n" \
+                             "            name: Audio\n" \
+                             "          - entity: binary_sensor.[camera_id]_watchdog\n" \
+                             "            name: Watchdog\n"
+
+INPUT_SELECT = "input_select:\n" \
+               "  cast_to_screen_dropdown: \n" \
+               "    icon: mdi:cast\n" \
+               "    name: Media Player \n" \
+               "    options: \n" \
+               "[cast_to_screen_dropdown_options]\n" \
+               "  camera_dropdown: \n" \
+               "    name: BlueIris Camera \n" \
+               f"    initial: {ATTR_SYSTEM_CAMERA_ALL_NAME} \n" \
+               "    icon: mdi:camera \n" \
+               "    options: \n" \
+               "[camera_dropdown_options]\n"
+
+INPUT_SELECT_OPTION = "      - [item]"
+
+SCRIPT = 'script:\n' \
+         '  execute_cast_dropdown:\n' \
+         '    alias: Press to execute\n' \
+         '    sequence:\n' \
+         '      - service: media_player.play_media\n' \
+         '        data_template:\n' \
+         '          media_content_type: \'image/jpg\'\n' \
+         '          entity_id: >\n' \
+         '            {% set media_players = {[media_player_conditions]} %}\n' \
+         '            {{media_players[states.input_select.cast_to_screen_dropdown.state]}}\n' \
+         '          media_content_id: >\n' \
+         '            {% set camera_list = {[camera_conditions]} %}\n' \
+         '            {{camera_list[states.input_select.camera_dropdown.state]}}\n'

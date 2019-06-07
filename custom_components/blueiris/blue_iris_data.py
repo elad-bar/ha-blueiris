@@ -14,9 +14,10 @@ class BlueIrisData:
     """The Class for handling the data retrieval."""
 
     def __init__(self, host, port, cameras, username, password, ssl, exclude,
-                 profiles):
+                 profiles, scan_interval):
         """Initialize the data object."""
         self._was_initialized = False
+        self._scan_interval = scan_interval
 
         self._configuration_errors = None
         self._configurations = {CONF_CAMERAS: {}, CONF_PROFILE: {}}
@@ -39,6 +40,10 @@ class BlueIrisData:
 
         if self._is_arming_allowed:
             self._api = BlueIrisApi(self.base_url, username, password)
+
+    @property
+    def scan_interval(self):
+        return self._scan_interval
 
     @property
     def base_url(self):
@@ -64,10 +69,8 @@ class BlueIrisData:
     def set_camera_list(self, cameras, exclude):
         for system_camera in SYSTEM_CAMERA_CONFIG:
             if system_camera in cameras:
-                self.log_warn(
-                    f("System camera cannot be added, please remove camera:"
-                      " {system_camera}")
-                )
+                self.log_warn(f"System camera cannot be added, " 
+                              f"please remove camera: {system_camera}")
 
             if exclude is None or system_camera not in exclude:
                 camera = {
@@ -83,8 +86,7 @@ class BlueIrisData:
     def set_profiles(self, profiles):
         if profiles is not None:
             if self._credentials is None:
-                self.log_error("Cannot set profile of Blue Iris without"
-                               " administrator credentials")
+                self.log_error("Profile state requires admin credentials")
                 return
 
             self._profile_armed = profiles.get(CONF_PROFILE_ARMED)
@@ -102,7 +104,7 @@ class BlueIrisData:
         self._base_url = f'{PROTOCOLS[ssl]}://{self._credentials}{host}:{port}'
 
         self._image_url = f'{self._base_url}/image/[camera_id]?q=100&s=100'
-        self._stream_url = f'{self._base_url}/h264/[camera_id]/temp.m3u8'
+        self._stream_url = f'{self._base_url}/livestream.htm?cam=[camera_id]'
 
     def add_camera(self, camera):
         camera_id = camera.get(CONF_ID)
@@ -116,9 +118,8 @@ class BlueIrisData:
                 CAMERA_ID_PLACEHOLDER, camera_id),
         }
 
-        _LOGGER.debug(
-            f"Blue Iris camera configuration loaded, details: {camera_details}"
-        )
+        _LOGGER.debug(f"Blue Iris camera loaded, details: {camera_details}")
+
         self._configurations[CONF_CAMERAS][camera_id] = camera_details
 
     def get_all_cameras(self):
@@ -129,8 +130,7 @@ class BlueIrisData:
 
     def update_blue_iris_profile(self, arm):
         if not self._is_arming_allowed:
-            _LOGGER.warning(
-                "Configuration not does not support Arming Blue Iris")
+            _LOGGER.warning("No support for set arm state")
             return
 
         profile = self._profile_unarmed
@@ -144,12 +144,16 @@ class BlueIrisData:
 
     def get_arm_state(self):
         if not self._is_arming_allowed:
-            _LOGGER.warning("Configuration does not support get Arming State"
-                            " from Blue Iris")
+            _LOGGER.warning("No support to get armed state")
             return
 
         data = self._api.get_data()
-        state = f'profile={self._profile_armed}' in data
+        state = False
+
+        if data is None:
+            _LOGGER.warning("Failed to get profile")
+        else:
+            state = f'profile={self._profile_armed}' in data
 
         return state
 

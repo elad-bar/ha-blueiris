@@ -69,7 +69,7 @@ def setup(hass, config):
         ha = BlueIrisHomeAssistant(hass, scan_interval)
 
         bi_data = BlueIrisData(host, port, cameras, username, password, ssl,
-                               exclude, profile)
+                               exclude, profile, scan_interval)
 
         hass.data[DATA_BLUEIRIS] = bi_data
 
@@ -77,11 +77,14 @@ def setup(hass, config):
 
         if configuration_errors is not None:
             all_errors = "<br /> - ".join(configuration_errors)
-            error_message = f("<b>Errors while loading configuration:</b>"
-                              "<br />{all_errors}")
+            error_message = f"<b>Errors while loading configuration:</b>" \
+                f"<br />{all_errors}"
+
             ha.notify_error_message(error_message)
         else:
-            ha.initialize(bi_data.update)
+            camera_list = bi_data.get_all_cameras()
+
+            ha.initialize(bi_data.update, camera_list)
 
             initialized = True
 

@@ -298,6 +298,12 @@ script:
       - entity: script.execute_cast_dropdown
 ```
 
+### Auto-generate configurations:
+`blueiris.generate_advanced_configurations` service will create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml:
+* input select (drop-downs)
+* script to cast based on the selection
+* UI of all the components created by BlueIris based on the description above
+
 ## Track Updates
 
 This custom card can be tracked with the help of custom-updater.
