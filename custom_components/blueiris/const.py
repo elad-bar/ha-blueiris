@@ -5,7 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
-VERSION = '1.0.15'
+VERSION = '1.0.16'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
@@ -44,6 +44,7 @@ SCAN_INTERVAL = timedelta(seconds=60)
 
 ATTR_FRIENDLY_NAME = 'friendly_name'
 
+IMAGE_UPDATE_INTERVAL = timedelta(seconds=1)
 IMAGE_TIMEOUT = timedelta(seconds=5)
 
 PROTOCOLS = {
