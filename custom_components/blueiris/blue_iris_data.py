@@ -110,6 +110,7 @@ class BlueIrisData:
         camera_id = camera.get(CONF_ID)
 
         camera_details = {
+            CONF_ID: camera_id,
             CONF_NAME: camera.get(CONF_NAME, camera_id),
             CONF_ROOM: camera.get(CONF_ROOM),
             CONF_STILL_IMAGE_URL: self._image_url.replace(

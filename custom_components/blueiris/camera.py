@@ -14,7 +14,7 @@ from homeassistant.helpers.event import track_time_interval
 
 from homeassistant.const import (CONF_NAME, CONF_AUTHENTICATION,
                                  HTTP_DIGEST_AUTHENTICATION,
-                                 CONF_VERIFY_SSL)
+                                 CONF_VERIFY_SSL, CONF_ID)
 from homeassistant.components.camera import (
     DEFAULT_CONTENT_TYPE, SUPPORT_STREAM, Camera)
 from homeassistant.components.generic.camera import (
@@ -85,6 +85,7 @@ class BlueIrisCamera(Camera):
         self._hass = hass
         self._authentication = device_info.get(CONF_AUTHENTICATION)
         self._name = device_info[CONF_NAME]
+        self._camera_id = device_info[CONF_ID]
         self._still_image_url = device_info[CONF_STILL_IMAGE_URL]
         self._stream_source = device_info[CONF_STREAM_SOURCE]
         self._limit_refetch = device_info[CONF_LIMIT_REFETCH_TO_URL_CHANGE]
@@ -111,6 +112,11 @@ class BlueIrisCamera(Camera):
     def supported_features(self):
         """Return supported features for this camera."""
         return self._supported_features
+
+    @property
+    def camera_id(self):
+        """Return the interval between frames of the MJPEG stream."""
+        return self._camera_id
 
     @property
     def frame_interval(self):
