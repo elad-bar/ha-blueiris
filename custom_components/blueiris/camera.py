@@ -46,6 +46,7 @@ def async_setup_platform(hass, config, async_add_entities,
         _LOGGER.info(f"Processing new camera: {camera}")
 
         device_info = {
+            CONF_ID:  camera[CONF_ID],
             CONF_NAME: camera[CONF_NAME],
             CONF_STILL_IMAGE_URL: camera[CONF_STILL_IMAGE_URL],
             CONF_STREAM_SOURCE: camera[CONF_STREAM_SOURCE],
