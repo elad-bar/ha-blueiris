@@ -137,6 +137,6 @@ SCRIPT = 'script:\n' \
          '            {{media_players[states.input_select.cast_to_screen_dropdown.state]}}\n' \
          '          media_content_id: >\n' \
          '            {% set camera_list = {[camera_conditions]} %}\n' \
-         '            {{[bi-url]}}\n'
+         '            {{"[bi-url]"}}\n'
 
 HA_CAM_STATE = "camera_list[states.input_select.camera_dropdown.state]"

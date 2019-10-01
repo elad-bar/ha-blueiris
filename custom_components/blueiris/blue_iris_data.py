@@ -106,7 +106,7 @@ class BlueIrisData:
         cast_credentials = ""
         if username is not None and password is not None:
             self._credentials = f'{username}:{password}@'
-            cast_credentials = "?user={username}&pw={password}"
+            cast_credentials = f"?user={username}&pw={password}"
 
         self._base_url = f'{PROTOCOLS[ssl]}://{self._credentials}{host}:{port}'
         self._cast_url = f'{PROTOCOLS[ssl]}://{host}:{port}/mjpg/[CAM_ID]/video.mjpg{cast_credentials}'
