@@ -46,7 +46,6 @@ def async_setup_platform(hass, config, async_add_entities,
         _LOGGER.info(f"Processing new camera: {camera}")
 
         device_info = {
-            CONF_ID:  camera[CONF_ID],
             CONF_NAME: camera[CONF_NAME],
             CONF_STILL_IMAGE_URL: camera[CONF_STILL_IMAGE_URL],
             CONF_STREAM_SOURCE: camera[CONF_STREAM_SOURCE],
@@ -56,7 +55,7 @@ def async_setup_platform(hass, config, async_add_entities,
             CONF_VERIFY_SSL: False,
         }
 
-        bi_camera = BlueIrisCamera(hass, device_info)
+        bi_camera = BlueIrisCamera(hass, device_info, camera_id)
         bi_camera_list.append(bi_camera)
 
         _LOGGER.debug(f"Camera created: {bi_camera}")
@@ -79,14 +78,14 @@ class BlueIrisCamera(Camera):
     def disable_motion_detection(self):
         pass
 
-    def __init__(self, hass, device_info):
+    def __init__(self, hass, device_info, camera_id):
         """Initialize a generic camera."""
         super().__init__()
 
         self._hass = hass
         self._authentication = device_info.get(CONF_AUTHENTICATION)
         self._name = device_info[CONF_NAME]
-        self._camera_id = device_info[CONF_ID]
+        self._camera_id = camera_id
         self._still_image_url = device_info[CONF_STILL_IMAGE_URL]
         self._stream_source = device_info[CONF_STREAM_SOURCE]
         self._limit_refetch = device_info[CONF_LIMIT_REFETCH_TO_URL_CHANGE]
