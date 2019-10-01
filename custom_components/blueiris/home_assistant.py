@@ -18,7 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class BlueIrisHomeAssistant:
-    def __init__(self, hass, scan_interval, base_url):
+    def __init__(self, hass, scan_interval, cast_url):
         self._scan_interval = scan_interval
         self._hass = hass
         self._camera_list = None
@@ -26,7 +26,7 @@ class BlueIrisHomeAssistant:
         self._script_data = []
         self._input_select_data = INPUT_SELECT
 
-        self._stream_url = f"'{base_url}/mjpg/' ~ {HA_CAM_STATE} ~ '/video.mjpg'"
+        self._cast_template = cast_url.replace('[CAMID]', HA_CAM_STATE)
 
     def initialize(self, bi_refresh_callback, camera_list):
         self._camera_list = camera_list
@@ -92,7 +92,7 @@ class BlueIrisHomeAssistant:
         return camera_data
 
     @staticmethod
-    def build_script(camera_conditions, media_player_conditions, stream_url):
+    def build_script(camera_conditions, media_player_conditions, cast_template):
         media_player_condition = ', '.join(media_player_conditions)
         camera_condition = ', '.join(camera_conditions)
 
@@ -102,7 +102,7 @@ class BlueIrisHomeAssistant:
         script = script.replace('[camera_conditions]',
                                 camera_condition)
 
-        script = script.replace('[bi-url]', stream_url)
+        script = script.replace('[bi-url]', cast_template)
 
         _LOGGER.info(f'Script: {script}')
 
@@ -217,7 +217,7 @@ class BlueIrisHomeAssistant:
             input_select = self.build_input_select(camera_options, media_player_options)
             script = self.build_script(camera_conditions,
                                        media_player_conditions,
-                                       self._stream_url)
+                                       self._cast_template)
 
             components_path = self._hass.config.path('blueiris.advanced_configurations.yaml')
 

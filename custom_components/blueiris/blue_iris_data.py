@@ -31,6 +31,7 @@ class BlueIrisData:
         self._image_url = None
         self._credentials = None
         self._base_url = None
+        self._cast_url = None
 
         self.set_blue_iris_urls(host, port, ssl, username, password)
 
@@ -44,6 +45,10 @@ class BlueIrisData:
     @property
     def scan_interval(self):
         return self._scan_interval
+
+    @property
+    def cast_url(self):
+        return self._cast_url
 
     @property
     def base_url(self):
@@ -98,10 +103,13 @@ class BlueIrisData:
 
     def set_blue_iris_urls(self, host, port, ssl, username, password):
         self._credentials = ''
+        cast_credentials = ""
         if username is not None and password is not None:
             self._credentials = f'{username}:{password}@'
+            cast_credentials = "?user={username}&pw={password}"
 
         self._base_url = f'{PROTOCOLS[ssl]}://{self._credentials}{host}:{port}'
+        self._cast_url = f'{PROTOCOLS[ssl]}://{host}:{port}/mjpg/[CAM_ID]/video.mjpg{cast_credentials}'
 
         self._image_url = f'{self._base_url}/image/[camera_id]?q=100&s=100'
         self._stream_url = f'{self._base_url}/livestream.htm?cam=[camera_id]'
