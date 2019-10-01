@@ -170,7 +170,6 @@ class BlueIrisHomeAssistant:
         for camera in self._camera_list:
             camera_details = self._camera_list[camera]
             camera_name = camera_details.get(CONF_NAME)
-            camera_id = camera_details.get(CONF_ID)
 
             camera_options.append(INPUT_SELECT_OPTION.replace('[item]', camera_name))
 
@@ -178,7 +177,7 @@ class BlueIrisHomeAssistant:
                 is_first = False
 
             camera_condition = self.get_script_condition(camera_name,
-                                                         camera_id)
+                                                         camera)
 
             camera_conditions.append(camera_condition)
 
