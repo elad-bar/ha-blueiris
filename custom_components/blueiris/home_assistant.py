@@ -26,7 +26,7 @@ class BlueIrisHomeAssistant:
         self._script_data = []
         self._input_select_data = INPUT_SELECT
 
-        self._cast_template = cast_url.replace('[CAMID]', HA_CAM_STATE)
+        self._cast_template = cast_url.replace('[CAM_ID]', HA_CAM_STATE)
 
     def initialize(self, bi_refresh_callback, camera_list):
         self._camera_list = camera_list
