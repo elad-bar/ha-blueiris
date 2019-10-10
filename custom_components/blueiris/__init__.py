@@ -67,7 +67,7 @@ def setup(hass, config):
         profile = conf.get(CONF_PROFILE)
 
         bi_data = BlueIrisData(host, port, cameras, username, password, ssl,
-                               exclude, profile, scan_interval)
+                               exclude, profile, scan_interval, cv.template)
 
         ha = BlueIrisHomeAssistant(hass, scan_interval, bi_data.cast_url)
 
