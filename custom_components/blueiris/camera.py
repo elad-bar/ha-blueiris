@@ -6,7 +6,8 @@ https://home-assistant.io/components/camera.blueiris/
 import asyncio
 import logging
 
-from homeassistant.const import (CONF_NAME, CONF_VERIFY_SSL)
+from homeassistant.const import (CONF_NAME, CONF_USERNAME, CONF_VERIFY_SSL,
+                                 CONF_PASSWORD, CONF_AUTHENTICATION)
 from homeassistant.components.camera import (
     DEFAULT_CONTENT_TYPE)
 from homeassistant.components.generic.camera import (
@@ -38,13 +39,16 @@ def async_setup_platform(hass, config, async_add_entities,
         _LOGGER.info(f"Processing new camera: {camera}")
 
         device_info = {
-            CONF_NAME: camera[CONF_NAME],
-            CONF_STILL_IMAGE_URL: camera[CONF_STILL_IMAGE_URL],
-            CONF_STREAM_SOURCE: camera[CONF_STREAM_SOURCE],
+            CONF_NAME: camera.get(CONF_NAME),
+            CONF_STILL_IMAGE_URL: camera.get(CONF_STILL_IMAGE_URL),
+            CONF_STREAM_SOURCE: camera.get(CONF_STREAM_SOURCE),
             CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,
             CONF_FRAMERATE: 2,
             CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
             CONF_VERIFY_SSL: False,
+            CONF_USERNAME: camera.get(CONF_USERNAME),
+            CONF_PASSWORD: camera.get(CONF_PASSWORD),
+            CONF_AUTHENTICATION: AUTHENTICATION_BASIC
         }
 
         bi_camera = GenericCamera(hass, device_info)
