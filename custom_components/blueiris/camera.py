@@ -51,9 +51,11 @@ def async_setup_platform(hass, config, async_add_entities,
             CONF_AUTHENTICATION: AUTHENTICATION_BASIC
         }
 
+        _LOGGER.info(f'Creating camera: {device_info}')
+
         bi_camera = GenericCamera(hass, device_info)
         bi_camera_list.append(bi_camera)
 
-        _LOGGER.debug(f"Camera created: {bi_camera}")
+        _LOGGER.info(f"Camera created: {bi_camera}")
 
     async_add_entities(bi_camera_list, True)
