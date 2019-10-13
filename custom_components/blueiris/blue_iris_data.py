@@ -114,10 +114,11 @@ class BlueIrisData:
             cast_credentials = f"?user={self._username}&pw={self._password}"
 
         self._base_url = f'{PROTOCOLS[ssl]}://{host}:{port}'
+        self._creds_url = f'{PROTOCOLS[ssl]}://{self._credentials}{host}:{port}'
         self._cast_url = f'{PROTOCOLS[ssl]}://{host}:{port}/mjpg/[CAM_ID]/video.mjpg{cast_credentials}'
 
-        self._image_url = f'{self._base_url}/image/[camera_id]?q=100&s=100'
-        self._stream_url = f'{self._base_url}/h264/[camera_id]/temp.m3u8'
+        self._image_url = f'{self._creds_url}/image/[camera_id]?q=100&s=100'
+        self._stream_url = f'{self._creds_url}/h264/[camera_id]/temp.m3u8'
 
     def add_camera(self, camera):
         camera_id = camera.get(CONF_ID)

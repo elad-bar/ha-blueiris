@@ -46,8 +46,6 @@ def async_setup_platform(hass, config, async_add_entities,
             CONF_FRAMERATE: 2,
             CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
             CONF_VERIFY_SSL: False,
-            CONF_USERNAME: camera.get(CONF_USERNAME),
-            CONF_PASSWORD: camera.get(CONF_PASSWORD),
             CONF_AUTHENTICATION: AUTHENTICATION_BASIC
         }
 
