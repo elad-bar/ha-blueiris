@@ -113,7 +113,7 @@ class BlueIrisData:
             self._credentials = f'{self._username}:{self._password}@'
             cast_credentials = f"?user={self._username}&pw={self._password}"
 
-        self._base_url = f'{PROTOCOLS[ssl]}://{self._credentials}{host}:{port}'
+        self._base_url = f'{PROTOCOLS[ssl]}://{host}:{port}'
         self._cast_url = f'{PROTOCOLS[ssl]}://{host}:{port}/mjpg/[CAM_ID]/video.mjpg{cast_credentials}'
 
         self._image_url = f'{self._base_url}/image/[camera_id]?q=100&s=100'
