@@ -3,7 +3,6 @@ Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/camera.blueiris/
 """
-import asyncio
 import logging
 
 from homeassistant.const import (CONF_NAME, CONF_USERNAME, CONF_VERIFY_SSL,
@@ -22,9 +21,10 @@ DEPENDENCIES = [DOMAIN]
 _LOGGER = logging.getLogger(__name__)
 
 
-@asyncio.coroutine
-def async_setup_platform(hass, config, async_add_entities,
-                         discovery_info=None):
+async def async_setup_platform(hass,
+                               config,
+                               async_add_entities,
+                               discovery_info=None):
     """Set up a Blue Iris Camera."""
     bi_data = hass.data.get(DATA_BLUEIRIS)
 

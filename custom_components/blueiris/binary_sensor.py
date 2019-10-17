@@ -21,9 +21,10 @@ _LOGGER = logging.getLogger(__name__)
 DEPENDENCIES = [DOMAIN, 'mqtt']
 
 
-@asyncio.coroutine
-def async_setup_platform(hass, config, async_add_entities,
-                         discovery_info=None):
+async def async_setup_platform(hass,
+                               config,
+                               async_add_entities,
+                               discovery_info=None):
     """Set up the Blue Iris binary sensor."""
     bi_data = hass.data.get(DATA_BLUEIRIS)
 
@@ -43,6 +44,7 @@ def async_setup_platform(hass, config, async_add_entities,
     }
 
     for camera_id in cameras:
+        device_class = ''
         camera = cameras[camera_id]
         _LOGGER.debug(f"Processing new camera[{camera_id}]: {camera}")
 
@@ -112,10 +114,9 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
         self._payload_off = payload_off
         self._force_update = force_update
 
-    @asyncio.coroutine
-    def async_added_to_hass(self):
+    async def async_added_to_hass(self):
         """Subscribe MQTT events."""
-        yield from super().async_added_to_hass()
+        await super().async_added_to_hass()
 
         @callback
         def state_message_received(message):
@@ -133,8 +134,10 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
 
             self.async_schedule_update_ha_state()
 
-        yield from mqtt.async_subscribe(self.hass, self._state_topic,
-                                        state_message_received, DEFAULT_QOS)
+        await mqtt.async_subscribe(self.hass,
+                                   self._state_topic,
+                                   state_message_received,
+                                   DEFAULT_QOS)
 
     @property
     def should_poll(self):

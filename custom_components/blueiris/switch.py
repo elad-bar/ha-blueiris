@@ -17,9 +17,10 @@ _LOGGER = logging.getLogger(__name__)
 DEPENDENCIES = [DOMAIN]
 
 
-@asyncio.coroutine
-def async_setup_platform(hass, config, async_add_entities,
-                         discovery_info=None):
+async def async_setup_platform(hass,
+                               config,
+                               async_add_entities,
+                               discovery_info=None):
     """Set up the Blue Iris switch platform."""
     bi_data = hass.data.get(DATA_BLUEIRIS)
 
@@ -58,8 +59,7 @@ class BlueIrisProfileSwitch(SwitchDevice):
         """Call update method."""
         self.async_schedule_update_ha_state(True)
 
-    @asyncio.coroutine
-    def async_update(self):
+    async def async_update(self):
         """Get the updated status of the switch."""
 
         self._state = self._bi_data.is_blue_iris_armed()
@@ -69,14 +69,12 @@ class BlueIrisProfileSwitch(SwitchDevice):
         """Return the boolean response if the node is on."""
         return self._state
 
-    @asyncio.coroutine
-    def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs):
         """Turn device on."""
         self._bi_data.update_blue_iris_profile(True)
         self.async_schedule_update_ha_state()
 
-    @asyncio.coroutine
-    def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs):
         """Turn device off."""
         self._bi_data.update_blue_iris_profile(False)
         self.async_schedule_update_ha_state()
