@@ -4,7 +4,7 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
-from homeassistant.const import (CONF_NAME, CONF_TYPE,
+from homeassistant.const import (CONF_NAME, CONF_TYPE, CONF_ID,
                                  CONF_DEVICE_CLASS, CONF_STATE)
 
 from homeassistant.components.mqtt import (
