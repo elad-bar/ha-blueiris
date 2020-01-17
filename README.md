@@ -1,8 +1,5 @@
 # BlueIris
 
-## Change-log
-Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
-
 ## Description
 
 Integration with Blue Iris Video Security Software. Creates the following components:
@@ -12,6 +9,10 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 * Switch (Arm / Unarmed) - only when profiles and admin username and password are provided.
 * Support HLS Streams instead of H264.
 * Support SSL with self-signed certificate.
+
+
+## Change-log
+Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
 
 ## Configuration
 
