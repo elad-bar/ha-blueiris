@@ -3,16 +3,13 @@ Support for Blue Iris binary sensors.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.blueiris/
 """
-import asyncio
+import time
+import json
 import logging
 from homeassistant.core import callback
 from homeassistant.components import mqtt
 from homeassistant.components.binary_sensor import (BinarySensorDevice)
-from homeassistant.const import (CONF_NAME, STATE_ON, STATE_OFF)
-from homeassistant.components.mqtt import (
-    MqttAvailability, CONF_PAYLOAD_AVAILABLE, DEFAULT_PAYLOAD_AVAILABLE,
-    CONF_QOS, CONF_PAYLOAD_NOT_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE,
-    DEFAULT_QOS)
+from homeassistant.components.mqtt import (MqttAvailability)
 
 from .const import *
 
@@ -33,86 +30,55 @@ async def async_setup_platform(hass,
 
     cameras = bi_data.get_all_cameras()
 
-    bi_binary_sensor_list = []
-
-    force_update = DEFAULT_FORCE_UPDATE
-
-    mqtt_availability_config = {
-        CONF_PAYLOAD_AVAILABLE: DEFAULT_PAYLOAD_AVAILABLE,
-        CONF_PAYLOAD_NOT_AVAILABLE: DEFAULT_PAYLOAD_NOT_AVAILABLE,
-        CONF_QOS: DEFAULT_QOS
-    }
+    entities = []
+    binary_sensors = [
+        BlueIrisMotionBinarySensor,
+        BlueIrisAudioBinarySensor,
+        BlueIrisConnectivityBinarySensor
+    ]
 
     for camera_id in cameras:
-        device_class = ''
         camera = cameras[camera_id]
         _LOGGER.debug(f"Processing new camera[{camera_id}]: {camera}")
 
-        if camera_id not in [
-                ATTR_SYSTEM_CAMERA_ALL_ID, ATTR_SYSTEM_CAMERA_CYCLE_ID
-        ]:
-            # Create camera motion, audio, external, and watchdog MQTT topics.
-            for t in ['MOTION', 'AUDIO', 'EXTERNAL', 'WATCHDOG']:
-                state = None
+        if camera_id not in SYSTEM_CAMERA_ID:
+            for binary_sensor in binary_sensors:
+                entity = binary_sensor(camera)
 
-                state_topic = f"BlueIris/{camera_id}/{t}"
-
-                if t == 'WATCHDOG':
-                    device_class = 'connectivity'
-
-                    # Invert sense of sensor message, as 'WATCHDOG'
-                    # triggers 'ON' during a disconnection.
-                    payload_on = DEFAULT_PAYLOAD_OFF
-                    payload_off = DEFAULT_PAYLOAD_ON
-                    # Assume we start in the 'connected' state.
-                    state = STATE_ON
-                else:
-                    if t == 'MOTION':
-                        # Hardcode topic to default trigger zone 'A'.
-                        # If more than one trigger zone is in use, additional
-                        # sensors will have to be created manually.
-                        state_topic = f"BlueIris/{camera_id}/MOTION_A"
-
-                        device_class = 'motion'
-                    if t == 'AUDIO':
-                        device_class = 'sound'
-                    if t == 'EXTERNAL':
-                        device_class = 'plug'
-
-                    payload_on = DEFAULT_PAYLOAD_ON
-                    payload_off = DEFAULT_PAYLOAD_OFF
-
-                binary_sensor_name = f"{camera[CONF_NAME]} {t.lower()}"
-
-                bi_motion_binary_sensor = BlueIrisBinarySensor(
-                    binary_sensor_name, state_topic, device_class,
-                    force_update, payload_on, payload_off,
-                    mqtt_availability_config, state)
-
-                bi_binary_sensor_list.append(bi_motion_binary_sensor)
-
-                _LOGGER.debug("Blue Iris Binary Sensor created:"
-                              f" {bi_motion_binary_sensor},"
-                              f" state_topic: {state_topic}")
+                entities.append(entity)
 
     # Add component entities asynchronously.
-    async_add_entities(bi_binary_sensor_list, True)
+    async_add_entities(entities, True)
 
 
 class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
-    def __init__(self, name, state_topic, device_class, force_update,
-                 payload_on, payload_off, mqtt_availability_config,
-                 state=None):
+    def __init__(self, camera, sensor_type):
         """Initialize the MQTT binary sensor."""
-        super().__init__(mqtt_availability_config)
-        self._name = name
-        self._state = state
+        super().__init__(MQTT_AVAILABILITY_CONFIG)
+
+        camera_id = camera.get(CONF_ID)
+        camera_name = camera.get(CONF_NAME)
+
+        state_topic = f"BlueIris/{camera_id}/Status"
+
+        sensor_name = sensor_type.get(CONF_NAME)
+        handle_payload_type = sensor_type.get(CONF_TYPE)
+        device_class = sensor_type.get(CONF_DEVICE_CLASS)
+        default_state = sensor_type.get(CONF_STATE)
+
+        self._name = f"{camera_name} {sensor_name}"
+        self._state = default_state
         self._state_topic = state_topic
         self._device_class = device_class
-        self._payload_on = payload_on
-        self._payload_off = payload_off
-        self._force_update = force_update
+        self._handle_payload_type = handle_payload_type
+
+    def handle_payload(self, pl_type, pl_trigger):
+        _LOGGER.info(f"Handling {self._name} {pl_type} event with value: {pl_trigger}")
+
+        self._state = pl_trigger is DEFAULT_PAYLOAD_ON
+
+        self.async_schedule_update_ha_state()
 
     async def async_added_to_hass(self):
         """Subscribe MQTT events."""
@@ -121,18 +87,15 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
         @callback
         def state_message_received(message):
             """Handle a new received MQTT state message."""
-            if message.payload == self._payload_on:
-                self._state = True
-            elif message.payload == self._payload_off:
-                self._state = False
-            else:
-                """Payload is not for this entity."""
-                _LOGGER.warning("No matching payload found for entity:"
-                                f" {self._name} with state_topic:"
-                                f" {self._state_topic}")
-                return
+            _LOGGER.debug(f"{self._name} Binary Sensor received message: {message.payload}")
 
-            self.async_schedule_update_ha_state()
+            payload = json.loads(message.payload)
+
+            pl_type = payload.get(MQTT_MESSAGE_TYPE, MQTT_MESSAGE_VALUE_UNKNOWN)
+            pl_trigger = payload.get(MQTT_MESSAGE_TRIGGER, MQTT_MESSAGE_VALUE_UNKNOWN)
+
+            if self._handle_payload_type in pl_type:
+                self.handle_payload(pl_type, pl_trigger)
 
         await mqtt.async_subscribe(self.hass,
                                    self._state_topic,
@@ -162,4 +125,40 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
     @property
     def force_update(self):
         """Force update."""
-        return self._force_update
+        return DEFAULT_FORCE_UPDATE
+
+
+class BlueIrisConnectivityBinarySensor(BlueIrisBinarySensor):
+    """Representation a binary sensor that is updated by MQTT."""
+
+    def __init__(self, camera):
+        """Initialize the MQTT binary sensor."""
+        super().__init__(camera, SENSOR_TYPE_CONNECTIVITY)
+
+    @property
+    def is_on(self):
+        """Return true if the binary sensor is on."""
+        return self._state is False
+
+
+class BlueIrisMotionBinarySensor(BlueIrisBinarySensor):
+    """Representation a binary sensor that is updated by MQTT."""
+
+    def __init__(self, camera):
+        """Initialize the MQTT binary sensor."""
+        super().__init__(camera, SENSOR_TYPE_MOTION)
+
+
+class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
+    """Representation a binary sensor that is updated by MQTT."""
+
+    def __init__(self, camera):
+        """Initialize the MQTT binary sensor."""
+        super().__init__(camera, SENSOR_TYPE_AUDIO)
+
+    def handle_payload(self, pl_type, pl_trigger):
+        super().handle_payload(pl_type, pl_trigger)
+
+        time.sleep(2)
+
+        super().handle_payload(pl_type, DEFAULT_PAYLOAD_OFF)

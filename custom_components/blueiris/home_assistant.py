@@ -6,10 +6,9 @@ https://home-assistant.io/components/blueiris/
 import logging
 import sys
 
-from homeassistant.const import (CONF_NAME, EVENT_HOMEASSISTANT_START)
+from homeassistant.const import (EVENT_HOMEASSISTANT_START)
 from homeassistant.helpers.dispatcher import dispatcher_send
 from homeassistant.helpers.event import track_time_interval
-from homeassistant.components.generic.camera import (CONF_STREAM_SOURCE)
 from homeassistant.util import slugify
 
 from .const import *

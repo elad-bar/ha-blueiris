@@ -5,7 +5,7 @@ https://home-assistant.io/components/camera.blueiris/
 """
 import logging
 
-from homeassistant.const import (CONF_NAME, CONF_USERNAME, CONF_VERIFY_SSL,
+from homeassistant.const import (CONF_USERNAME, CONF_VERIFY_SSL,
                                  CONF_PASSWORD, CONF_AUTHENTICATION)
 from homeassistant.components.camera import (
     DEFAULT_CONTENT_TYPE)

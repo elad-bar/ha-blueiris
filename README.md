@@ -1,16 +1,21 @@
 # BlueIris
 
+## Change-log
+Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
+
 ## Description
 
 Integration with Blue Iris Video Security Software. Creates the following components:
 
 * Camera - per-camera defined.
-* MQTT Binary Sensors (MOTION, AUDIO, EXTERNAL, WATCHDOG) - per-camera defined. The MQTT topic configured in Blue Iris should be `BlueIris/&CAM/&TYPE` for all cameras. Blue Iris will replace the macros with the correct camera short name and the alert type. Enter `ON` for the payload when triggered, and `OFF` for when trigger is reset. Make sure to check `Alert again when trigger is reset` to that Home Assistant gets notified when the alert ends.
+* MQTT Binary Sensors (MOTION, AUDIO, WATCHDOG) - per-camera defined.
 * Switch (Arm / Unarmed) - only when profiles and admin username and password are provided.
 * Support HLS Streams instead of H264.
 * Support SSL with self-signed certificate.
 
 ## Configuration
+
+#### Note that binary sensor changed in the latest version, below are more details.
 
 Basic configuration of the Component follows:
 
@@ -197,22 +202,63 @@ In the Blue Iris Options panel, on the `Digital IO and IoT` tab under `MQTT`, se
 
 For each camera you wish to monitor, select `"Camera properties..."` and on the `Alerts` tab, check `"Post to a web address or MQTT server"` and then select `"Configure..."`.
 
-![Blue Iris Alerts](/docs/images/bi-alerts.png)
+Binary sensors for motion, audio and watchdog (connectivity) per camera,
+In order to configure it in BlueIris you will need to go to:
+#### Motion
+Camera settings -> Alerts:
+Fire when: This camera is triggered
 
-In the `Configure Web or MQTT Alert` dialog, set the options as shown below. The MQTT topic should be `BlueIris/&CAM/&TYPE` for all cameras. Blue Iris will replace the macros with the correct camera short name and the alert type. Enter `ON` for the payload when triggered, and `OFF` for when trigger is reset. Make sure to check `Alert again when trigger is reset` to that Home Assistant gets notified when the alert ends.
+Motion zones must be checked
 
-**NOTE:** Blue Iris appends the motion zone that triggered to the `&TYPE` macro (e.g. "MOTION_A"). The Component will only automatically create a binary sensor for the "MOTION_A" topic (i.e. for a single motion trigger zone). If you need to utilize multiple motion zones, you may:
+At least 1 zone must be checked (A-H) with Any selected in the camera's drop-down
+OR
 
-* Set the topic without using a macro (e.g. "BlueIris/&CAM/MOTION_A"); this will cause `AUDIO` and `EXTERNAL` events to also trigger as `MOTION_A` events (but will fix all problems with motion zones).
-* Manually create additional sensors and automation in your Home Assistant configuration to process the additional MQTT topics.
+All selected in the camera's drop-down
 
-![Blue Iris MQTT Alert](/docs/images/bi-alerts_mqtt.png)
+Action section:
+Click on `On alert`, 
 
-Similarly, configure the connectivity alert for the camera by going to the `Watchdog` tab and selecting `"Configure Watchdog Alerts"`. On the `Alerts` tab, check `"Post to a web address or MQTT server"` and then select `"Configure..."`. In the `Configure Web or MQTT Alert` dialog, set the options again (same as for Alerts).
+in the popup window, create new (or modify) alert for MQTT with the following settings:
+```
+Topic - BlueIris/&CAM/Status
+Payload - { "type": "&TYPE", "trigger": "ON" }
+```
 
-**NOTE:** Even though connectivity is down when the Watchdog is triggered, the MQTT payload is still `ON`. The meaning is inverted in the component logic in order to keep the configuration straightforward.
+for `On reset` do the same with payload:
+`{ "type": "&TYPE", "trigger": "OFF" }`
 
-![Blue Iris Watchdog](/docs/images/bi-watchdog.png)
+
+The alert should be sent for the profile you would like it to trigger
+
+![Blue Iris Motion](/docs/images/bi-motion-alerts.png)
+
+![Blue Iris MQTT Alert](/docs/images/bi-alerts-list.png)
+![Blue Iris MQTT Alert](/docs/images/bi-alerts-settings.png)
+
+#### Audio
+Camera settings -> Audio -> Options:<br/>
+Check the `Trigger the camera during profiles` and mark all profiles you would like it to trigger<br/>
+Check the `Use 1 second average intensity` and set the sensitivity level to the desired level<br/>
+
+Payloads will be sent according to the definition in the Alert's section defined above using the same settings.
+
+![Blue Iris Alerts](/docs/images/bi-audio-alerts.png)
+
+#### Watchdog (Connectivity)
+Camera settings -> Watchdog<br/>
+in the action's section click on `On loss of signal`, <br/>
+then in the popup window, create new (or modify) alert for MQTT with the following settings:
+```
+Topic - BlueIris/&CAM/Status
+Payload - { "type": "Connectivity", "trigger": "OFF" }
+```
+
+for `On signal restoration` do the same with payload:
+`{ "type": "&TYPE", "trigger": "ON" }` 
+
+The alert should be sent for the profile you would like it to trigger
+
+![Blue Iris Alerts](/docs/images/bi-watchdog-alerts.png)
 
 #### Troubleshooting MQTT
 

@@ -3,7 +3,6 @@ Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
-import asyncio
 import logging
 
 from homeassistant.core import callback

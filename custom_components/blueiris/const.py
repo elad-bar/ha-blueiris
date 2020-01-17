@@ -4,8 +4,15 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
+from homeassistant.const import (CONF_NAME, CONF_TYPE,
+                                 CONF_DEVICE_CLASS, CONF_STATE)
 
-VERSION = '1.0.18'
+from homeassistant.components.mqtt import (
+    CONF_PAYLOAD_AVAILABLE, DEFAULT_PAYLOAD_AVAILABLE,
+    CONF_QOS, CONF_PAYLOAD_NOT_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE,
+    DEFAULT_QOS)
+
+VERSION = '1.1.0'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
@@ -23,6 +30,17 @@ BLUEIRIS_AUTH_ERROR = "Authorization required"
 SYSTEM_CAMERA_CONFIG = {
     ATTR_SYSTEM_CAMERA_ALL_NAME: ATTR_SYSTEM_CAMERA_ALL_ID,
     ATTR_SYSTEM_CAMERA_CYCLE_NAME: ATTR_SYSTEM_CAMERA_CYCLE_ID
+}
+
+SYSTEM_CAMERA_ID = [
+    ATTR_SYSTEM_CAMERA_ALL_ID,
+    ATTR_SYSTEM_CAMERA_CYCLE_ID
+]
+
+MQTT_AVAILABILITY_CONFIG = {
+    CONF_PAYLOAD_AVAILABLE: DEFAULT_PAYLOAD_AVAILABLE,
+    CONF_PAYLOAD_NOT_AVAILABLE: DEFAULT_PAYLOAD_NOT_AVAILABLE,
+    CONF_QOS: DEFAULT_QOS
 }
 
 CONF_CAMERAS = 'camera'
@@ -59,7 +77,31 @@ DEFAULT_PAYLOAD_ON = 'ON'
 DEFAULT_FORCE_UPDATE = False
 
 DEVICE_CLASS_CONNECTIVITY = 'connectivity'
-DEVICE_CLASS_MOTION = 'motion'
+
+SENSOR_TYPE_CONNECTIVITY = {
+    CONF_NAME: 'Connectivity',
+    CONF_TYPE: 'CONNECTIVITY',
+    CONF_DEVICE_CLASS: 'connectivity',
+    CONF_STATE: True
+}
+
+SENSOR_TYPE_MOTION = {
+    CONF_NAME: 'Motion',
+    CONF_TYPE: 'MOTION',
+    CONF_DEVICE_CLASS: 'motion'
+}
+
+SENSOR_TYPE_AUDIO = {
+    CONF_NAME: 'Audio',
+    CONF_TYPE: 'AUDIO',
+    CONF_DEVICE_CLASS: 'sound'
+}
+
+SENSOR_TYPES = [SENSOR_TYPE_MOTION, SENSOR_TYPE_AUDIO]
+
+MQTT_MESSAGE_TRIGGER = 'trigger'
+MQTT_MESSAGE_TYPE = 'type'
+MQTT_MESSAGE_VALUE_UNKNOWN = 'unknown'
 
 CONFIG_OPTIONS = 'options'
 CONFIG_CONDITIONS = 'conditions'

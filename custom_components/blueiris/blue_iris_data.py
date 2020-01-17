@@ -1,10 +1,8 @@
 import logging
 
-from homeassistant.const import (CONF_ROOM, CONF_NAME, CONF_ID, CONF_USERNAME,
-                                 CONF_PASSWORD, CONF_AUTHENTICATION)
+from homeassistant.const import (CONF_ROOM, CONF_USERNAME, CONF_PASSWORD)
 from homeassistant.components.generic.camera import (CONF_STREAM_SOURCE,
                                                      CONF_STILL_IMAGE_URL)
-
 
 from .const import *
 from .blue_iris_api import BlueIrisApi

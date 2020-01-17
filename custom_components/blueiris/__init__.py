@@ -9,8 +9,8 @@ import logging
 import voluptuous as vol
 
 from homeassistant.const import (
-    CONF_ROOM, CONF_EXCLUDE, CONF_NAME, CONF_HOST, CONF_PORT, CONF_PASSWORD,
-    CONF_USERNAME, CONF_SSL, CONF_ID)
+    CONF_ROOM, CONF_EXCLUDE, CONF_HOST, CONF_PORT, CONF_PASSWORD,
+    CONF_USERNAME, CONF_SSL)
 from homeassistant.helpers import config_validation as cv
 
 from .const import VERSION
