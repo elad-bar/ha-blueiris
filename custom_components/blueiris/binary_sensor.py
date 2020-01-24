@@ -53,6 +53,7 @@ async def async_setup_platform(hass,
 
 class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
+
     def __init__(self, camera, sensor_type):
         """Initialize the MQTT binary sensor."""
         super().__init__(MQTT_AVAILABILITY_CONFIG)
@@ -73,10 +74,13 @@ class BlueIrisBinarySensor(MqttAvailability, BinarySensorDevice):
         self._device_class = device_class
         self._handle_payload_type = handle_payload_type
 
+    def republish(self, payload):
+        mqtt.publish(self.hass, self._state_topic, payload, DEFAULT_QOS)
+
     def handle_payload(self, pl_type, pl_trigger):
         _LOGGER.info(f"Handling {self._name} {pl_type} event with value: {pl_trigger}")
 
-        self._state = pl_trigger is DEFAULT_PAYLOAD_ON
+        self._state = pl_trigger == DEFAULT_PAYLOAD_ON
 
         self.async_schedule_update_ha_state()
 
@@ -138,7 +142,7 @@ class BlueIrisConnectivityBinarySensor(BlueIrisBinarySensor):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._state is False
+        return not self._state
 
 
 class BlueIrisMotionBinarySensor(BlueIrisBinarySensor):
@@ -161,4 +165,11 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
 
         time.sleep(2)
 
-        super().handle_payload(pl_type, DEFAULT_PAYLOAD_OFF)
+        data = {
+            MQTT_MESSAGE_TYPE: pl_type,
+            MQTT_MESSAGE_TRIGGER: DEFAULT_PAYLOAD_OFF
+        }
+
+        payload = json.dumps(data)
+
+        self.republish(payload)
