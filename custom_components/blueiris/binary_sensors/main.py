@@ -39,6 +39,7 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         self._name = DEFAULT_NAME
         self._binary_sensors = {}
         self._active_count = None
+        self._attributes = {}
 
     @property
     def should_poll(self):
@@ -49,6 +50,11 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
     def name(self):
         """Return the name of the binary sensor."""
         return self._name
+
+    @property
+    def device_state_attributes(self):
+        """Return true if the binary sensor is on."""
+        return self._attributes
 
     @property
     def is_on(self):
@@ -97,10 +103,15 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
         return result
 
+    def get_binary_sensor_by_key(self, key) -> BlueIrisBinarySensor:
+        binary_sensor = self._binary_sensors.get(key)
+
+        return binary_sensor
+
     def get_binary_sensor(self, topic, event_type) -> BlueIrisBinarySensor:
         binary_sensor_key = get_key(topic, event_type)
 
-        binary_sensor = self._binary_sensors.get(binary_sensor_key)
+        binary_sensor = self.get_binary_sensor_by_key(binary_sensor_key)
 
         return binary_sensor
 
@@ -121,13 +132,37 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         else:
             binary_sensor.update_data(event_type, trigger)
 
-            previous_active_count = self._active_count
-            active_count = 1 if trigger == STATE_ON else -1
+            self.update_data()
 
-            if previous_active_count is None:
-                self._active_count = active_count if trigger == STATE_ON else None
-            else:
-                self._active_count += active_count
+    def update_data(self):
+        active_count = 0
 
-            if previous_active_count != self._active_count:
-                self.async_schedule_update_ha_state()
+        items = {}
+
+        for key in self._binary_sensors:
+            binary_sensor = self.get_binary_sensor_by_key(key)
+            is_on = binary_sensor.state == STATE_ON
+
+            is_connectivity = binary_sensor.event_type == SENSOR_CONNECTIVITY_NAME.lower()
+
+            if (is_on and not is_connectivity) or (not is_on and is_connectivity):
+                event_sensors = items.get(binary_sensor.event_type, [])
+
+                event_sensors.append(binary_sensor.name)
+
+                items[binary_sensor.event_type] = event_sensors
+
+                active_count += 1
+
+        self._active_count = active_count
+
+        attributes = {
+            "Active alerts": self._active_count
+        }
+
+        for key in items:
+            attributes[str(key).capitalize()] = ", ".join(items[key])
+
+        self._attributes = attributes
+
+        self.async_schedule_update_ha_state()
