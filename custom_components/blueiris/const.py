@@ -4,9 +4,8 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
-from homeassistant.const import (CONF_NAME, CONF_TYPE, CONF_ID,
-                                 CONF_DEVICE_CLASS, CONF_STATE)
 
+from homeassistant.const import (CONF_ID, CONF_NAME, STATE_ON, STATE_OFF)
 from homeassistant.components.mqtt import (
     CONF_PAYLOAD_AVAILABLE, DEFAULT_PAYLOAD_AVAILABLE,
     CONF_QOS, CONF_PAYLOAD_NOT_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE,
@@ -24,6 +23,8 @@ ATTR_SYSTEM_CAMERA_ALL_NAME = 'All'
 ATTR_SYSTEM_CAMERA_ALL_ID = 'Index'
 ATTR_SYSTEM_CAMERA_CYCLE_NAME = 'Cycle'
 ATTR_SYSTEM_CAMERA_CYCLE_ID = '@Index'
+
+AUDIO_EVENT_LENGTH = 2
 
 BLUEIRIS_AUTH_ERROR = "Authorization required"
 
@@ -72,36 +73,25 @@ PROTOCOLS = {
     False: 'http'
 }
 
-DEFAULT_PAYLOAD_OFF = 'OFF'
-DEFAULT_PAYLOAD_ON = 'ON'
 DEFAULT_FORCE_UPDATE = False
 
-DEVICE_CLASS_CONNECTIVITY = 'connectivity'
+SENSOR_CONNECTIVITY_NAME = 'Connectivity'
+SENSOR_MOTION_NAME = 'Motion'
+SENSOR_AUDIO_NAME = 'Audio'
 
-SENSOR_TYPE_CONNECTIVITY = {
-    CONF_NAME: 'Connectivity',
-    CONF_TYPE: 'CONNECTIVITY',
-    CONF_DEVICE_CLASS: 'connectivity',
-    CONF_STATE: True
+SENSOR_TYPES = [SENSOR_CONNECTIVITY_NAME,
+                SENSOR_MOTION_NAME,
+                SENSOR_AUDIO_NAME]
+
+SENSOR_DEVICE_CLASS = {
+    SENSOR_AUDIO_NAME: 'sound'
 }
-
-SENSOR_TYPE_MOTION = {
-    CONF_NAME: 'Motion',
-    CONF_TYPE: 'MOTION',
-    CONF_DEVICE_CLASS: 'motion'
-}
-
-SENSOR_TYPE_AUDIO = {
-    CONF_NAME: 'Audio',
-    CONF_TYPE: 'AUDIO',
-    CONF_DEVICE_CLASS: 'sound'
-}
-
-SENSOR_TYPES = [SENSOR_TYPE_MOTION, SENSOR_TYPE_AUDIO]
 
 MQTT_MESSAGE_TRIGGER = 'trigger'
 MQTT_MESSAGE_TYPE = 'type'
 MQTT_MESSAGE_VALUE_UNKNOWN = 'unknown'
+
+MQTT_ALL_TOPIC = "BlueIris/+/Status"
 
 CONFIG_OPTIONS = 'options'
 CONFIG_CONDITIONS = 'conditions'
