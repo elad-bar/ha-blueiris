@@ -141,7 +141,7 @@ UI_LOVELACE_REGULAR_CAMERA = "  # [camera_name]\n" \
                              "            name: Motion\n" \
                              "          - entity: binary_sensor.[camera_id]_audio\n" \
                              "            name: Audio\n" \
-                             "          - entity: binary_sensor.[camera_id]_watchdog\n" \
+                             "          - entity: binary_sensor.[camera_id]_connectivity\n" \
                              "            name: Watchdog\n"
 
 INPUT_SELECT = "input_select:\n" \
