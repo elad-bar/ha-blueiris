@@ -36,6 +36,7 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
         self._name = DEFAULT_NAME
         self._binary_sensors = {}
+        self._active_count = None
 
     @property
     def should_poll(self):
@@ -50,7 +51,7 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return True
+        return self._active_count is not None and self._active_count > 0
 
     @property
     def force_update(self):
@@ -100,3 +101,10 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
         if binary_sensor is not None:
             binary_sensor.update_data(event_type, trigger)
+
+            active_count = 1 if trigger == STATE_ON else -1
+
+            if self._active_count is None:
+                self._active_count = active_count if trigger == STATE_ON else None
+            else:
+                self._active_count += active_count
