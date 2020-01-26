@@ -121,9 +121,13 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         else:
             binary_sensor.update_data(event_type, trigger)
 
+            previous_active_count = self._active_count
             active_count = 1 if trigger == STATE_ON else -1
 
-            if self._active_count is None:
+            if previous_active_count is None:
                 self._active_count = active_count if trigger == STATE_ON else None
             else:
                 self._active_count += active_count
+
+            if previous_active_count != self._active_count:
+                self.async_schedule_update_ha_state()
