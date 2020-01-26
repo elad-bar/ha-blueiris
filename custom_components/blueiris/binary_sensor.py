@@ -43,5 +43,8 @@ async def async_setup_platform(hass,
 
     entities.append(main_binary_sensor)
 
+    binary_sensors = main_binary_sensor.get_binary_sensors()
+    _LOGGER.info(f"Registered binary sensors: {binary_sensors}")
+
     # Add component entities asynchronously.
     async_add_entities(entities, True)

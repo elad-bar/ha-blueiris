@@ -3,6 +3,7 @@ import logging
 
 from homeassistant.core import callback
 from homeassistant.components import mqtt
+from homeassistant.components.mqtt import Message
 from homeassistant.components.binary_sensor import (BinarySensorDevice)
 from homeassistant.components.mqtt import (MqttAvailability)
 
@@ -10,6 +11,7 @@ from custom_components.blueiris.const import *
 from .audio import BlueIrisAudioBinarySensor
 from .connectivity import BlueIrisConnectivityBinarySensor
 from .motion import BlueIrisMotionBinarySensor
+from .base import BlueIrisBinarySensor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,7 +65,7 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         await super().async_added_to_hass()
 
         @callback
-        def state_message_received(message):
+        def state_message_received(message: Message):
             """Handle a new received MQTT state message."""
             _LOGGER.debug(f"Received BlueIris Message - {message.topic}: {message.payload}")
 
@@ -74,7 +76,7 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
                                    state_message_received,
                                    DEFAULT_QOS)
 
-    def register(self, binary_sensor):
+    def register(self, binary_sensor: BlueIrisBinarySensor):
         topic = binary_sensor.topic
         event_type = binary_sensor.event_type
 
@@ -85,21 +87,38 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
             self._binary_sensors[binary_sensor_key] = binary_sensor
 
-    def process(self, message):
+    def get_binary_sensors(self):
+        keys = []
+
+        for binary_sensor_key in self._binary_sensors:
+            keys.append(binary_sensor_key)
+
+        result = ", ".join(keys)
+
+        return result
+
+    def get_binary_sensor(self, topic, event_type) -> BlueIrisBinarySensor:
+        binary_sensor_key = get_key(topic, event_type)
+
+        binary_sensor = self._binary_sensors.get(binary_sensor_key)
+
+        return binary_sensor
+
+    def process(self, message: Message):
         topic = message.topic
         payload = json.loads(message.payload)
 
         event_type = payload.get(MQTT_MESSAGE_TYPE, MQTT_MESSAGE_VALUE_UNKNOWN).lower()
         trigger = payload.get(MQTT_MESSAGE_TRIGGER, MQTT_MESSAGE_VALUE_UNKNOWN).lower()
 
-        if SENSOR_MOTION_NAME in event_type:
-            event_type = SENSOR_MOTION_NAME
+        if SENSOR_MOTION_NAME.lower() in event_type:
+            event_type = SENSOR_MOTION_NAME.lower()
 
-        binary_sensor_key = get_key(topic, event_type)
+        binary_sensor = self.get_binary_sensor(topic, event_type)
 
-        binary_sensor = self._binary_sensors.get(binary_sensor_key)
-
-        if binary_sensor is not None:
+        if binary_sensor is None:
+            _LOGGER.info(f"Sensor not found, failed to process {event_type}: {trigger} for {topic}")
+        else:
             binary_sensor.update_data(event_type, trigger)
 
             active_count = 1 if trigger == STATE_ON else -1
