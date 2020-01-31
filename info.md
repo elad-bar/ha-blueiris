@@ -153,8 +153,8 @@ cards:
             name: Motion
           - entity: binary_sensor.front_door_audio
             name: Audio
-          - entity: binary_sensor.front_door_watchdog
-            name: Watchdog
+          - entity: binary_sensor.front_door_connectivity
+            name: Connectivity
 
   # Front Drive camera
   - type: custom:vertical-stack-in-card
@@ -169,8 +169,8 @@ cards:
             name: Motion
           - entity: binary_sensor.front_drive_audio
             name: Audio
-          - entity: binary_sensor.front_drive_watchdog
-            name: Watchdog  
+          - entity: binary_sensor.front_drive_connectivity
+            name: Connectivity  
 
   # Garage camera
   - type: custom:vertical-stack-in-card
@@ -185,8 +185,8 @@ cards:
             name: Motion
           - entity: binary_sensor.garage_audio
             name: Audio
-          - entity: binary_sensor.garage_watchdog
-            name: Watchdog
+          - entity: binary_sensor.garage_connectivity
+            name: Connectivity
 ```
 
 ### Blue Iris MQTT Configuration
