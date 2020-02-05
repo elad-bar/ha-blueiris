@@ -13,6 +13,7 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 ## Change-log
 Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
+Feb 05 2020 - No need to declare binary_sensor, switch and camera as those are being auto-discoverd 
 
 ## Configuration
 
@@ -83,28 +84,6 @@ blueiris:
       name: 'Garage'
       # Room name (adds as attribute)
       room: 'Garage'
-
-# Binary Sensor
-# https://www.home-assistant.io/components/binary_sensor/
-binary_sensor:
-  # Creates binary sensors according cameras defined in the platform
-  - platform: blueiris
-
-# Camera
-# https://www.home-assistant.io/components/camera
-camera:
-  # Creates cameras according to those defined in the platform
-  - platform: blueiris
-
-# Stream
-# https://www.home-assistant.io/components/stream
-stream:
-
-# Switch
-# https://www.home-assistant.io/components/switch
-switch:
-  # Creates switch to arm and disarm BlueIris (available only when profiles and admin password are provided)
-  - platform: blueiris
 ```
 
 ### Lovelace UI Configuration

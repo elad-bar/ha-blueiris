@@ -14,7 +14,7 @@ class BlueIrisData:
     """The Class for handling the data retrieval."""
 
     def __init__(self, host, port, cameras, username, password, ssl, exclude,
-                 profiles, scan_interval, cv_template):
+                 profiles, scan_interval):
         """Initialize the data object."""
         self._was_initialized = False
         self._scan_interval = scan_interval
@@ -32,7 +32,6 @@ class BlueIrisData:
         self._credentials = None
         self._base_url = None
         self._cast_url = None
-        self._cv_template = cv_template
         self._username = username
         self._password = password
 
@@ -124,8 +123,8 @@ class BlueIrisData:
             CONF_ID: camera_id,
             CONF_NAME: camera.get(CONF_NAME, camera_id),
             CONF_ROOM: camera.get(CONF_ROOM),
-            CONF_STILL_IMAGE_URL: self._cv_template(self._image_url.replace(
-                CAMERA_ID_PLACEHOLDER, camera_id)),
+            CONF_STILL_IMAGE_URL: self._image_url.replace(
+                CAMERA_ID_PLACEHOLDER, camera_id),
             CONF_STREAM_SOURCE: self._stream_url.replace(
                 CAMERA_ID_PLACEHOLDER, camera_id),
             CONF_USERNAME: self._username,

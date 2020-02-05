@@ -4,6 +4,7 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.blueiris/
 """
 import logging
+import json
 
 from .const import *
 from custom_components.blueiris.binary_sensors.main import BlueIrisMainBinarySensor, ALL_BINARY_SENSORS
@@ -18,19 +19,17 @@ async def async_setup_platform(hass,
                                async_add_entities,
                                discovery_info=None):
     """Set up the Blue Iris binary sensor."""
-    bi_data = hass.data.get(DATA_BLUEIRIS)
-
-    if not bi_data:
+    if discovery_info is None:
         return
+
+    camera_list = json.loads(discovery_info)
 
     main_binary_sensor = BlueIrisMainBinarySensor()
 
-    cameras = bi_data.get_all_cameras()
-
     entities = []
 
-    for camera_id in cameras:
-        camera = cameras[camera_id]
+    for camera_id in camera_list:
+        camera = camera_list[camera_id]
         _LOGGER.debug(f"Processing new camera[{camera_id}]: {camera}")
 
         if camera_id not in SYSTEM_CAMERA_ID:

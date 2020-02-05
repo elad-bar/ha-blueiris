@@ -5,6 +5,7 @@ https://home-assistant.io/components/blueiris/
 """
 import sys
 import logging
+import json
 
 import voluptuous as vol
 
@@ -67,7 +68,7 @@ def setup(hass, config):
         profile = conf.get(CONF_PROFILE)
 
         bi_data = BlueIrisData(host, port, cameras, username, password, ssl,
-                               exclude, profile, scan_interval, cv.template)
+                               exclude, profile, scan_interval)
 
         ha = BlueIrisHomeAssistant(hass, scan_interval, bi_data.cast_url)
 
@@ -85,6 +86,14 @@ def setup(hass, config):
             camera_list = bi_data.get_all_cameras()
 
             ha.initialize(bi_data.update, camera_list)
+
+            discovery = hass.helpers.discovery
+
+            discovery_info = json.dumps(camera_list)
+
+            discovery.load_platform("binary_sensor", DOMAIN, discovery_info, config)
+            discovery.load_platform("camera", DOMAIN, discovery_info, config)
+            discovery.load_platform("switch", DOMAIN, None, config)
 
             initialized = True
 
