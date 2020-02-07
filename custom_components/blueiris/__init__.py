@@ -46,14 +46,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         bi_api = BlueIrisApi(hass, host, port, ssl, username, password)
 
+        await bi_api.initialize()
+
         bi_ha = BlueIrisHomeAssistant(hass, bi_api.cast_template)
 
         hass.data[DATA_BLUEIRIS] = {
             DATA_BLUEIRIS_API: bi_api,
             DATA_BLUEIRIS_HA: bi_ha
         }
-
-        await bi_api.initialize()
 
         async_forward_entry_setup = hass.config_entries.async_forward_entry_setup
 
