@@ -109,16 +109,23 @@ class BlueIrisApi:
         return result
 
     async def initialize(self):
-        if self._hass is None:
-            if self._session is not None:
-                await self._session.close()
+        try:
+            if self._hass is None:
+                if self._session is not None:
+                    await self._session.close()
 
-            self._session = aiohttp.client.ClientSession()
-        else:
-            self._session = async_create_clientsession(hass=self._hass)
+                self._session = aiohttp.client.ClientSession()
+            else:
+                self._session = async_create_clientsession(hass=self._hass)
 
-        if await self.login():
-            await self.async_update()
+            if await self.login():
+                await self.async_update()
+
+        except Exception as ex:
+            exc_type, exc_obj, tb = sys.exc_info()
+            line_number = tb.tb_lineno
+
+            _LOGGER.error(f"Failed to initialize BlueIris API, error: {ex}, line: {line_number}")
 
     async def async_update(self):
         await self.load_camera()

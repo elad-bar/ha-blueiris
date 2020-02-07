@@ -124,6 +124,8 @@ BI_DISCOVERY_BINARY_SENSOR = f"{BI_DISCOVERY}_{DOMAIN_BINARY_SENSOR}"
 BI_DISCOVERY_CAMERA = f"{BI_DISCOVERY}_{DOMAIN_CAMERA}"
 BI_DISCOVERY_SWITCH = f"{BI_DISCOVERY}_{DOMAIN_SWITCH}"
 
+BI_UPDATE_SIGNAL = f"{DOMAIN}_UPDATE_SIGNAL"
+
 UI_LOVELACE = '# Example ui-lovelace.yaml view entry\n' \
               'title: Blue Iris\n' \
               'icon: mdi:eye\n' \

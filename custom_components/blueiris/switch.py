@@ -3,6 +3,7 @@ Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
+import sys
 import logging
 
 from homeassistant.core import callback
@@ -21,22 +22,28 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Switch."""
     _LOGGER.debug(f"Starting async_setup_entry")
 
-    api = _get_api(hass)
+    try:
+        api = _get_api(hass)
 
-    if api is None:
-        return
+        if api is None:
+            return
 
-    profiles = api.data.get("profiles", [])
+        profiles = api.data.get("profiles", [])
 
-    entities = []
-    for profile_name in profiles:
-        profile_id = profiles.index(profile_name)
+        entities = []
+        for profile_name in profiles:
+            profile_id = profiles.index(profile_name)
 
-        switch = BlueIrisProfileSwitch(api, profile_id, profile_name)
+            switch = BlueIrisProfileSwitch(api, profile_id, profile_name)
 
-        entities.append(switch)
+            entities.append(switch)
 
-    async_add_devices(entities)
+        async_add_devices(entities)
+    except Exception as ex:
+        exc_type, exc_obj, tb = sys.exc_info()
+        line_number = tb.tb_lineno
+
+        _LOGGER.error(f'Failed to load BlueIris Switch, Error: {ex}, Line: {line_number}')
 
 
 class BlueIrisProfileSwitch(SwitchDevice):
@@ -58,9 +65,7 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        async_dispatcher_connect(self.hass,
-                                 BI_DISCOVERY_SWITCH,
-                                 self._update_callback)
+        async_dispatcher_connect(self.hass, BI_UPDATE_SIGNAL, self._update_callback)
 
     @callback
     def _update_callback(self):

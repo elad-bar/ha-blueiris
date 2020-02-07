@@ -7,21 +7,10 @@ from homeassistant.components.mqtt import Message
 from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 from homeassistant.components.mqtt import (MqttAvailability)
 
-from custom_components.blueiris.blue_iris_api import _get_api
 from custom_components.blueiris.const import *
-from .audio import BlueIrisAudioBinarySensor
-from .connectivity import BlueIrisConnectivityBinarySensor
-from .motion import BlueIrisMotionBinarySensor
 from .base import BlueIrisBinarySensor
 
 _LOGGER = logging.getLogger(__name__)
-
-
-ALL_BINARY_SENSORS = [
-        BlueIrisMotionBinarySensor,
-        BlueIrisAudioBinarySensor,
-        BlueIrisConnectivityBinarySensor
-    ]
 
 
 def get_key(topic, event_type):
@@ -33,11 +22,11 @@ def get_key(topic, event_type):
 class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self):
+    def __init__(self, api):
         """Initialize the MQTT binary sensor."""
         super().__init__(MQTT_AVAILABILITY_CONFIG)
 
-        self._api = _get_api(self.hass)
+        self._api = api
         self._name = f"{DEFAULT_NAME}"
         self._binary_sensors = {}
         self._active_count = None

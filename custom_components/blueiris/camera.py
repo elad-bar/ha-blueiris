@@ -3,10 +3,10 @@ Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/camera.blueiris/
 """
+import sys
 import logging
 
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.const import (CONF_USERNAME, CONF_VERIFY_SSL, CONF_NAME,
+from homeassistant.const import (CONF_USERNAME, CONF_VERIFY_SSL,
                                  CONF_PASSWORD, CONF_AUTHENTICATION)
 from homeassistant.components.camera import (
     DEFAULT_CONTENT_TYPE)
@@ -29,48 +29,55 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Switch."""
     _LOGGER.debug(f"Starting async_setup_entry")
 
-    api = _get_api(hass)
+    try:
+        api = _get_api(hass)
 
-    if api is None:
-        return
+        if api is None:
+            return
 
-    camera_list = api.camera_list
-    username = api.username
-    password = api.password
-    base_url = api.base_url
+        camera_list = api.camera_list
+        username = api.username
+        password = api.password
+        base_url = api.base_url
 
-    image_url = f'{base_url}/image/{CAMERA_ID_PLACEHOLDER}?q=100&s=100'
-    stream_url = f'{base_url}/h264/{CAMERA_ID_PLACEHOLDER}/temp.m3u8'
+        image_url = f'{base_url}/image/{CAMERA_ID_PLACEHOLDER}?q=100&s=100'
+        stream_url = f'{base_url}/h264/{CAMERA_ID_PLACEHOLDER}/temp.m3u8'
 
-    entities = []
-    for camera in camera_list:
-        _LOGGER.debug(f"Processing new camera: {camera}")
+        entities = []
+        for camera in camera_list:
+            _LOGGER.debug(f"Processing new camera: {camera}")
 
-        camera_id = camera.get("optionValue")
-        camera_name = camera.get("optionDisplay")
+            camera_id = camera.get("optionValue")
+            camera_name = camera.get("optionDisplay")
 
-        still_image_url = image_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
-        still_image_url_template = cv.template(still_image_url)
+            still_image_url = image_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
+            still_image_url_template = cv.template(still_image_url)
 
-        stream_source = stream_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
+            stream_source = stream_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
 
-        device_info = {
-            CONF_NAME: f"{DEFAULT_NAME} {camera_name}",
-            CONF_STILL_IMAGE_URL: still_image_url_template,
-            CONF_STREAM_SOURCE: stream_source,
-            CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,
-            CONF_FRAMERATE: 2,
-            CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
-            CONF_VERIFY_SSL: False,
-            CONF_USERNAME: username,
-            CONF_PASSWORD: password,
-            CONF_AUTHENTICATION: AUTHENTICATION_BASIC
-        }
+            device_info = {
+                CONF_NAME: f"{DEFAULT_NAME} {camera_name}",
+                CONF_STILL_IMAGE_URL: still_image_url_template,
+                CONF_STREAM_SOURCE: stream_source,
+                CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,
+                CONF_FRAMERATE: 2,
+                CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
+                CONF_VERIFY_SSL: False,
+                CONF_USERNAME: username,
+                CONF_PASSWORD: password,
+                CONF_AUTHENTICATION: AUTHENTICATION_BASIC
+            }
 
-        bi_camera = BlueIrisCamera(hass, device_info, api, camera)
-        entities.append(bi_camera)
+            bi_camera = BlueIrisCamera(hass, device_info, api, camera)
+            entities.append(bi_camera)
 
-    async_add_devices(entities)
+        async_add_devices(entities)
+
+    except Exception as ex:
+        exc_type, exc_obj, tb = sys.exc_info()
+        line_number = tb.tb_lineno
+
+        _LOGGER.error(f"Failed to load BlueIris Camera, error: {ex}, line: {line_number}")
 
 
 class BlueIrisCamera(GenericCamera):
@@ -93,4 +100,3 @@ class BlueIrisCamera(GenericCamera):
                 attrs[key_name] = self._camera[key]
 
         return attrs
-

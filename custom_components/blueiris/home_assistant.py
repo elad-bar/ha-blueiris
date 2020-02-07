@@ -7,6 +7,7 @@ import logging
 import sys
 
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util import slugify
 
 from .blue_iris_api import _get_api
@@ -24,12 +25,12 @@ class BlueIrisHomeAssistant:
         self._cast_template = cast_template
         self._api = _get_api(hass)
 
-        async_track_time_interval(self._hass, self.async_update, SCAN_INTERVAL)
-
         async_call_later(self._hass, 5, self.async_finalize)
 
     async def async_finalize(self, event_time):
         _LOGGER.debug(f"async_finalize called at {event_time}")
+
+        async_track_time_interval(self._hass, self.async_update, SCAN_INTERVAL)
 
         self._hass.services.async_register(DOMAIN,
                                            'generate_advanced_configurations',
@@ -41,23 +42,7 @@ class BlueIrisHomeAssistant:
         if self._api is not None:
             await self._api.async_update()
 
-    def notify_error(self, ex, line_number):
-        _LOGGER.error(f"Error while initializing {DOMAIN}, exception: {ex},"
-                      f" Line: {line_number}")
-
-        self._hass.components.persistent_notification.create(
-            f"Error: {ex}<br /> You will need to restart hass after fixing.",
-            title=NOTIFICATION_TITLE,
-            notification_id=NOTIFICATION_ID)
-
-    def notify_error_message(self, message):
-        _LOGGER.error(f"Error while initializing {DOMAIN}, Error: {message}")
-
-        self._hass.components.persistent_notification.create(
-            (f"Error: {message}<br /> You will need to restart hass after"
-             " fixing."),
-            title=NOTIFICATION_TITLE,
-            notification_id=NOTIFICATION_ID)
+            async_dispatcher_send(self._hass, BI_UPDATE_SIGNAL)
 
     @staticmethod
     def build_ui_lovelace(camera_ui_items):
