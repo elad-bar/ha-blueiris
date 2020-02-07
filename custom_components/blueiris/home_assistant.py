@@ -38,7 +38,8 @@ class BlueIrisHomeAssistant:
     async def async_update(self, event_time):
         _LOGGER.debug(f"async_finalize called at {event_time}")
 
-        await self._api.async_update()
+        if self._api is not None:
+            await self._api.async_update()
 
     def notify_error(self, ex, line_number):
         _LOGGER.error(f"Error while initializing {DOMAIN}, exception: {ex},"

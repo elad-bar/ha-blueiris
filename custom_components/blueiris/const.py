@@ -109,6 +109,15 @@ ATTR_BLUE_IRIS_CAMERA = {
     "nNoSignal": "No Signal #",
     "error": "Error"
 }
+ATTR_BLUE_IRIS_STATUS = [
+    "system name",
+    "version",
+    "license",
+    "support",
+    "user",
+    "latitude",
+    "longitude"
+]
 
 BI_DISCOVERY = f"{DOMAIN}_discovery"
 BI_DISCOVERY_BINARY_SENSOR = f"{BI_DISCOVERY}_{DOMAIN_BINARY_SENSOR}"

@@ -35,6 +35,20 @@ ssl: should use ssl?
 ## Components
 From now, components are not being displayed in the entities of the integration and available only through states (Developer -> States)
 
+###### Binary Sensor - Alerts
+```
+State: represents whether there is an active alert or not
+Attributes:
+    Active alerts #
+    System name
+    Version
+    License
+    Support expiration
+    Logged in User
+    Latitude
+    Longitude
+```
+
 ###### Binary Sensor - Connectivity - Non-system-camera
 ```
 State: represents whether the camera is online or not (based on MQTT message)

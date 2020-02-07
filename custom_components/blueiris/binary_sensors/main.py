@@ -7,6 +7,7 @@ from homeassistant.components.mqtt import Message
 from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 from homeassistant.components.mqtt import (MqttAvailability)
 
+from custom_components.blueiris.blue_iris_api import _get_api
 from custom_components.blueiris.const import *
 from .audio import BlueIrisAudioBinarySensor
 from .connectivity import BlueIrisConnectivityBinarySensor
@@ -36,7 +37,8 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         """Initialize the MQTT binary sensor."""
         super().__init__(MQTT_AVAILABILITY_CONFIG)
 
-        self._name = DEFAULT_NAME
+        self._api = _get_api(self.hass)
+        self._name = f"{DEFAULT_NAME}"
         self._binary_sensors = {}
         self._active_count = None
         self._attributes = {}
@@ -162,6 +164,10 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
         for key in items:
             attributes[str(key).capitalize()] = ", ".join(items[key])
+
+        for key in ATTR_BLUE_IRIS_STATUS:
+            if key in self._api.data:
+                attributes[key.capitalize()] = self._api.data[key]
 
         self._attributes = attributes
 
