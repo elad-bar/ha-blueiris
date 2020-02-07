@@ -1,6 +1,6 @@
 {
     "blueiris": {
-        "version": "1.0.18",
+        "version": "2.0.0",
         "local_location": "/custom_components/blueiris/__init__.py",
         "remote_location": "https://raw.githubusercontent.com/elad-bar/ha-blueiris/master/custom_components/blueiris/__init__.py",
         "visit_repo": "https://github.com/elad-bar/ha-blueiris",

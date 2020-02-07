@@ -6,48 +6,39 @@ https://home-assistant.io/components/blueiris/
 import logging
 import sys
 
-from homeassistant.const import (EVENT_HOMEASSISTANT_START)
-from homeassistant.helpers.dispatcher import dispatcher_send
-from homeassistant.helpers.event import track_time_interval
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.util import slugify
 
+from .blue_iris_api import _get_api
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class BlueIrisHomeAssistant:
-    def __init__(self, hass, scan_interval, cast_url):
-        self._scan_interval = scan_interval
+    def __init__(self, hass, cast_template):
         self._hass = hass
-        self._camera_list = None
         self._ui_lovelace_data = [UI_LOVELACE]
         self._script_data = []
         self._input_select_data = INPUT_SELECT
+        self._cast_template = cast_template
+        self._api = _get_api(hass)
 
-        self._cast_template = cast_url.replace('[CAM_ID]', f'" ~ {HA_CAM_STATE} ~"')
+        async_track_time_interval(self._hass, self.async_update, SCAN_INTERVAL)
 
-    def initialize(self, bi_refresh_callback, camera_list):
-        self._camera_list = camera_list
+        async_call_later(self._hass, 5, self.async_finalize)
 
-        def bi_generate_advanced_configurations(event_time):
-            """Call BlueIris to refresh information."""
-            _LOGGER.debug(f"Generating {DOMAIN} data @{event_time}")
+    async def async_finalize(self, event_time):
+        _LOGGER.debug(f"async_finalize called at {event_time}")
 
-            self.generate_advanced_configurations()
+        self._hass.services.async_register(DOMAIN,
+                                           'generate_advanced_configurations',
+                                           self.generate_advanced_configurations)
 
-        def bi_refresh(event_time):
-            """Call BlueIris to refresh information."""
-            _LOGGER.debug(f"Updating {DOMAIN} component at {event_time}")
-            bi_refresh_callback()
-            dispatcher_send(self._hass, SIGNAL_UPDATE_BLUEIRIS)
+    async def async_update(self, event_time):
+        _LOGGER.debug(f"async_finalize called at {event_time}")
 
-        track_time_interval(self._hass, bi_refresh, self._scan_interval)
-
-        self._hass.services.register(DOMAIN, 'generate_advanced_configurations',
-                                     bi_generate_advanced_configurations)
-
-        self._hass.bus.listen_once(EVENT_HOMEASSISTANT_START, bi_refresh)
+        await self._api.async_update()
 
     def notify_error(self, ex, line_number):
         _LOGGER.error(f"Error while initializing {DOMAIN}, exception: {ex},"
@@ -85,7 +76,7 @@ class BlueIrisHomeAssistant:
         if is_system:
             template = UI_LOVELACE_SYSTEM_CAMERA
 
-        camera_data = template.replace('[camera_id]', camera_id) \
+        camera_data = template.replace(CAMERA_ID_PLACEHOLDER, camera_id) \
             .replace('[camera_name]', camera_name)
 
         return camera_data
@@ -165,10 +156,12 @@ class BlueIrisHomeAssistant:
         regular_camera_list = []
         camera_conditions = []
 
+        camera_list = self._api.camera_list
+
         is_first = True
-        for camera in self._camera_list:
-            camera_details = self._camera_list[camera]
-            camera_name = camera_details.get(CONF_NAME)
+        for camera_details in camera_list:
+            camera_name = camera_details.get("optionDisplay")
+            camera_id = camera_details.get("optionValue")
 
             camera_options.append(INPUT_SELECT_OPTION.replace('[item]', camera_name))
 
@@ -176,7 +169,7 @@ class BlueIrisHomeAssistant:
                 is_first = False
 
             camera_condition = self.get_script_condition(camera_name,
-                                                         camera)
+                                                         camera_id)
 
             camera_conditions.append(camera_condition)
 
@@ -200,7 +193,7 @@ class BlueIrisHomeAssistant:
 
         return result
 
-    def generate_advanced_configurations(self):
+    def generate_advanced_configurations(self, event_time):
 
         try:
             camera_data = self.get_camera_data()

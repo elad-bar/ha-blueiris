@@ -4,5 +4,6 @@
     "documentation": "https://github.com/elad-bar/ha-blueiris",
     "dependencies": ["mqtt"],
     "codeowners": ["@elad-bar"],
-    "requirements": []
+    "requirements": [],
+    "config_flow": true
   }

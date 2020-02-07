@@ -4,7 +4,7 @@ import logging
 from homeassistant.core import callback
 from homeassistant.components import mqtt
 from homeassistant.components.mqtt import Message
-from homeassistant.components.binary_sensor import (BinarySensorDevice)
+from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 from homeassistant.components.mqtt import (MqttAvailability)
 
 from custom_components.blueiris.const import *

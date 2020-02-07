@@ -12,4 +12,8 @@ class BlueIrisConnectivityBinarySensor(BlueIrisBinarySensor):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return not self._state
+        state = self._state
+        if self._camera_id in SYSTEM_CAMERA_ID:
+            state = False
+
+        return not state

@@ -14,21 +14,75 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 ## Change-log
 Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
 Feb 05 2020 - No need to declare binary_sensor, switch and camera as those are being auto-discoverd 
+Feb 07 2020 - v2.0.0 - Breaking change!!! 
+* BlueIris 5 JSON API integration
+* UI configuration support instead of YAML
+* Less configurations, takes configurations from BI server (all cameras are loaded, audio binary sensor will not created unless needed)
+* More details per camera in the attributes 
+* Switch functionality changed, each profile is being represented with a switch, `is armed` switch removed
+* Added support for HACS
 
 ## Configuration
 
-#### Note that binary sensor changed in the latest version, below are more details.
+#### From the UI (Configuration -> Integration)
+```
+host: hostname or ip
+port: port 
+username: Username 
+password: Password 
+ssl: should use ssl?
+```
+## Components
+From now, components are not being displayed in the entities of the integration and available only through states (Developer -> States)
 
-Basic configuration of the Component follows:
+###### Binary Sensor - Connectivity - Non-system-camera
+```
+State: represents whether the camera is online or not (based on MQTT message)
+```
+
+###### Binary Sensor - Audio - Non-system-camera and camera supports audio
+```
+State: represents whether the camera is triggered for noise or not (based on MQTT message)
+```
+
+###### Binary Sensor - Motion - Non-system-camera
+```
+State: represents whether the camera is triggered for motion or not (based on MQTT message)
+```
+
+###### Camera
+```
+State: Idle
+Attributes:
+    FPS
+    Audio support
+    Width
+    Height
+    Is Online
+    Is Recording
+    Issue (Camera is yellow)
+    Alerts #
+    Triggers #
+    Clips #
+    No Signal #
+    Error
+```
+
+###### Switch - Profile (Per profile)
+If you are turning off one of the switch it will work according to the following order:
+Profile #1 turned off, will turn on Profile #0
+All the other profiles upon turning off, will turn on Profile #1
+
+```
+State: Allows to set the active profile, only one of the profile switches can be turned on at a time
+```
 
 ### Blue Iris API Configuration
-
 If you intent to use any of the Blue Iris REST API commands (such as profile switching), it's recommended you create a separate Administrator user for Home Assitant to connect to, and limit access to LAN only.  Use this username and password in your Home Assistant configuration (shown in the next section). This keeps any accesses or limitations you may wish to set on Home Assistant separate from the primary Administrator.
 
 ![Blue Iris Edit User](/docs/images/bi-edit_user.png)
 
 ### Blue Iris Web Server Configuration
-
 Enable the Blue Iris Web Server. Select the  `Advanced...` button to proceed to the next step.
 
 ![Blue Iris Web Server](/docs/images/bi-web_server.png)
@@ -44,47 +98,6 @@ Configure the Encoding settings so they’re compatible for Chromecast devices: 
 Finally, enable re-encoding. Set `Hardware accelerated decode (restart)` to a setting appropriate to your hardware (e.g. `Intel(R)+VideoPostPRoc`).
 
 ![Blue Iris Cameras Options](/docs/images/bi-cameras.png)
-
-### Home Assistant Configuration
-
-```YAML
-# Example configuration.yaml entry
-blueiris:
-  host: !secret blueiris_host
-  port: !secret blueiris_port
-  # [optional] Blue Iris admin username and password
-  username: !secret blueiris_admin_username
-  password: !secret blueiris_admin_password
-  # [optional] Blue Iris profile numbers - will create switch if defined
-  #   -1 is Default profile
-  #   0 is Inactive profile
-  #   1-7 profile range
-  profile:
-    # armed profile number
-    armed: -1
-    # unarmed profile number
-    unarmed: 3
-  # List of camera objects
-  camera:
-      # Camera short name in Blue Iris
-    - id: Cam4
-      # [optional] Name of the camera for display
-      name: 'Front Door'
-      # [optional] Room name (adds as attribute)
-      room: 'Front Door'
-      # BlueIris camera's short name
-    - id: Cam5
-      # name of the camera for display
-      name: 'Front Drive'
-      # Room name (adds as attribute)
-      room: 'Front Drive'
-      # BlueIris camera's short name
-    - id: Cam6
-      # name of the camera for display
-      name: 'Garage'
-      # Room name (adds as attribute)
-      room: 'Garage'
-```
 
 ### Lovelace UI Configuration
 

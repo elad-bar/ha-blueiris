@@ -1,0 +1,21 @@
+{
+  "config": {
+    "title": "Blue Iris",
+    "step": {
+      "user": {
+        "title": "Set up Blue Iris",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "username": "Username",
+          "password": "Password",
+          "ssl": "Is SSL"
+        }
+      }
+    },
+    "abort": {
+      "already_setup": "Setup already completed",
+      "one_instance_only": "Only one integration supported"
+    }
+  }
+}

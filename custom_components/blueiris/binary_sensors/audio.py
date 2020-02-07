@@ -2,6 +2,8 @@ import asyncio
 import logging
 from datetime import datetime
 
+from homeassistant.components.binary_sensor import STATE_OFF
+
 from custom_components.blueiris.const import *
 from .base import BlueIrisBinarySensor
 

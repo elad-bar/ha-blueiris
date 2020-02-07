@@ -4,46 +4,63 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.blueiris/
 """
 import logging
-import json
 
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+
+from custom_components.blueiris.binary_sensors.audio import BlueIrisAudioBinarySensor
+from custom_components.blueiris.binary_sensors.motion import BlueIrisMotionBinarySensor
 from .const import *
 from custom_components.blueiris.binary_sensors.main import BlueIrisMainBinarySensor, ALL_BINARY_SENSORS
+from custom_components.blueiris.binary_sensors.connectivity import BlueIrisConnectivityBinarySensor
+
+from .blue_iris_api import _get_api
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = [DOMAIN, 'mqtt']
 
 
-async def async_setup_platform(hass,
-                               config,
-                               async_add_entities,
-                               discovery_info=None):
-    """Set up the Blue Iris binary sensor."""
-    if discovery_info is None:
-        return
+async def async_setup_entry(hass, config_entry, async_add_devices):
+    """Set up the BlueIris Switch."""
+    _LOGGER.debug(f"Starting async_setup_entry")
 
-    camera_list = json.loads(discovery_info)
+    api = _get_api(hass)
+
+    if api is None:
+        return
 
     main_binary_sensor = BlueIrisMainBinarySensor()
 
+    camera_list = api.camera_list
+
     entities = []
+    for camera in camera_list:
+        _LOGGER.debug(f"Processing new binary sensor: {camera}")
 
-    for camera_id in camera_list:
-        camera = camera_list[camera_id]
-        _LOGGER.debug(f"Processing new camera[{camera_id}]: {camera}")
+        camera_id = camera.get("optionValue")
+        audio_support = camera.get("audio", False)
+        is_system = camera_id in SYSTEM_CAMERA_ID
 
-        if camera_id not in SYSTEM_CAMERA_ID:
-            for binary_sensor in ALL_BINARY_SENSORS:
-                entity = binary_sensor(camera)
+        allowed_binary_sensors = []
 
-                main_binary_sensor.register(entity)
+        if not is_system:
+            allowed_binary_sensors.append(BlueIrisMotionBinarySensor)
 
-                entities.append(entity)
+            if audio_support:
+                allowed_binary_sensors.append(BlueIrisAudioBinarySensor)
+
+        allowed_binary_sensors.append(BlueIrisConnectivityBinarySensor)
+
+        for binary_sensor in allowed_binary_sensors:
+            entity = binary_sensor(camera)
+
+            main_binary_sensor.register(entity)
+
+            entities.append(entity)
 
     entities.append(main_binary_sensor)
 
     binary_sensors = main_binary_sensor.get_binary_sensors()
     _LOGGER.info(f"Registered binary sensors: {binary_sensors}")
 
-    # Add component entities asynchronously.
-    async_add_entities(entities, True)
+    async_add_devices(entities)

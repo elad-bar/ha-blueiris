@@ -5,7 +5,7 @@ https://home-assistant.io/components/binary_sensor.blueiris/
 """
 import logging
 
-from homeassistant.components.binary_sensor import (BinarySensorDevice)
+from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 
 from custom_components.blueiris.const import *
 
@@ -19,14 +19,14 @@ class BlueIrisBinarySensor(BinarySensorDevice):
         """Initialize the MQTT binary sensor."""
         super().__init__()
 
-        camera_id = camera.get(CONF_ID)
-        camera_name = camera.get(CONF_NAME)
+        self._camera_id = camera.get("optionValue")
+        self._camera_name = camera.get("optionDisplay")
 
-        state_topic = MQTT_ALL_TOPIC.replace('+', camera_id)
+        state_topic = MQTT_ALL_TOPIC.replace('+', self._camera_id)
 
         device_class = SENSOR_DEVICE_CLASS.get(sensor_type_name, sensor_type_name).lower()
 
-        self._name = f"{camera_name} {sensor_type_name}"
+        self._name = f"{DEFAULT_NAME} {self._camera_name} {sensor_type_name}"
         self._state = False
         self._state_topic = state_topic
         self._device_class = device_class

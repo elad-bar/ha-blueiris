@@ -5,18 +5,25 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
-from homeassistant.const import (CONF_ID, CONF_NAME, STATE_ON, STATE_OFF)
+from homeassistant.components.binary_sensor import DOMAIN as DOMAIN_BINARY_SENSOR
+from homeassistant.components.camera import DOMAIN as DOMAIN_CAMERA
+from homeassistant.components.switch import DOMAIN as DOMAIN_SWITCH
+
+from homeassistant.const import CONF_ID, CONF_NAME
+
 from homeassistant.components.mqtt import (
     CONF_PAYLOAD_AVAILABLE, DEFAULT_PAYLOAD_AVAILABLE,
     CONF_QOS, CONF_PAYLOAD_NOT_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE,
     DEFAULT_QOS)
 
-VERSION = '1.1.0'
+VERSION = '2.0.0'
 
 DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
-DEFAULT_NAME = "Blue Iris"
-SIGNAL_UPDATE_BLUEIRIS = f'updates_{DOMAIN}'
+DATA_BLUEIRIS_API = f'{DATA_BLUEIRIS}_API'
+DATA_BLUEIRIS_HA = f'{DATA_BLUEIRIS}_HA'
+DEFAULT_NAME = "BlueIris"
+DEFAULT_PORT = 80
 
 ATTR_ADMIN_PROFILE = 'Profile'
 ATTR_SYSTEM_CAMERA_ALL_NAME = 'All'
@@ -44,34 +51,23 @@ MQTT_AVAILABILITY_CONFIG = {
     CONF_QOS: DEFAULT_QOS
 }
 
-CONF_CAMERAS = 'camera'
-
-CONF_PROFILE = 'profile'
-CONF_PROFILE_ARMED = 'armed'
-CONF_PROFILE_UNARMED = 'unarmed'
-
 AUTHENTICATION_BASIC = 'basic'
 
 NOTIFICATION_ID = f'{DOMAIN}_notification'
 NOTIFICATION_TITLE = f'{DEFAULT_NAME} Setup'
 
-ATTR_SUPPORTED_FEATURES = 'supported_features'
-
 DEFAULT_ICON = 'mdi:alarm-light'
 
 CAMERA_ID_PLACEHOLDER = '[camera_id]'
 
-SCAN_INTERVAL = timedelta(seconds=60)
-
 ATTR_FRIENDLY_NAME = 'friendly_name'
-
-IMAGE_UPDATE_INTERVAL = timedelta(seconds=1)
-IMAGE_TIMEOUT = timedelta(seconds=5)
 
 PROTOCOLS = {
     True: 'https',
     False: 'http'
 }
+
+SCAN_INTERVAL = timedelta(seconds=30)
 
 DEFAULT_FORCE_UPDATE = False
 
@@ -96,6 +92,28 @@ MQTT_ALL_TOPIC = "BlueIris/+/Status"
 CONFIG_OPTIONS = 'options'
 CONFIG_CONDITIONS = 'conditions'
 CONFIG_ITEMS = 'items'
+
+ATTR_BLUE_IRIS_CAMERA = {
+    "optionDisplay": CONF_NAME,
+    "optionValue": CONF_ID,
+    "FPS": "FPS",
+    "audio": "Audio support",
+    "width": "Width",
+    "height": "Height",
+    "isOnline": "Is Online",
+    "isRecording": "Is Recording",
+    "isYellow": "Issue",
+    "nAlerts": "Alerts #",
+    "nTriggers": "Triggers #",
+    "nClips": "Clips #",
+    "nNoSignal": "No Signal #",
+    "error": "Error"
+}
+
+BI_DISCOVERY = f"{DOMAIN}_discovery"
+BI_DISCOVERY_BINARY_SENSOR = f"{BI_DISCOVERY}_{DOMAIN_BINARY_SENSOR}"
+BI_DISCOVERY_CAMERA = f"{BI_DISCOVERY}_{DOMAIN_CAMERA}"
+BI_DISCOVERY_SWITCH = f"{BI_DISCOVERY}_{DOMAIN_SWITCH}"
 
 UI_LOVELACE = '# Example ui-lovelace.yaml view entry\n' \
               'title: Blue Iris\n' \

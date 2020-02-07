@@ -10,38 +10,46 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from homeassistant.components.switch import SwitchDevice
 from .const import *
+from .blue_iris_api import _get_api, BlueIrisApi
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = [DOMAIN]
 
 
-async def async_setup_platform(hass,
-                               config,
-                               async_add_entities,
-                               discovery_info=None):
-    """Set up the Blue Iris switch platform."""
-    bi_data = hass.data.get(DATA_BLUEIRIS)
+async def async_setup_entry(hass, config_entry, async_add_devices):
+    """Set up the BlueIris Switch."""
+    _LOGGER.debug(f"Starting async_setup_entry")
 
-    if not bi_data:
+    api = _get_api(hass)
+
+    if api is None:
         return
 
-    profile_switch = BlueIrisProfileSwitch(bi_data)
+    profiles = api.data.get("profiles", [])
 
-    async_add_entities([profile_switch], True)
+    entities = []
+    for profile_name in profiles:
+        profile_id = profiles.index(profile_name)
+
+        switch = BlueIrisProfileSwitch(api, profile_id, profile_name)
+
+        entities.append(switch)
+
+    async_add_devices(entities)
 
 
 class BlueIrisProfileSwitch(SwitchDevice):
     """An abstract class for an Blue Iris arm switch."""
-    def __init__(self, bi_data):
+    def __init__(self, api: BlueIrisApi, profile_id: int, profile_name: str):
         """Initialize the settings switch."""
         super().__init__()
 
-        self._bi_data = bi_data
-
-        self._name = 'blueiris_alerts'
-        self._friendly_name = "Blue Iris Arm / Disarm"
+        self._name = f"{DEFAULT_NAME} {ATTR_ADMIN_PROFILE} {profile_name}"
+        self._profile_name = profile_name
+        self._profile_id = profile_id
         self._state = False
+        self._api = api
 
     @property
     def name(self):
@@ -50,7 +58,8 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        async_dispatcher_connect(self.hass, SIGNAL_UPDATE_BLUEIRIS,
+        async_dispatcher_connect(self.hass,
+                                 BI_DISCOVERY_SWITCH,
                                  self._update_callback)
 
     @callback
@@ -60,8 +69,9 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_update(self):
         """Get the updated status of the switch."""
+        current_profile = self._api.status.get("profile", 0)
 
-        self._state = self._bi_data.is_blue_iris_armed()
+        self._state = current_profile == self._profile_id
 
     @property
     def is_on(self):
@@ -70,12 +80,16 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
-        self._bi_data.update_blue_iris_profile(True)
+        await self._api.set_profile(self._profile_id)
         self.async_schedule_update_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn device off."""
-        self._bi_data.update_blue_iris_profile(False)
+        to_profile_id = 1
+        if self._profile_id == 1:
+            to_profile_id = 0
+
+        await self._api.set_profile(to_profile_id)
         self.async_schedule_update_ha_state()
 
     @property
