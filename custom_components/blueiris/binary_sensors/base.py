@@ -4,6 +4,7 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.blueiris/
 """
 import logging
+from typing import Optional
 
 from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 
@@ -31,6 +32,28 @@ class BlueIrisBinarySensor(BinarySensorDevice):
         self._state_topic = state_topic
         self._device_class = device_class
         self._event_type = sensor_type_name.lower()
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return the name of the node."""
+        return f"{DOMAIN}-{self._name}"
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self.unique_id)
+            },
+            "name": self.name,
+            "manufacturer": DEFAULT_NAME,
+            "model": self._event_type
+        }
+
+    @property
+    def device_info(self):
+        return {
+
+        }
 
     def update_data(self, event_type, trigger):
         _LOGGER.info(f"Handling {self._name} {event_type} event with value: {trigger}")

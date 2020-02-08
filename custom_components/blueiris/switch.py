@@ -5,6 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 import sys
 import logging
+from typing import Any, Dict, Optional, Union
 
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -57,6 +58,22 @@ class BlueIrisProfileSwitch(SwitchDevice):
         self._profile_id = profile_id
         self._state = False
         self._api = api
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return the name of the node."""
+        return f"{DOMAIN}-{ATTR_ADMIN_PROFILE}-{self._name}"
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self.unique_id)
+            },
+            "name": self.name,
+            "manufacturer": DEFAULT_NAME,
+            "model": self._profile_name
+        }
 
     @property
     def name(self):

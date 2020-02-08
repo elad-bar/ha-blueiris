@@ -23,7 +23,6 @@ class BlueIrisHomeAssistant:
         self._script_data = []
         self._input_select_data = INPUT_SELECT
         self._cast_template = cast_template
-        self._api = _get_api(hass)
 
         async_call_later(self._hass, 5, self.async_finalize)
 
@@ -39,8 +38,10 @@ class BlueIrisHomeAssistant:
     async def async_update(self, event_time):
         _LOGGER.debug(f"async_finalize called at {event_time}")
 
-        if self._api is not None:
-            await self._api.async_update()
+        api = _get_api(self._hass)
+
+        if api is not None:
+            await api.async_update()
 
             async_dispatcher_send(self._hass, BI_UPDATE_SIGNAL)
 
@@ -142,7 +143,12 @@ class BlueIrisHomeAssistant:
         regular_camera_list = []
         camera_conditions = []
 
-        camera_list = self._api.camera_list
+        api = _get_api(self._hass)
+
+        if api is None:
+            return
+
+        camera_list = api.camera_list
 
         is_first = True
         for camera_details in camera_list:

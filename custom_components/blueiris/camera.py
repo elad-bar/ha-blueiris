@@ -5,6 +5,7 @@ https://home-assistant.io/components/camera.blueiris/
 """
 import sys
 import logging
+from typing import Optional
 
 from homeassistant.const import (CONF_USERNAME, CONF_VERIFY_SSL,
                                  CONF_PASSWORD, CONF_AUTHENTICATION)
@@ -87,6 +88,25 @@ class BlueIrisCamera(GenericCamera):
 
         self._api = api
         self._camera = camera
+        self._device_info = device_info
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return the name of the node."""
+        name = self._device_info.get(CONF_NAME)
+
+        return f"{DOMAIN}-{name}"
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self.unique_id)
+            },
+            "name": self.name,
+            "manufacturer": DEFAULT_NAME,
+            "model": "Camera"
+        }
 
     @property
     def state_attributes(self):

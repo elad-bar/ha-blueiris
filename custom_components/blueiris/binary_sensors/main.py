@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Optional
 
 from homeassistant.core import callback
 from homeassistant.components import mqtt
@@ -31,6 +32,21 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         self._binary_sensors = {}
         self._active_count = None
         self._attributes = {}
+
+    @property
+    def unique_id(self) -> Optional[str]:
+        """Return the name of the node."""
+        return f"{DOMAIN}-{self._name}-main"
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {
+                (DOMAIN, self.unique_id)
+            },
+            "name": self.name,
+            "manufacturer": DEFAULT_NAME
+        }
 
     @property
     def should_poll(self):
