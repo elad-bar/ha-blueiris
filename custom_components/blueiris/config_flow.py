@@ -2,7 +2,6 @@
 import logging
 
 import voluptuous as vol
-from homeassistant.const import (CONF_SSL, CONF_HOST, CONF_PORT, CONF_USERNAME, CONF_PASSWORD)
 
 from homeassistant import config_entries
 
@@ -12,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @config_entries.HANDLERS.register(DOMAIN)
-class DahuaVTOFlowHandler(config_entries.ConfigFlow):
+class BlueIrisFlowHandler(config_entries.ConfigFlow):
     """Handle a BlueIris config flow."""
 
     VERSION = 1
@@ -28,14 +27,14 @@ class DahuaVTOFlowHandler(config_entries.ConfigFlow):
         fields = {
             vol.Required(CONF_HOST): str,
             vol.Required(CONF_PORT): int,
-            vol.Optional(CONF_USERNAME): str,
-            vol.Optional(CONF_PASSWORD): str,
+            vol.Required(CONF_USERNAME): str,
+            vol.Required(CONF_PASSWORD): str,
             vol.Optional(CONF_SSL, default=False): bool,
         }
 
         if user_input is not None:
             return self.async_create_entry(
-                title=DEFAULT_NAME,
+                title=user_input.get(CONF_HOST),
                 data={
                     CONF_HOST: user_input.get(CONF_HOST),
                     CONF_PORT: user_input.get(CONF_PORT, DEFAULT_PORT),
@@ -55,7 +54,7 @@ class DahuaVTOFlowHandler(config_entries.ConfigFlow):
             return self.async_abort(reason="already_setup")
 
         return self.async_create_entry(
-            title="DahuaVTO (import from configuration.yaml)",
+            title="BlueIris (import from configuration.yaml)",
             data={
                 CONF_HOST: info.get(CONF_HOST),
                 CONF_PORT: info.get(CONF_PORT, DEFAULT_PORT),

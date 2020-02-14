@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import json
 import hashlib
@@ -30,6 +31,7 @@ class BlueIrisApi:
             self._session = None
             self._session_id = None
             self._is_connected = False
+            self._is_logged_in = False
 
             self._status = {}
             self._data = {}
@@ -118,8 +120,7 @@ class BlueIrisApi:
             else:
                 self._session = async_create_clientsession(hass=self._hass)
 
-            if await self.login():
-                await self.async_update()
+            await self.async_update()
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
@@ -128,8 +129,9 @@ class BlueIrisApi:
             _LOGGER.error(f"Failed to initialize BlueIris API, error: {ex}, line: {line_number}")
 
     async def async_update(self):
-        await self.load_camera()
-        await self.load_status()
+        if await self.verify_connection():
+            await self.load_camera()
+            await self.load_status()
 
     async def load_session_id(self):
         request_data = {
@@ -176,7 +178,9 @@ class BlueIrisApi:
 
             _LOGGER.error(f'Failed to login, Error: {ex}, Line: {line_number}')
 
-        return logged_in
+        self._is_logged_in = logged_in
+
+        return self._is_logged_in
 
     async def load_camera(self):
         request_data = {
@@ -218,18 +222,19 @@ class BlueIrisApi:
             for key in data:
                 self._status[key] = data[key]
 
+    async def verify_connection(self):
+        result = False
 
-def _get_api(hass) -> BlueIrisApi:
-    if DATA_BLUEIRIS not in hass.data:
-        _LOGGER.error("BlueIris data is not available")
-        return None
+        for i in range(3):
+            if not self._is_logged_in:
+                if i > 0:
+                    _LOGGER.warning(f"Try #{i} to reconnect {self._url}")
 
-    bi_data = hass.data[DATA_BLUEIRIS]
+                if await self.login():
+                    result = True
+                    break
 
-    if DATA_BLUEIRIS_API not in bi_data:
-        _LOGGER.error("BlueIris API is not available")
-        return None
+                else:
+                    await asyncio.sleep(RECONNECT_DELAY)
 
-    api = bi_data[DATA_BLUEIRIS_API]
-
-    return api
+        return result

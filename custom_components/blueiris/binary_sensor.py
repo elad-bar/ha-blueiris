@@ -6,7 +6,7 @@ https://home-assistant.io/components/binary_sensor.blueiris/
 import sys
 import logging
 
-from .blue_iris_api import _get_api
+from .home_assistant import _get_api
 from .const import *
 
 from custom_components.blueiris.binary_sensors.audio import BlueIrisAudioBinarySensor
@@ -40,6 +40,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
             camera_id = camera.get("optionValue")
             audio_support = camera.get("audio", False)
+            is_online = camera.get("isOnline", False)
             is_system = camera_id in SYSTEM_CAMERA_ID
 
             allowed_binary_sensors = []
@@ -53,7 +54,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
             allowed_binary_sensors.append(BlueIrisConnectivityBinarySensor)
 
             for binary_sensor in allowed_binary_sensors:
-                entity = binary_sensor(camera)
+                entity = binary_sensor(camera, is_online)
 
                 main_binary_sensor.register(entity)
 
@@ -64,7 +65,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         binary_sensors = main_binary_sensor.get_binary_sensors()
         _LOGGER.info(f"Registered binary sensors: {binary_sensors}")
 
-        async_add_devices(entities)
+        async_add_devices(entities, True)
     except Exception as ex:
         exc_type, exc_obj, tb = sys.exc_info()
         line_number = tb.tb_lineno

@@ -36,7 +36,7 @@ class BlueIrisBinarySensor(BinarySensorDevice):
     @property
     def unique_id(self) -> Optional[str]:
         """Return the name of the node."""
-        return f"{DOMAIN}-{self._name}"
+        return f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{self._name}"
 
     @property
     def device_info(self):
@@ -47,12 +47,6 @@ class BlueIrisBinarySensor(BinarySensorDevice):
             "name": self.name,
             "manufacturer": DEFAULT_NAME,
             "model": self._event_type
-        }
-
-    @property
-    def device_info(self):
-        return {
-
         }
 
     def update_data(self, event_type, trigger):

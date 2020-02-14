@@ -7,17 +7,15 @@ import sys
 import logging
 from typing import Optional
 
-from homeassistant.const import (CONF_USERNAME, CONF_VERIFY_SSL,
-                                 CONF_PASSWORD, CONF_AUTHENTICATION)
-from homeassistant.components.camera import (
-    DEFAULT_CONTENT_TYPE)
+from homeassistant.const import ( CONF_VERIFY_SSL, CONF_AUTHENTICATION)
+from homeassistant.components.camera import (DEFAULT_CONTENT_TYPE)
 from homeassistant.components.generic.camera import (
     CONF_LIMIT_REFETCH_TO_URL_CHANGE, CONF_FRAMERATE, CONF_CONTENT_TYPE,
     CONF_STREAM_SOURCE, CONF_STILL_IMAGE_URL)
 
 from homeassistant.helpers import config_validation as cv
 
-from .blue_iris_api import _get_api
+from .home_assistant import _get_api
 from .const import *
 from homeassistant.components.generic.camera import GenericCamera
 
@@ -72,7 +70,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
             bi_camera = BlueIrisCamera(hass, device_info, api, camera)
             entities.append(bi_camera)
 
-        async_add_devices(entities)
+        async_add_devices(entities, True)
 
     except Exception as ex:
         exc_type, exc_obj, tb = sys.exc_info()
@@ -95,7 +93,7 @@ class BlueIrisCamera(GenericCamera):
         """Return the name of the node."""
         name = self._device_info.get(CONF_NAME)
 
-        return f"{DOMAIN}-{name}"
+        return f"{DOMAIN}-{DOMAIN_CAMERA}-{name}"
 
     @property
     def device_info(self):

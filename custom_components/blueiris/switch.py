@@ -5,21 +5,22 @@ https://home-assistant.io/components/switch.blueiris/
 """
 import sys
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Optional
 
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from homeassistant.components.switch import SwitchDevice
 from .const import *
-from .blue_iris_api import _get_api, BlueIrisApi
+from .blue_iris_api import BlueIrisApi
+from .home_assistant import _get_api
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = [DOMAIN]
 
 
-async def async_setup_entry(hass, config_entry, async_add_devices):
+async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the BlueIris Switch."""
     _LOGGER.debug(f"Starting async_setup_entry")
 
@@ -39,7 +40,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
             entities.append(switch)
 
-        async_add_devices(entities)
+        async_add_entities(entities, True)
     except Exception as ex:
         exc_type, exc_obj, tb = sys.exc_info()
         line_number = tb.tb_lineno
@@ -58,11 +59,12 @@ class BlueIrisProfileSwitch(SwitchDevice):
         self._profile_id = profile_id
         self._state = False
         self._api = api
+        self._remove_dispatcher = None
 
     @property
     def unique_id(self) -> Optional[str]:
         """Return the name of the node."""
-        return f"{DOMAIN}-{ATTR_ADMIN_PROFILE}-{self._name}"
+        return f"{DOMAIN}-{DOMAIN_SWITCH}-{ATTR_ADMIN_PROFILE}-{self._name}"
 
     @property
     def device_info(self):
@@ -82,7 +84,11 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        async_dispatcher_connect(self.hass, BI_UPDATE_SIGNAL, self._update_callback)
+        self._remove_dispatcher = async_dispatcher_connect(self.hass, BI_UPDATE_SIGNAL, self._update_callback)
+
+    async def async_will_remove_from_hass(self) -> None:
+        if self._remove_dispatcher is not None:
+            self._remove_dispatcher()
 
     @callback
     def _update_callback(self):
@@ -123,4 +129,7 @@ class BlueIrisProfileSwitch(SwitchDevice):
         pass
 
     def turn_off(self, **kwargs) -> None:
+        pass
+
+    async def async_setup(self):
         pass

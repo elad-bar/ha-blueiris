@@ -7,6 +7,7 @@ from homeassistant.components import mqtt
 from homeassistant.components.mqtt import Message
 from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 from homeassistant.components.mqtt import (MqttAvailability)
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from custom_components.blueiris.const import *
 from .base import BlueIrisBinarySensor
@@ -32,11 +33,12 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         self._binary_sensors = {}
         self._active_count = None
         self._attributes = {}
+        self._remove_dispatcher = None
 
     @property
     def unique_id(self) -> Optional[str]:
         """Return the name of the node."""
-        return f"{DOMAIN}-{self._name}-main"
+        return f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{self._name}"
 
     @property
     def device_info(self):
@@ -88,6 +90,14 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
                                    MQTT_ALL_TOPIC,
                                    state_message_received,
                                    DEFAULT_QOS)
+
+    async def async_added_to_hass(self):
+        """Register callbacks."""
+        self._remove_dispatcher = async_dispatcher_connect(self.hass, BI_UPDATE_SIGNAL, self.update_data)
+
+    async def async_will_remove_from_hass(self) -> None:
+        if self._remove_dispatcher is not None:
+            self._remove_dispatcher()
 
     def register(self, binary_sensor: BlueIrisBinarySensor):
         topic = binary_sensor.topic
@@ -141,6 +151,7 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
             self.update_data()
 
+    @callback
     def update_data(self):
         active_count = 0
 
@@ -176,4 +187,4 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
         self._attributes = attributes
 
-        self.async_schedule_update_ha_state()
+        self.async_schedule_update_ha_state(True)

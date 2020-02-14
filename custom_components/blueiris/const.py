@@ -5,11 +5,14 @@ https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
 
+from homeassistant.const import (
+    CONF_HOST, CONF_PORT, CONF_PASSWORD,
+    CONF_USERNAME, CONF_SSL,
+    CONF_ID, CONF_NAME)
+
 from homeassistant.components.binary_sensor import DOMAIN as DOMAIN_BINARY_SENSOR
 from homeassistant.components.camera import DOMAIN as DOMAIN_CAMERA
 from homeassistant.components.switch import DOMAIN as DOMAIN_SWITCH
-
-from homeassistant.const import CONF_ID, CONF_NAME
 
 from homeassistant.components.mqtt import (
     CONF_PAYLOAD_AVAILABLE, DEFAULT_PAYLOAD_AVAILABLE,
@@ -22,6 +25,7 @@ DOMAIN = 'blueiris'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
 DATA_BLUEIRIS_API = f'{DATA_BLUEIRIS}_API'
 DATA_BLUEIRIS_HA = f'{DATA_BLUEIRIS}_HA'
+DATA_BLUEIRIS_HA_ENTITIES = f'{DATA_BLUEIRIS}_HA_Entities'
 DEFAULT_NAME = "BlueIris"
 DEFAULT_PORT = 80
 
@@ -32,6 +36,7 @@ ATTR_SYSTEM_CAMERA_CYCLE_NAME = 'Cycle'
 ATTR_SYSTEM_CAMERA_CYCLE_ID = '@Index'
 
 AUDIO_EVENT_LENGTH = 2
+RECONNECT_DELAY = 15
 
 BLUEIRIS_AUTH_ERROR = "Authorization required"
 
