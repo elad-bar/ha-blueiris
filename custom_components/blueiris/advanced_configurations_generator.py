@@ -63,7 +63,7 @@ class AdvancedConfigurationGenerator:
         lines = [
             f"  {slugify(entity_name)}:",
             f"    name: {entity_name}",
-            f"    initial: {initial_camera}",
+            f"    initial: '{initial_camera}'",
             f"    icon: mdi:camera",
             f"    options:"
         ]
@@ -125,10 +125,12 @@ class AdvancedConfigurationGenerator:
 
             media_player_entity_ids.append(f"'{name}': '{entity_id}'")
 
-        media_player_input_select = "BlueIris Cast Devices"
+        media_player_input_select = slugify("BlueIris Cast Devices")
         media_players_entities = ", ".join(media_player_entity_ids)
         lines.append(f"            {{% set media_players = {{{media_players_entities}}} %}}")
-        lines.append(f"            {{{{media_players[states.input_select.{slugify(media_player_input_select)}.state]}}}}")
+        lines.append(f"            {{{{media_players[states.input_select.{media_player_input_select}.state]}}}}")
+
+        lines.append(f"          media_content_id: >")
 
         camera_entity_ids = []
         for camera in camera_list:
@@ -154,6 +156,10 @@ class AdvancedConfigurationGenerator:
             credentials = f"?user={username}&pw={password}"
 
         camera_input_select = slugify("BlueIris Camera")
-        cast_template = f'{self._api.base_url}/mjpg/" ~ camera_list[states.input_select.{camera_input_select}.state] ~"/video.mjpg{credentials}'
+        url = f'{self._api.base_url}/mjpg/'
+        path = f"camera_list[states.input_select.{camera_input_select}.state]"
+        video = f"/video.mjpg{credentials}"
+
+        cast_template = f"'{url}' ~ {path} ~ '{video}'"
 
         return cast_template
