@@ -42,9 +42,6 @@ class BlueIrisHomeAssistant:
 
         self._hass = hass
         self._host = host
-        self._ui_lovelace_data = [UI_LOVELACE]
-        self._script_data = []
-        self._input_select_data = INPUT_SELECT
 
         self._config_entry = entry
         self._unload_domain = []

@@ -1,6 +1,6 @@
-import sys
 import logging
 
+from homeassistant.components.media_player import SUPPORT_PLAY_MEDIA
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
 
@@ -10,111 +10,80 @@ from .const import *
 _LOGGER = logging.getLogger(__name__)
 
 
+def _add_to_file(fs, content, title=None):
+    if title is not None:
+        header = f" {title} ".rjust(40, "#").ljust(80, "#")
+        fs.write(f"{header}\n")
+
+    fs.write(f"{content}\n")
+    fs.write("\n")
+
+
 class AdvancedConfigurationGenerator:
     def __init__(self, hass: HomeAssistant, api: BlueIrisApi):
         self._hass = hass
         self._api = api
-        self._cast_template = self._api.cast_template
 
     def generate_advanced_configurations(self, event_time):
         _LOGGER.info(f"Started to generate advanced configuration @ {event_time}")
+        components_path = self._hass.config.path('blueiris.advanced_configurations.yaml')
 
-        try:
-            camera_data = self.get_camera_data()
-            media_player_data = self.get_media_player_data()
-
-            camera_conditions = camera_data[CONFIG_CONDITIONS]
-            camera_options = camera_data[CONFIG_OPTIONS]
-            camera_ui_items = camera_data[CONFIG_ITEMS]
-            media_player_conditions = media_player_data[CONFIG_CONDITIONS]
-            media_player_options = media_player_data[CONFIG_OPTIONS]
-
-            ui_lovelace = self.build_ui_lovelace(camera_ui_items)
-            input_select = self.build_input_select(camera_options, media_player_options)
-            script = self.build_script(camera_conditions,
-                                       media_player_conditions,
-                                       self._cast_template)
-
-            components_path = self._hass.config.path('blueiris.advanced_configurations.yaml')
-
-            with open(components_path, 'w+') as out:
-                out.write(input_select)
-                out.write(script)
-                out.write(ui_lovelace)
-
-        except Exception as ex:
-            exc_type, exc_obj, tb = sys.exc_info()
-            line_number = tb.tb_lineno
-
-            _LOGGER.error(f'Failed to log BI data, Error: {ex}, Line: {line_number}')
-
-    @staticmethod
-    def build_ui_lovelace(camera_ui_items):
-        camera_ui_list = '\n'.join(camera_ui_items)
-
-        ui_lovelace = f"{UI_LOVELACE}\n{camera_ui_list}"
-
-        _LOGGER.info(f'Script: {ui_lovelace}')
-
-        return ui_lovelace
-
-    @staticmethod
-    def get_camera_ui_lovelace(camera_name, is_system=False):
-        camera_id = slugify(camera_name)
-        template = UI_LOVELACE_REGULAR_CAMERA
-
-        if is_system:
-            template = UI_LOVELACE_SYSTEM_CAMERA
-
-        camera_data = template.replace(CAMERA_ID_PLACEHOLDER, camera_id) \
-            .replace('[camera_name]', camera_name)
-
-        return camera_data
-
-    @staticmethod
-    def build_script(camera_conditions, media_player_conditions, cast_template):
-        media_player_condition = ', '.join(media_player_conditions)
-        camera_condition = ', '.join(camera_conditions)
-
-        script = SCRIPT.replace('[media_player_conditions]',
-                                media_player_condition)
-
-        script = script.replace('[camera_conditions]',
-                                camera_condition)
-
-        script = script.replace('[bi-url]', cast_template)
-
-        _LOGGER.info(f'Script: {script}')
-
-        return script
-
-    @staticmethod
-    def get_script_condition(match, value):
-        script_condition = f'"{match}": "{value}"'
-
-        return script_condition
-
-    @staticmethod
-    def build_input_select(camera_options, media_player_options):
-        cast_to_screen_dropdown_options = '\n'.join(media_player_options)
-        camera_dropdown_options = '\n'.join(camera_options)
-
-        input_select = INPUT_SELECT.replace('[cast_to_screen_dropdown_options]',
-                                            cast_to_screen_dropdown_options). \
-            replace('[camera_dropdown_options]',
-                    camera_dropdown_options)
-
-        _LOGGER.info(f'Script: {input_select}')
-
-        return input_select
-
-    def get_media_player_data(self):
+        camera_list = self._api.camera_list
         media_players = self._hass.states.entity_ids('media_player')
 
-        media_player_options = []
-        media_player_conditions = []
+        input_select_camera = self.generate_input_select_camera(camera_list)
+        input_select_media_player = self.generate_input_select_media_player(media_players)
+        script = self.generate_script(camera_list, media_players)
 
-        is_first = True
+        with open(components_path, 'w+') as out:
+            _add_to_file(out, "input_select:", "INPUT SELECT")
+            _add_to_file(out, input_select_camera)
+            _add_to_file(out, input_select_media_player)
+
+            _add_to_file(out, "script:", "SCRIPT")
+            _add_to_file(out, script)
+
+    @staticmethod
+    def generate_input_select_camera(camera_list):
+        entity_name = "BlueIris Camera"
+        camera_items = []
+        initial_camera = None
+        for camera_details in camera_list:
+            camera_id = camera_details.get("optionDisplay")
+            camera_name = camera_details.get("optionDisplay")
+
+            if camera_id in SYSTEM_CAMERA_ID:
+                initial_camera = camera_name
+
+            camera_items.append(camera_name)
+
+        if initial_camera is None:
+            initial_camera = camera_items[0]
+
+        lines = [
+            f"  {slugify(entity_name)}:",
+            f"    name: {entity_name}",
+            f"    initial: {initial_camera}",
+            f"    icon: mdi:camera",
+            f"    options:"
+        ]
+
+        for camera_name in camera_items:
+            lines.append(f"      - '{camera_name}'")
+
+        result = "\n".join(lines)
+
+        return result
+
+    def generate_input_select_media_player(self, media_players):
+        entity_name = "BlueIris Cast Devices"
+        lines = [
+            f"  {slugify(entity_name)}:",
+            f"    name: {entity_name}",
+            f"    icon: mdi:cast",
+            f"    options:"
+        ]
+
         for entity_id in media_players:
             state = self._hass.states.get(entity_id)
 
@@ -123,62 +92,68 @@ class AdvancedConfigurationGenerator:
             else:
                 name = state.name
 
-            media_player_options.append(INPUT_SELECT_OPTION.replace('[item]', name))
+            supported_features = state.attributes.get("supported_features", 0)
+            support_play_media = bool(supported_features & SUPPORT_PLAY_MEDIA)
 
-            if is_first:
-                is_first = False
+            if support_play_media:
+                lines.append(f"      - '{name}'")
 
-            media_player_condition = self.get_script_condition(name,
-                                                               entity_id)
-
-            media_player_conditions.append(media_player_condition)
-
-        result = {
-            CONFIG_CONDITIONS: media_player_conditions,
-            CONFIG_OPTIONS: media_player_options
-        }
+        result = "\n".join(lines)
 
         return result
 
-    def get_camera_data(self):
-        camera_ui_items = []
-        camera_options = []
-        regular_camera_list = []
-        camera_conditions = []
+    def generate_script(self, camera_list, media_players):
+        entity_name = "BlueIris Cast"
+        lines = [
+            f"  {slugify(entity_name)}:",
+            f"    alias: {entity_name}",
+            f"    sequence:",
+            f"      - service: media_player.play_media",
+            f"        data_template:",
+            f"          media_content_type: 'image/jpg'",
+            f"          entity_id: >",
+        ]
 
-        camera_list = self._api.camera_list
+        media_player_entity_ids = []
+        for entity_id in media_players:
+            state = self._hass.states.get(entity_id)
 
-        is_first = True
-        for camera_details in camera_list:
-            camera_name = camera_details.get("optionDisplay")
-            camera_id = camera_details.get("optionValue")
-
-            camera_options.append(INPUT_SELECT_OPTION.replace('[item]', camera_name))
-
-            if is_first:
-                is_first = False
-
-            camera_condition = self.get_script_condition(camera_name,
-                                                         camera_id)
-
-            camera_conditions.append(camera_condition)
-
-            if camera_name in SYSTEM_CAMERA_CONFIG:
-                camera_ui_item = self.get_camera_ui_lovelace(camera_name, True)
-
-                camera_ui_items.append(camera_ui_item)
+            if ATTR_FRIENDLY_NAME in state.attributes:
+                name = state.attributes[ATTR_FRIENDLY_NAME]
             else:
-                regular_camera_list.append(camera_name)
+                name = state.name
 
-        for camera_name in regular_camera_list:
-            camera_ui_item = self.get_camera_ui_lovelace(camera_name)
+            media_player_entity_ids.append(f"'{name}': '{entity_id}'")
 
-            camera_ui_items.append(camera_ui_item)
+        media_player_input_select = "BlueIris Cast Devices"
+        media_players_entities = ", ".join(media_player_entity_ids)
+        lines.append(f"            {{% set media_players = {{{media_players_entities}}} %}}")
+        lines.append(f"            {{{{media_players[states.input_select.{slugify(media_player_input_select)}.state]}}}}")
 
-        result = {
-            CONFIG_CONDITIONS: camera_conditions,
-            CONFIG_OPTIONS: camera_options,
-            CONFIG_ITEMS: camera_ui_items
-        }
+        camera_entity_ids = []
+        for camera in camera_list:
+            camera_id = camera.get("optionValue")
+            camera_name = camera.get("optionDisplay")
+
+            camera_entity_ids.append(f"'{camera_name}': '{camera_id}'")
+
+        camera_entities = ", ".join(camera_entity_ids)
+        lines.append(f"            {{% set camera_list = {{{camera_entities}}} %}}")
+        lines.append(f"            {{{{{self.get_cast_template()}}}}}")
+
+        result = "\n".join(lines)
 
         return result
+
+    def get_cast_template(self):
+        username = self._api.username
+        password = self._api.password
+
+        credentials = ""
+        if username is not None and password is not None:
+            credentials = f"?user={username}&pw={password}"
+
+        camera_input_select = slugify("BlueIris Camera")
+        cast_template = f'{self._api.base_url}/mjpg/" ~ camera_list[states.input_select.{camera_input_select}.state] ~"/video.mjpg{credentials}'
+
+        return cast_template

@@ -40,17 +40,11 @@ class BlueIrisApi:
             self._base_url = f"{self._protocol}://{self._host}:{self._port}"
             self._url = f"{self._base_url}/json"
 
-            self._cast_template = None
-
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
             _LOGGER.error(f"Failed to load BlueIris API, error: {ex}, line: {line_number}")
-
-    @property
-    def cast_template(self):
-        return self._cast_template
 
     @property
     def base_url(self):
@@ -79,16 +73,6 @@ class BlueIrisApi:
     @property
     def password(self):
         return self._password
-
-    def set_cast_template(self):
-        username = self._username
-        password = self._password
-
-        credentials = ""
-        if username is not None and password is not None:
-            credentials = f"?user={username}&pw={password}"
-
-        self._cast_template = f'{self._base_url}/mjpg/" ~ {HA_CAM_STATE} ~"/video.mjpg{credentials}'
 
     async def async_post(self, data):
         result = None
@@ -130,8 +114,6 @@ class BlueIrisApi:
             self._camera_list = []
             self._username = username
             self._password = password
-
-            self.set_cast_template()
 
             if self._hass is None:
                 if self._session is not None:

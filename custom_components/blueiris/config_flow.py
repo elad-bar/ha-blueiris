@@ -107,7 +107,10 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage the EdgeOS options."""
         return await self.async_step_blue_iris_additional_settings(user_input)
 
-    def get_value(self, key, default=""):
+    def get_value(self, key, default=None):
+        if default is None:
+            default = ""
+
         value = self._data.get(key, default)
 
         if key in self.options:
