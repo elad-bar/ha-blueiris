@@ -18,12 +18,12 @@ _LOGGER = logging.getLogger(__name__)
 class BlueIrisApi:
     """The Class for handling the data retrieval."""
 
-    def __init__(self, hass, host, port, ssl, username, password):
+    def __init__(self, hass, host, port, ssl):
         try:
             self._last_update = datetime.now()
             self._hass = hass
-            self._username = username
-            self._password = password
+            self._username = None
+            self._password = None
             self._host = host
             self._port = port
             self._ssl = ssl
@@ -40,11 +40,7 @@ class BlueIrisApi:
             self._base_url = f"{self._protocol}://{self._host}:{self._port}"
             self._url = f"{self._base_url}/json"
 
-            credentials = ""
-            if username is not None and password is not None:
-                credentials = f"?user={username}&pw={password}"
-
-            self._cast_template = f'{self._base_url}/mjpg/" ~ {HA_CAM_STATE} ~"/video.mjpg{credentials}'
+            self._cast_template = None
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
@@ -84,6 +80,16 @@ class BlueIrisApi:
     def password(self):
         return self._password
 
+    def set_cast_template(self):
+        username = self._username
+        password = self._password
+
+        credentials = ""
+        if username is not None and password is not None:
+            credentials = f"?user={username}&pw={password}"
+
+        self._cast_template = f'{self._base_url}/mjpg/" ~ {HA_CAM_STATE} ~"/video.mjpg{credentials}'
+
     async def async_post(self, data):
         result = None
 
@@ -110,8 +116,23 @@ class BlueIrisApi:
 
         return result
 
-    async def initialize(self):
+    async def initialize(self, username, password, update=True):
         try:
+            if username is not None and len(username) < 1:
+                username = None
+
+            if password is not None and len(password) < 1:
+                password = None
+
+            self._is_logged_in = False
+            self._data = {}
+            self._status = {}
+            self._camera_list = []
+            self._username = username
+            self._password = password
+
+            self.set_cast_template()
+
             if self._hass is None:
                 if self._session is not None:
                     await self._session.close()
@@ -120,7 +141,8 @@ class BlueIrisApi:
             else:
                 self._session = async_create_clientsession(hass=self._hass)
 
-            await self.async_update()
+            if update:
+                await self.async_update()
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
@@ -225,7 +247,7 @@ class BlueIrisApi:
     async def verify_connection(self):
         result = False
 
-        for i in range(3):
+        for i in range(1):
             if not self._is_logged_in:
                 if i > 0:
                     _LOGGER.warning(f"Try #{i} to reconnect {self._url}")

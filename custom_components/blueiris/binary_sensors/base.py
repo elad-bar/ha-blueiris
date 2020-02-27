@@ -6,65 +6,53 @@ https://home-assistant.io/components/binary_sensor.blueiris/
 import logging
 from typing import Optional
 
-from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
+from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.core import callback
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers import device_registry as dr
 
+from custom_components.blueiris import BlueIrisHomeAssistant
 from custom_components.blueiris.const import *
 
 _LOGGER = logging.getLogger(__name__)
+
+CURRENT_DOMAIN = DOMAIN_BINARY_SENSOR
 
 
 class BlueIrisBinarySensor(BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, camera, sensor_type_name):
+    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
         """Initialize the MQTT binary sensor."""
         super().__init__()
 
-        self._camera_id = camera.get("optionValue")
-        self._camera_name = camera.get("optionDisplay")
+        self._hass = hass
+        self._ha = ha
+        self._entity = entity
+        self._remove_dispatcher = None
 
-        state_topic = MQTT_ALL_TOPIC.replace('+', self._camera_id)
-
-        device_class = SENSOR_DEVICE_CLASS.get(sensor_type_name, sensor_type_name).lower()
-
-        self._name = f"{DEFAULT_NAME} {self._camera_name} {sensor_type_name}"
-        self._state = False
-        self._state_topic = state_topic
-        self._device_class = device_class
-        self._event_type = sensor_type_name.lower()
+    @property
+    def ha(self):
+        return self._ha
 
     @property
     def unique_id(self) -> Optional[str]:
         """Return the name of the node."""
-        return f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{self._name}"
+        return self._entity.get(ENTITY_UNIQUE_ID)
 
     @property
     def device_info(self):
-        return {
-            "identifiers": {
-                (DOMAIN, self.unique_id)
-            },
-            "name": self.name,
-            "manufacturer": DEFAULT_NAME,
-            "model": self._event_type
-        }
-
-    def update_data(self, event_type, trigger):
-        _LOGGER.info(f"Handling {self._name} {event_type} event with value: {trigger}")
-
-        self._state = trigger == STATE_ON
-
-        self.async_schedule_update_ha_state()
+        return self._entity.get(ENTITY_DEVICE_INFO)
 
     @property
     def topic(self):
         """Return the polling state."""
-        return self._state_topic
+        return self._entity.get(ENTITY_TOPIC)
 
     @property
     def event_type(self):
         """Return the polling state."""
-        return self._event_type
+        return self._entity.get(ENTITY_EVENT)
 
     @property
     def should_poll(self):
@@ -74,19 +62,60 @@ class BlueIrisBinarySensor(BinarySensorDevice):
     @property
     def name(self):
         """Return the name of the binary sensor."""
-        return self._name
+        return self._entity.get(ENTITY_NAME)
 
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._state
+        return self._entity.get(ENTITY_STATE)
 
     @property
     def device_class(self):
         """Return the class of this sensor."""
-        return self._device_class
+        return self._entity.get(ENTITY_DEVICE_CLASS)
 
     @property
     def force_update(self):
         """Force update."""
         return DEFAULT_FORCE_UPDATE
+
+    async def async_added_to_hass(self):
+        """Register callbacks."""
+        self._remove_dispatcher = async_dispatcher_connect(self.hass, SIGNALS[CURRENT_DOMAIN], self.update_data)
+
+    async def async_will_remove_from_hass(self) -> None:
+        if self._remove_dispatcher is not None:
+            self._remove_dispatcher()
+
+    @callback
+    def update_data(self):
+        self.hass.async_add_job(self.async_update_data)
+
+    async def async_update_data(self):
+        if self._ha is None:
+            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - HA is None | {self.name}")
+        else:
+            previous_state = self.is_on
+            self._entity = self._ha.get_entity(CURRENT_DOMAIN, self.name)
+
+            current_state = self._entity.get(ENTITY_STATE)
+            state_changed = previous_state != current_state
+
+            if self._entity is None:
+                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - entity is None | {self.name}")
+
+                self._entity = {}
+                await self.async_remove()
+
+                dev_id = self.device_info.get("id")
+                device_reg = await dr.async_get_registry(self._hass)
+
+                device_reg.async_remove_device(dev_id)
+            else:
+                if state_changed:
+                    _LOGGER.debug(f"Update {CURRENT_DOMAIN} -> {self.name}, from: {previous_state} to {current_state}")
+
+                    self.perform_update()
+
+    def perform_update(self):
+        self.async_schedule_update_ha_state(True)

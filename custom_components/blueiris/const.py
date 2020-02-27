@@ -4,6 +4,7 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
+import voluptuous as vol
 
 from homeassistant.const import (
     CONF_HOST, CONF_PORT, CONF_PASSWORD,
@@ -79,10 +80,7 @@ DEFAULT_FORCE_UPDATE = False
 SENSOR_CONNECTIVITY_NAME = 'Connectivity'
 SENSOR_MOTION_NAME = 'Motion'
 SENSOR_AUDIO_NAME = 'Audio'
-
-SENSOR_TYPES = [SENSOR_CONNECTIVITY_NAME,
-                SENSOR_MOTION_NAME,
-                SENSOR_AUDIO_NAME]
+SENSOR_MAIN_NAME = 'Main'
 
 SENSOR_DEVICE_CLASS = {
     SENSOR_AUDIO_NAME: 'sound'
@@ -129,7 +127,9 @@ BI_DISCOVERY_BINARY_SENSOR = f"{BI_DISCOVERY}_{DOMAIN_BINARY_SENSOR}"
 BI_DISCOVERY_CAMERA = f"{BI_DISCOVERY}_{DOMAIN_CAMERA}"
 BI_DISCOVERY_SWITCH = f"{BI_DISCOVERY}_{DOMAIN_SWITCH}"
 
-BI_UPDATE_SIGNAL = f"{DOMAIN}_UPDATE_SIGNAL"
+BI_UPDATE_SIGNAL_CAMERA = f"{DOMAIN}_{DOMAIN_CAMERA}_UPDATE_SIGNAL"
+BI_UPDATE_SIGNAL_BINARY_SENSOR = f"{DOMAIN}_{DOMAIN_BINARY_SENSOR}_UPDATE_SIGNAL"
+BI_UPDATE_SIGNAL_SWITCH = f"{DOMAIN}_{DOMAIN_SWITCH}_UPDATE_SIGNAL"
 
 UI_LOVELACE = '# Example ui-lovelace.yaml view entry\n' \
               'title: Blue Iris\n' \
@@ -208,3 +208,34 @@ SCRIPT = 'script:\n' \
          '            {{"[bi-url]"}}\n'
 
 HA_CAM_STATE = "camera_list[states.input_select.camera_dropdown.state]"
+
+CONFIG_FIELDS = {
+    vol.Required(CONF_HOST): str,
+    vol.Required(CONF_PORT): int,
+    vol.Optional(CONF_SSL, default=False): bool,
+    vol.Optional(CONF_USERNAME): str,
+    vol.Optional(CONF_PASSWORD): str,
+}
+
+SUPPORTED_DOMAINS = [DOMAIN_SWITCH, DOMAIN_BINARY_SENSOR, DOMAIN_CAMERA]
+SIGNALS = {
+    DOMAIN_BINARY_SENSOR: BI_UPDATE_SIGNAL_BINARY_SENSOR,
+    DOMAIN_CAMERA: BI_UPDATE_SIGNAL_CAMERA,
+    DOMAIN_SWITCH: BI_UPDATE_SIGNAL_SWITCH
+}
+
+ENTITY_ID = "id"
+ENTITY_NAME = "name"
+ENTITY_STATE = "state"
+ENTITY_ATTRIBUTES = "attributes"
+ENTITY_ICON = "icon"
+ENTITY_UNIQUE_ID = "unique-id"
+ENTITY_EVENT = "event-type"
+ENTITY_TOPIC = "topic"
+ENTITY_DEVICE_CLASS = "device-class"
+ENTITY_DEVICE_INFO = "device-info"
+ENTITY_CAMERA_DETAILS = "camera-details"
+ENTITY_BINARY_SENSOR_TYPE = "binary-sensor-type"
+
+CONF_EXCLUDE_SYSTEM_CAMERA = "exclude-system-camera"
+CONF_CLEAR_CREDENTIALS = "clear-credentials"

@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from .const import VERSION
 from .const import *
 from .blue_iris_api import BlueIrisApi
-from .home_assistant import BlueIrisHomeAssistant
+from .home_assistant import BlueIrisHomeAssistant, _get_ha
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,9 +27,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         _LOGGER.debug(f"Starting async_setup_entry of {DOMAIN}")
-        bi_ha = BlueIrisHomeAssistant(hass, entry)
+        entry.add_update_listener(async_options_updated)
 
-        hass.data[DATA_BLUEIRIS] = bi_ha
+        bi_ha = BlueIrisHomeAssistant(hass, entry)
 
         await bi_ha.initialize()
 
@@ -46,19 +46,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
-    unload = hass.config_entries.async_forward_entry_unload
+    host = entry.data.get(CONF_HOST)
+    ha = _get_ha(hass, host)
 
-    await hass.data[DATA_BLUEIRIS].async_remove()
-
-    hass.async_create_task(unload(entry, DOMAIN_BINARY_SENSOR))
-    hass.async_create_task(unload(entry, DOMAIN_CAMERA))
-    hass.async_create_task(unload(entry, DOMAIN_SWITCH))
-
-    del hass.data[DATA_BLUEIRIS]
+    await ha.async_remove()
 
     return True
 
 
 async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
     """Triggered by config entry options updates."""
-    hass.data[DATA_BLUEIRIS].options = entry.options
+    host = entry.data.get(CONF_HOST)
+    ha = _get_ha(hass, host)
+
+    _LOGGER.info(f"async_options_updated {host}, Entry: {entry.as_dict()} ")
+
+    await ha.async_update_entry(entry, True)

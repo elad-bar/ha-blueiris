@@ -7,48 +7,38 @@ from homeassistant.components import mqtt
 from homeassistant.components.mqtt import Message
 from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
 from homeassistant.components.mqtt import (MqttAvailability)
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
+from homeassistant.helpers import device_registry as dr
 
+from custom_components.blueiris import BlueIrisHomeAssistant
 from custom_components.blueiris.const import *
-from .base import BlueIrisBinarySensor
 
 _LOGGER = logging.getLogger(__name__)
 
-
-def get_key(topic, event_type):
-    key = f"{topic}_{event_type}".lower()
-
-    return key
+CURRENT_DOMAIN = DOMAIN_BINARY_SENSOR
 
 
 class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, api):
+    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
         """Initialize the MQTT binary sensor."""
         super().__init__(MQTT_AVAILABILITY_CONFIG)
 
-        self._api = api
-        self._name = f"{DEFAULT_NAME}"
-        self._binary_sensors = {}
-        self._active_count = None
-        self._attributes = {}
+        self._hass = hass
+        self._ha = ha
+        self._entity = entity
         self._remove_dispatcher = None
+        self._remove_subscription = None
 
     @property
     def unique_id(self) -> Optional[str]:
         """Return the name of the node."""
-        return f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{self._name}"
+        return self._entity.get(ENTITY_UNIQUE_ID)
 
     @property
     def device_info(self):
-        return {
-            "identifiers": {
-                (DOMAIN, self.unique_id)
-            },
-            "name": self.name,
-            "manufacturer": DEFAULT_NAME
-        }
+        return self._entity.get(ENTITY_DEVICE_INFO)
 
     @property
     def should_poll(self):
@@ -58,17 +48,17 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
     @property
     def name(self):
         """Return the name of the binary sensor."""
-        return self._name
+        return self._entity.get(ENTITY_NAME)
 
     @property
     def device_state_attributes(self):
         """Return true if the binary sensor is on."""
-        return self._attributes
+        return self._entity.get(ENTITY_ATTRIBUTES)
 
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._active_count is not None and self._active_count > 0
+        return self._entity.get(ENTITY_STATE)
 
     @property
     def force_update(self):
@@ -86,51 +76,19 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
             self.process(message)
 
-        await mqtt.async_subscribe(self.hass,
-                                   MQTT_ALL_TOPIC,
-                                   state_message_received,
-                                   DEFAULT_QOS)
+        self._remove_dispatcher = async_dispatcher_connect(self.hass, SIGNALS[CURRENT_DOMAIN], self.update_data)
 
-    async def async_added_to_hass(self):
-        """Register callbacks."""
-        self._remove_dispatcher = async_dispatcher_connect(self.hass, BI_UPDATE_SIGNAL, self.update_data)
+        self._remove_subscription = await mqtt.async_subscribe(self.hass,
+                                                               MQTT_ALL_TOPIC,
+                                                               state_message_received,
+                                                               DEFAULT_QOS)
 
     async def async_will_remove_from_hass(self) -> None:
         if self._remove_dispatcher is not None:
             self._remove_dispatcher()
 
-    def register(self, binary_sensor: BlueIrisBinarySensor):
-        topic = binary_sensor.topic
-        event_type = binary_sensor.event_type
-
-        _LOGGER.debug(f"Registers {topic} to {event_type}")
-
-        if topic is not None:
-            binary_sensor_key = get_key(topic, event_type)
-
-            self._binary_sensors[binary_sensor_key] = binary_sensor
-
-    def get_binary_sensors(self):
-        keys = []
-
-        for binary_sensor_key in self._binary_sensors:
-            keys.append(binary_sensor_key)
-
-        result = ", ".join(keys)
-
-        return result
-
-    def get_binary_sensor_by_key(self, key) -> BlueIrisBinarySensor:
-        binary_sensor = self._binary_sensors.get(key)
-
-        return binary_sensor
-
-    def get_binary_sensor(self, topic, event_type) -> BlueIrisBinarySensor:
-        binary_sensor_key = get_key(topic, event_type)
-
-        binary_sensor = self.get_binary_sensor_by_key(binary_sensor_key)
-
-        return binary_sensor
+        if self._remove_subscription is not None:
+            self._remove_subscription()
 
     def process(self, message: Message):
         topic = message.topic
@@ -142,49 +100,38 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         if SENSOR_MOTION_NAME.lower() in event_type:
             event_type = SENSOR_MOTION_NAME.lower()
 
-        binary_sensor = self.get_binary_sensor(topic, event_type)
+        value = trigger == STATE_ON
 
-        if binary_sensor is None:
-            _LOGGER.info(f"Sensor not found, failed to process {event_type}: {trigger} for {topic}")
-        else:
-            binary_sensor.update_data(event_type, trigger)
+        self._ha.set_mqtt_state(topic, event_type, value)
 
-            self.update_data()
+        self.hass.async_add_job(self._ha.async_update, None)
 
     @callback
     def update_data(self):
-        active_count = 0
+        self.hass.async_add_job(self.async_update_data)
 
-        items = {}
+    async def async_update_data(self):
+        if self._ha is None:
+            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - HA is None | {self.name}")
+        else:
+            previous_state = self.is_on
+            self._entity = self._ha.get_entity(CURRENT_DOMAIN, self.name)
 
-        for key in self._binary_sensors:
-            binary_sensor = self.get_binary_sensor_by_key(key)
-            is_on = binary_sensor.state == STATE_ON
+            current_state = self._entity.get(ENTITY_STATE)
+            state_changed = previous_state != current_state
 
-            is_connectivity = binary_sensor.event_type == SENSOR_CONNECTIVITY_NAME.lower()
+            if self._entity is None:
+                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - entity is None | {self.name}")
 
-            if (is_on and not is_connectivity) or (not is_on and is_connectivity):
-                event_sensors = items.get(binary_sensor.event_type, [])
+                self._entity = {}
+                await self.async_remove()
 
-                event_sensors.append(binary_sensor.name)
+                dev_id = self.device_info.get("id")
+                device_reg = await dr.async_get_registry(self._hass)
 
-                items[binary_sensor.event_type] = event_sensors
+                device_reg.async_remove_device(dev_id)
+            else:
+                if state_changed:
+                    _LOGGER.debug(f"Update {CURRENT_DOMAIN} -> {self.name}, from: {previous_state} to {current_state}")
 
-                active_count += 1
-
-        self._active_count = active_count
-
-        attributes = {
-            "Active alerts": self._active_count
-        }
-
-        for key in items:
-            attributes[str(key).capitalize()] = ", ".join(items[key])
-
-        for key in ATTR_BLUE_IRIS_STATUS:
-            if key in self._api.data:
-                attributes[key.capitalize()] = self._api.data[key]
-
-        self._attributes = attributes
-
-        self.async_schedule_update_ha_state(True)
+                    self.async_schedule_update_ha_state(True)

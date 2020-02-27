@@ -2,7 +2,7 @@
     "domain": "blueiris",
     "name": "Integration with Blue Iris NVR",
     "documentation": "https://github.com/elad-bar/ha-blueiris",
-    "dependencies": ["mqtt"],
+    "dependencies": [],
     "codeowners": ["@elad-bar"],
     "requirements": [],
     "config_flow": true

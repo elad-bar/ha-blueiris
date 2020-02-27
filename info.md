@@ -12,8 +12,15 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 
 ## Change-log
-Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
-Feb 05 2020 - No need to declare binary_sensor, switch and camera as those are being auto-discoverd 
+Feb 28 2020
+* Removed hard-dependency on MQTT, if MQTT integration was not set, binary sensors will not be created - Issue #32
+* Username and password are now optional, if not set, will not create profile's switches
+* Added validation for host, port and SSL state in configuration, if URL is not accessible, will throw an error
+* Validate administrator username and password, in case entered wrong credentials, will throw an error
+* Fix issue #28 - entities not available after restart
+* Fix issue #27 - when changing switch it doesn't work smoothly and after restart
+* Resources (strings) fixed
+
 Feb 07 2020 - v2.0.0 - Breaking change!!! 
 * BlueIris 5 JSON API integration
 * UI configuration support instead of YAML
@@ -21,6 +28,9 @@ Feb 07 2020 - v2.0.0 - Breaking change!!!
 * More details per camera in the attributes 
 * Switch functionality changed, each profile is being represented with a switch, `is armed` switch removed
 * Added support for HACS
+Feb 05 2020 - No need to declare binary_sensor, switch and camera as those are being auto-discoverd 
+Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
+
 
 ## Configuration
 

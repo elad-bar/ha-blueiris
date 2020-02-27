@@ -9,121 +9,131 @@ from typing import Optional
 
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-
 from homeassistant.components.switch import SwitchDevice
+from homeassistant.helpers import device_registry as dr
+
 from .const import *
-from .blue_iris_api import BlueIrisApi
-from .home_assistant import _get_api
+from .home_assistant import _get_ha, BlueIrisHomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = [DOMAIN]
 
+CURRENT_DOMAIN = DOMAIN_SWITCH
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up the BlueIris Switch."""
-    _LOGGER.debug(f"Starting async_setup_entry")
+
+async def async_setup_entry(hass, config_entry, async_add_devices):
+    """Set up the EdgeOS Binary Sensor."""
+    _LOGGER.debug(f"Starting async_setup_entry {CURRENT_DOMAIN}")
 
     try:
-        api = _get_api(hass)
-
-        if api is None:
-            return
-
-        profiles = api.data.get("profiles", [])
-
+        entry_data = config_entry.data
+        host = entry_data.get(CONF_HOST)
         entities = []
-        for profile_name in profiles:
-            profile_id = profiles.index(profile_name)
 
-            switch = BlueIrisProfileSwitch(api, profile_id, profile_name)
+        ha = _get_ha(hass, host)
 
-            entities.append(switch)
+        if ha is not None:
+            entities_data = ha.get_entities(CURRENT_DOMAIN)
+            for entity_name in entities_data:
+                entity = entities_data[entity_name]
 
-        async_add_entities(entities, True)
+                entity = BlueIrisProfileSwitch(hass, ha, entity)
+
+                _LOGGER.debug(f"Setup {CURRENT_DOMAIN}: {entity.name} | {entity.unique_id}")
+
+                entities.append(entity)
+
+                ha.set_domain_entities_state(CURRENT_DOMAIN, True)
+
+        async_add_devices(entities, True)
     except Exception as ex:
         exc_type, exc_obj, tb = sys.exc_info()
         line_number = tb.tb_lineno
 
-        _LOGGER.error(f'Failed to load BlueIris Switch, Error: {ex}, Line: {line_number}')
+        _LOGGER.error(f"Failed to load {CURRENT_DOMAIN}, error: {ex}, line: {line_number}")
+
+
+async def async_unload_entry(hass, config_entry):
+    _LOGGER.info(f"async_unload_entry {CURRENT_DOMAIN}: {config_entry}")
+
+    entry_data = config_entry.data
+    host = entry_data.get(CONF_HOST)
+
+    ha = _get_ha(hass, host)
+
+    if ha is not None:
+        ha.set_domain_entities_state(CURRENT_DOMAIN, False)
+
+    return True
 
 
 class BlueIrisProfileSwitch(SwitchDevice):
     """An abstract class for an Blue Iris arm switch."""
-    def __init__(self, api: BlueIrisApi, profile_id: int, profile_name: str):
+    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
         """Initialize the settings switch."""
         super().__init__()
 
-        self._name = f"{DEFAULT_NAME} {ATTR_ADMIN_PROFILE} {profile_name}"
-        self._profile_name = profile_name
-        self._profile_id = profile_id
-        self._state = False
-        self._api = api
+        self._hass = hass
+        self._ha = ha
+        self._entity = entity
         self._remove_dispatcher = None
+
+    @property
+    def api(self):
+        return self._ha.api
+
+    @property
+    def profile_id(self):
+        return self._entity.get(ENTITY_ID)
 
     @property
     def unique_id(self) -> Optional[str]:
         """Return the name of the node."""
-        return f"{DOMAIN}-{DOMAIN_SWITCH}-{ATTR_ADMIN_PROFILE}-{self._name}"
+        return self._entity.get(ENTITY_UNIQUE_ID)
 
     @property
     def device_info(self):
-        return {
-            "identifiers": {
-                (DOMAIN, self.unique_id)
-            },
-            "name": self.name,
-            "manufacturer": DEFAULT_NAME,
-            "model": self._profile_name
-        }
+        return self._entity.get(ENTITY_DEVICE_INFO)
 
     @property
     def name(self):
         """Return the name of the node."""
-        return self._name
+        return self._entity.get(ENTITY_NAME)
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        self._remove_dispatcher = async_dispatcher_connect(self.hass, BI_UPDATE_SIGNAL, self._update_callback)
+        self._remove_dispatcher = async_dispatcher_connect(self.hass, SIGNALS[CURRENT_DOMAIN], self.update_data)
 
     async def async_will_remove_from_hass(self) -> None:
         if self._remove_dispatcher is not None:
             self._remove_dispatcher()
 
-    @callback
-    def _update_callback(self):
-        """Call update method."""
-        self.async_schedule_update_ha_state(True)
-
-    async def async_update(self):
-        """Get the updated status of the switch."""
-        current_profile = self._api.status.get("profile", 0)
-
-        self._state = current_profile == self._profile_id
-
     @property
     def is_on(self):
         """Return the boolean response if the node is on."""
-        return self._state
+        return self._entity.get(ENTITY_STATE)
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
-        await self._api.set_profile(self._profile_id)
-        self.async_schedule_update_ha_state()
+        await self.api.set_profile(self.profile_id)
+
+        await self._ha.async_update(None)
 
     async def async_turn_off(self, **kwargs):
         """Turn device off."""
         to_profile_id = 1
-        if self._profile_id == 1:
+        if self.profile_id == 1:
             to_profile_id = 0
 
-        await self._api.set_profile(to_profile_id)
-        self.async_schedule_update_ha_state()
+        await self.api.set_profile(to_profile_id)
+
+        await self._ha.async_update(None)
 
     @property
     def icon(self):
         """Return the icon for the switch."""
-        return DEFAULT_ICON
+        return self._entity.get(ENTITY_ICON)
 
     def turn_on(self, **kwargs) -> None:
         pass
@@ -133,3 +143,33 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_setup(self):
         pass
+
+    @callback
+    def update_data(self):
+        self.hass.async_add_job(self.async_update_data)
+
+    async def async_update_data(self):
+        if self._ha is None:
+            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - HA is None | {self.name}")
+        else:
+            previous_state = self.is_on
+            self._entity = self._ha.get_entity(CURRENT_DOMAIN, self.name)
+
+            current_state = self.is_on
+            state_changed = previous_state != current_state
+
+            if self._entity is None:
+                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - entity is None | {self.name}")
+
+                self._entity = {}
+                await self.async_remove()
+
+                dev_id = self.device_info.get("id")
+                device_reg = await dr.async_get_registry(self._hass)
+
+                device_reg.async_remove_device(dev_id)
+            else:
+                if state_changed:
+                    _LOGGER.debug(f"Update {CURRENT_DOMAIN} -> {self.name}, from: {previous_state} to {current_state}")
+
+                    self.async_schedule_update_ha_state(True)

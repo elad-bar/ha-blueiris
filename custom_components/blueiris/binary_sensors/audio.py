@@ -4,6 +4,7 @@ from datetime import datetime
 
 from homeassistant.components.binary_sensor import STATE_OFF
 
+from custom_components.blueiris import BlueIrisHomeAssistant
 from custom_components.blueiris.const import *
 from .base import BlueIrisBinarySensor
 
@@ -13,30 +14,34 @@ _LOGGER = logging.getLogger(__name__)
 class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, camera, is_online):
+    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
         """Initialize the MQTT binary sensor."""
-        super().__init__(camera, SENSOR_AUDIO_NAME)
+        super().__init__(hass, ha, entity)
 
         self._last_alert = None
 
-    def update_data(self, event_type, trigger):
-        is_trigger_off = trigger == STATE_OFF
+    def perform_update(self):
+        is_trigger_off = self.state == STATE_OFF
         current_timestamp = datetime.now().timestamp()
-        perform_action = True
 
-        if is_trigger_off and \
-                self._last_alert is not None and \
-                current_timestamp - self._last_alert <= AUDIO_EVENT_LENGTH:
+        _LOGGER.info(f"Performing update, state: {is_trigger_off}, last: {self._last_alert}, ts: {current_timestamp}")
 
-            perform_action = False
+        if is_trigger_off:
+            self._last_alert = None
+            super().perform_update()
 
-        if perform_action:
-            super().update_data(event_type, trigger)
+        else:
+            if self._last_alert is None or current_timestamp - self._last_alert > AUDIO_EVENT_LENGTH:
+                self._last_alert = current_timestamp
+                super().perform_update()
 
-            self._last_alert = None if is_trigger_off else current_timestamp
-            self.hass.async_create_task(self.turn_off_automatically(event_type))
+                self.hass.async_create_task(self.turn_off_automatically())
 
-    async def turn_off_automatically(self, event_type):
+    async def turn_off_automatically(self):
         await asyncio.sleep(AUDIO_EVENT_LENGTH)
 
-        super().update_data(event_type, STATE_OFF)
+        _LOGGER.info(f"Turn off audio alert for {self.name}")
+
+        self.ha.set_mqtt_state(self.topic, self.event_type, False)
+
+        self.hass.async_create_task(self._ha.async_update(None))
