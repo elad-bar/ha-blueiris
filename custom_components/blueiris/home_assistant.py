@@ -503,13 +503,10 @@ class BlueIrisHomeAssistant:
 
             unique_id = f"{DOMAIN}-{DOMAIN_CAMERA}-{entity_name}"
 
-            image_url = f'{base_url}/image/{CAMERA_ID_PLACEHOLDER}?q=100&s=100'
-            stream_url = f'{base_url}/h264/{CAMERA_ID_PLACEHOLDER}/temp.m3u8'
-
-            still_image_url = image_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
+            still_image_url = f'{base_url}/image/{camera_id}?q=100&s=100'
             still_image_url_template = cv.template(still_image_url)
 
-            stream_source = stream_url.replace(CAMERA_ID_PLACEHOLDER, camera_id)
+            stream_source = f'{base_url}/h264/{camera_id}/temp.m3u8'
 
             camera_details = {
                 CONF_NAME: f"{DEFAULT_NAME} {camera_name}",
@@ -525,7 +522,9 @@ class BlueIrisHomeAssistant:
             }
 
             attributes = {
-                ATTR_FRIENDLY_NAME: entity_name
+                ATTR_FRIENDLY_NAME: entity_name,
+                CONF_STREAM_SOURCE: stream_source,
+                CONF_STILL_IMAGE_URL: still_image_url
             }
 
             for key in ATTR_BLUE_IRIS_CAMERA:

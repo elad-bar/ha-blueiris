@@ -26,7 +26,7 @@
   "options": {
       "step": {
           "blue_iris_additional_settings": {
-              "title": "Options for BlueIris ({host}).",
+              "title": "Options for BlueIris.",
               "description": "Set up username and password to control profiles / exclude system camera.",
               "data": {
                   "username": "Username",
