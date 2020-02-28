@@ -38,7 +38,7 @@ class BlueIrisHomeAssistant:
         ssl = entry_data.get(CONF_SSL)
 
         self._api = BlueIrisApi(hass, host, port, ssl)
-        self._advanced_configuration_generator = AdvancedConfigurationGenerator(hass, self._api)
+        self._advanced_configuration_generator = None
 
         self._hass = hass
         self._host = host
@@ -169,6 +169,8 @@ class BlueIrisHomeAssistant:
 
     async def async_finalize(self, event_time):
         _LOGGER.debug(f"async_finalize called at {event_time}")
+
+        self._advanced_configuration_generator = AdvancedConfigurationGenerator(self._hass, self)
 
         self._hass.services.async_register(DOMAIN,
                                            'generate_advanced_configurations',
