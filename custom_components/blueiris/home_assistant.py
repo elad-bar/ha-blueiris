@@ -255,12 +255,53 @@ class BlueIrisHomeAssistant:
         if can_notify:
             async_dispatcher_send(self._hass, signal)
 
+    def get_system_device_info(self):
+        status_data = self._api.status
+
+        system_name = status_data.get("system name", DEFAULT_NAME)
+        version = status_data.get("version")
+
+        unique_id = f"{DEFAULT_NAME}-{system_name}-server"
+
+        device_info = {
+            "identifiers": {
+                (DOMAIN, unique_id)
+            },
+            "name": f"{system_name} Server",
+            "manufacturer": DEFAULT_NAME,
+            "model": "Server",
+            "sw_version": version
+        }
+
+        return device_info
+
+    def get_camera_device_info(self, camera):
+        status_data = self._api.status
+
+        system_name = status_data.get("system name", DEFAULT_NAME)
+        camera_id = camera.get("optionValue", "")
+        camera_name = camera.get("optionDisplay", "")
+
+        unique_id = f"{DEFAULT_NAME}-{system_name}-{camera_id}".lower()
+
+        device_info = {
+            "identifiers": {
+                (DOMAIN, unique_id)
+            },
+            "name": f"{camera_name} ({camera_id})",
+            "manufacturer": DEFAULT_NAME,
+            "model": "Camera"
+        }
+
+        return device_info
+
     def get_profile_switch(self, profile_id, profile_name):
         entity = None
 
         try:
-            entity_name = f"{DEFAULT_NAME} {ATTR_ADMIN_PROFILE} {profile_name}"
             current_profile = self._api.status.get("profile", 0)
+
+            entity_name = f"{DEFAULT_NAME} {ATTR_ADMIN_PROFILE} {profile_name}"
             unique_id = f"{DOMAIN}-{DOMAIN_SWITCH}-{ATTR_ADMIN_PROFILE}-{entity_name}"
 
             state = current_profile == profile_id
@@ -269,14 +310,7 @@ class BlueIrisHomeAssistant:
                 ATTR_FRIENDLY_NAME: entity_name
             }
 
-            device_info = {
-                "identifiers": {
-                    (DOMAIN, unique_id)
-                },
-                "name": entity_name,
-                "manufacturer": DEFAULT_NAME,
-                "model": profile_name
-            }
+            device_info = self.get_system_device_info()
 
             entity = {
                 ENTITY_ID: profile_id,
@@ -339,14 +373,7 @@ class BlueIrisHomeAssistant:
                 current_alerts = alerts[alert_name]
                 attributes[alert_name] = ', '.join(current_alerts)
 
-            device_info = {
-                "identifiers": {
-                    (DOMAIN, unique_id)
-                },
-                "name": entity_name,
-                "manufacturer": DEFAULT_NAME,
-                "model": "MQTT Listener"
-            }
+            device_info = self.get_system_device_info()
 
             entity = {
                 ENTITY_UNIQUE_ID: unique_id,
@@ -391,14 +418,7 @@ class BlueIrisHomeAssistant:
                 ATTR_FRIENDLY_NAME: entity_name
             }
 
-            device_info = {
-                "identifiers": {
-                    (DOMAIN, unique_id)
-                },
-                "name": entity_name,
-                "manufacturer": DEFAULT_NAME,
-                "model": sensor_type_name
-            }
+            device_info = self.get_camera_device_info(camera)
 
             entity = {
                 ENTITY_ID: camera_id,
@@ -496,14 +516,7 @@ class BlueIrisHomeAssistant:
 
                     attributes[key_name] = camera[key]
 
-            device_info = {
-                "identifiers": {
-                    (DOMAIN, unique_id)
-                },
-                "name": entity_name,
-                "manufacturer": DEFAULT_NAME,
-                "model": DOMAIN_CAMERA
-            }
+            device_info = self.get_camera_device_info(camera)
 
             entity = {
                 ENTITY_ID: camera_id,
