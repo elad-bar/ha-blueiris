@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import VERSION
 from .const import *
-from .home_assistant import _get_ha, _set_ha
+from .home_assistant import _async_set_ha
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,11 +29,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.add_update_listener(async_options_updated)
         host = entry.data.get(CONF_HOST)
 
-        _set_ha(hass, host, entry)
-
-        bi_ha = _get_ha(hass, host)
-
-        await bi_ha.initialize()
+        await _async_set_ha(hass, host, entry)
 
         initialized = True
 
@@ -51,16 +47,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     host = entry.data.get(CONF_HOST)
     ha = _get_ha(hass, host)
 
-    await ha.async_remove()
+    if ha is not None:
+        await ha.async_remove()
 
     return True
 
 
 async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
     """Triggered by config entry options updates."""
+    _LOGGER.info(f"async_options_updated, Entry: {entry.as_dict()} ")
+
     host = entry.data.get(CONF_HOST)
     ha = _get_ha(hass, host)
 
-    _LOGGER.info(f"async_options_updated {host}, Entry: {entry.as_dict()} ")
+    if ha is not None:
+        await ha.async_update_entry(entry, True)
 
-    await ha.async_update_entry(entry, True)
+
+def _get_ha(hass, host):
+    ha_data = hass.data.get(DATA_BLUEIRIS, {})
+    ha = ha_data.get(host)
+
+    return ha

@@ -6,7 +6,6 @@ https://home-assistant.io/components/binary_sensor.blueiris/
 import sys
 import logging
 
-from .home_assistant import _get_ha
 from .const import *
 from custom_components.blueiris.binary_sensors import *
 
@@ -71,3 +70,10 @@ async def async_unload_entry(hass, config_entry):
         entity_manager.set_domain_entries_state(CURRENT_DOMAIN, False)
 
     return True
+
+
+def _get_ha(hass, host):
+    ha_data = hass.data.get(DATA_BLUEIRIS, {})
+    ha = ha_data.get(host)
+
+    return ha

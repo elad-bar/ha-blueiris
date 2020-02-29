@@ -21,7 +21,9 @@ def _add_to_file(fs, content, title=None):
 class AdvancedConfigurationGenerator:
     def __init__(self, hass: HomeAssistant, ha):
         self._hass = hass
+
         self._ha = ha
+        self._api = self._ha.api
 
     def generate_advanced_configurations(self, event_time):
         _LOGGER.info(f"Started to generate advanced configuration @ {event_time}")

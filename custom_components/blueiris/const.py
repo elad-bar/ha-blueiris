@@ -155,9 +155,12 @@ ENTITY_UNIQUE_ID = "unique-id"
 ENTITY_EVENT = "event-type"
 ENTITY_TOPIC = "topic"
 ENTITY_DEVICE_CLASS = "device-class"
-ENTITY_DEVICE_INFO = "device-info"
+ENTITY_DEVICE_NAME = "device-name"
 ENTITY_CAMERA_DETAILS = "camera-details"
 ENTITY_BINARY_SENSOR_TYPE = "binary-sensor-type"
 
 CONF_EXCLUDE_SYSTEM_CAMERA = "exclude-system-camera"
 CONF_CLEAR_CREDENTIALS = "clear-credentials"
+
+DOMAIN_LOAD = "load"
+DOMAIN_UNLOAD = "unload"

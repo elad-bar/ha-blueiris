@@ -156,7 +156,7 @@ class BlueIrisApi:
         await self.load_status()
 
     async def load_session_id(self):
-        _LOGGER.info(f"BlueIris action: Loading session ID from {self.base_url}")
+        _LOGGER.info(f"Retrieving session ID from {self.base_url}")
 
         request_data = {
             "cmd": "login"
@@ -168,7 +168,7 @@ class BlueIrisApi:
         self._is_logged_in = False
 
     async def login(self):
-        _LOGGER.info(f"BlueIris action: Login to {self.base_url}")
+        _LOGGER.info(f"Performing login into {self.base_url}")
 
         logged_in = False
 
@@ -210,7 +210,7 @@ class BlueIrisApi:
         return self._is_logged_in
 
     async def load_camera(self):
-        _LOGGER.info(f"BlueIris action: Loading camera list from {self.base_url}")
+        _LOGGER.info(f"Retrieving camera list from {self.base_url}")
 
         request_data = {
             "cmd": "camlist",
@@ -223,7 +223,7 @@ class BlueIrisApi:
             self._camera_list = response.get("data", [])
 
     async def load_status(self):
-        _LOGGER.info(f"BlueIris action: Loading status from {self.base_url}")
+        _LOGGER.info(f"Retrieving status from {self.base_url}")
 
         request_data = {
             "cmd": "status",
@@ -239,7 +239,7 @@ class BlueIrisApi:
                 self._status[key] = data[key]
 
     async def set_profile(self, profile_id):
-        _LOGGER.info(f"BlueIris action: Setting profile (#{profile_id}) to {self.base_url}")
+        _LOGGER.info(f"Setting profile (#{profile_id}) to {self.base_url}")
 
         request_data = {
             "cmd": "status",

@@ -9,9 +9,7 @@ from typing import Optional
 from homeassistant.components.binary_sensor import BinarySensorDevice
 from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers import device_registry as dr
 
-from custom_components.blueiris import _get_ha
 from custom_components.blueiris.const import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,6 +31,7 @@ class BlueIrisBinarySensor(BinarySensorDevice):
 
         self._ha = _get_ha(self._hass, self._integration_name)
         self._entity_manager = self._ha.entity_manager
+        self._device_manager = self._ha.device_manager
 
     @property
     def unique_id(self) -> Optional[str]:
@@ -41,7 +40,9 @@ class BlueIrisBinarySensor(BinarySensorDevice):
 
     @property
     def device_info(self):
-        return self._entity.get(ENTITY_DEVICE_INFO)
+        device_name = self._entity.get(ENTITY_DEVICE_NAME)
+
+        return self._device_manager.get(device_name)
 
     @property
     def topic(self):
@@ -105,11 +106,6 @@ class BlueIrisBinarySensor(BinarySensorDevice):
 
                 self._entity = {}
                 await self.async_remove()
-
-                dev_id = self.device_info.get("id")
-                device_reg = await dr.async_get_registry(self._hass)
-
-                device_reg.async_remove_device(dev_id)
             else:
                 if state_changed:
                     _LOGGER.debug(f"Update {CURRENT_DOMAIN} -> {self.name}, from: {previous_state} to {current_state}")
@@ -118,3 +114,10 @@ class BlueIrisBinarySensor(BinarySensorDevice):
 
     def perform_update(self):
         self.async_schedule_update_ha_state(True)
+
+
+def _get_ha(hass, host):
+    ha_data = hass.data.get(DATA_BLUEIRIS, {})
+    ha = ha_data.get(host)
+
+    return ha

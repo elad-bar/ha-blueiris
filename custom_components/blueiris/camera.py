@@ -10,10 +10,8 @@ from typing import Optional
 
 from homeassistant.core import callback
 from homeassistant.components.generic.camera import GenericCamera
-from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
-from .home_assistant import _get_ha
 from .const import *
 
 DEPENDENCIES = [DOMAIN]
@@ -83,6 +81,7 @@ class BlueIrisCamera(GenericCamera, ABC):
 
         ha = _get_ha(self._hass, self._integration_name)
         self._entity_manager = ha.entity_manager
+        self._device_manager = ha.device_manager
 
         super().__init__(hass, device_info)
 
@@ -93,7 +92,9 @@ class BlueIrisCamera(GenericCamera, ABC):
 
     @property
     def device_info(self):
-        return self._entity.get(ENTITY_DEVICE_INFO)
+        device_name = self._entity.get(ENTITY_DEVICE_NAME)
+
+        return self._device_manager.get(device_name)
 
     @property
     def state_attributes(self):
@@ -129,10 +130,12 @@ class BlueIrisCamera(GenericCamera, ABC):
 
                 self._entity = {}
                 await self.async_remove()
-
-                dev_id = self.device_info.get("id")
-                device_reg = await dr.async_get_registry(self._hass)
-
-                device_reg.async_remove_device(dev_id)
             else:
                 self.async_schedule_update_ha_state(True)
+
+
+def _get_ha(hass, host):
+    ha_data = hass.data.get(DATA_BLUEIRIS, {})
+    ha = ha_data.get(host)
+
+    return ha
