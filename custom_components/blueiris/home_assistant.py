@@ -22,6 +22,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
+from .entity_manager import EntityManager
 from .advanced_configurations_generator import AdvancedConfigurationGenerator
 from .blue_iris_api import BlueIrisApi
 from .const import *
@@ -43,6 +44,7 @@ class BlueIrisHomeAssistant:
         self._hass = hass
         self._host = host
 
+        self._entity_manager = EntityManager()
         self._config_entry = entry
         self._unload_domain = []
         self._load_domain = []
@@ -51,28 +53,27 @@ class BlueIrisHomeAssistant:
 
         self._remove_async_track_time = None
 
-        self._entities = {}
-        self._domain_loaded = {}
-
         self._last_update = None
 
         self._is_ready = False
-        self._mqtt_states = {}
 
         self._is_updating = False
         self._exclude_system_camera = False
 
-        for domain in SUPPORTED_DOMAINS:
-            self._entities[domain] = {}
-            self.set_domain_entities_state(domain, False)
+    @property
+    def api(self):
+        return self._api
+
+    @property
+    def entity_manager(self):
+        return self._entity_manager
 
     async def initialize(self):
-        _set_ha(self._hass, self._host, self)
-
         async_call_later(self._hass, 5, self.async_finalize)
 
     async def async_update_entry(self, entry, clear_all):
-        _LOGGER.info(f"async_update_entry: {self._config_entry.options}")
+        _LOGGER.info(f"Handling ConfigEntry change: {self._config_entry.as_dict()}")
+
         self._is_ready = False
 
         self._config_entry = entry
@@ -101,8 +102,8 @@ class BlueIrisHomeAssistant:
             device_reg.async_clear_config_entry(self._config_entry.entry_id)
 
         for domain in SUPPORTED_DOMAINS:
-            has_entities = self._domain_loaded.get(domain, False)
-            pending_entities = self.get_entities(domain)
+            has_entities = self.entity_manager.has_entries(domain)
+            pending_entities = self.entity_manager.get_entities(domain)
 
             if domain not in self._load_domain and len(pending_entities) > 0:
                 self._load_domain.append(domain)
@@ -112,42 +113,6 @@ class BlueIrisHomeAssistant:
 
         if clear_all:
             await self.async_update(datetime.now())
-
-    def set_domain_entities_state(self, domain, has_entities):
-        self._domain_loaded[domain] = has_entities
-
-    def get_entities(self, domain):
-        return self._entities.get(domain, {})
-
-    def get_entity(self, domain, name):
-        entities = self.get_entities(domain)
-        entity = {}
-        if entities is not None:
-            entity = entities.get(name, {})
-
-        return entity
-
-    def set_entity(self, domain, name, data):
-        entities = self._entities.get(domain)
-
-        if entities is None:
-            self._entities[domain] = {}
-
-            entities = self._entities.get(domain)
-
-        entities[name] = data
-
-    def get_mqtt_state(self, topic, event_type, default=False):
-        key = _get_camera_binary_sensor_key(topic, event_type)
-
-        state = self._mqtt_states.get(key, default)
-
-        return state
-
-    def set_mqtt_state(self, topic, event_type, value):
-        key = _get_camera_binary_sensor_key(topic, event_type)
-
-        self._mqtt_states[key] = value
 
     async def async_remove(self):
         _LOGGER.debug(f"async_remove called")
@@ -160,12 +125,12 @@ class BlueIrisHomeAssistant:
         unload = self._hass.config_entries.async_forward_entry_unload
 
         for domain in SUPPORTED_DOMAINS:
-            has_entities = self._domain_loaded.get(domain, False)
+            has_entities = self.entity_manager.has_entries(domain)
 
             if has_entities and domain not in self._unload_domain:
                 self._hass.async_create_task(unload(self._config_entry, domain))
 
-        _set_ha(self._hass, self._host, None)
+        _clear_ha(self._hass, self._host)
 
     async def async_finalize(self, event_time):
         _LOGGER.debug(f"async_finalize called at {event_time}")
@@ -201,11 +166,9 @@ class BlueIrisHomeAssistant:
 
             previous_keys = {}
             for domain in SUPPORTED_DOMAINS:
-                previous_keys[domain] = []
-                if domain in self._entities:
-                    previous_keys[domain] = ','.join(self._entities[domain].keys())
+                previous_keys[domain] = ','.join(self.entity_manager.get_entities(domain).keys())
 
-                self._entities[domain] = {}
+                self.entity_manager.clear_entities(domain)
 
             available_camera = self._api.camera_list
 
@@ -232,7 +195,7 @@ class BlueIrisHomeAssistant:
                 await self.async_update_entry(self._config_entry, False)
             else:
                 for domain in SUPPORTED_DOMAINS:
-                    domain_keys = self._entities[domain].keys()
+                    domain_keys = self.entity_manager.get_entities(domain).keys()
                     previous_domain_keys = previous_keys[domain]
 
                     if len(domain_keys) > 0:
@@ -334,7 +297,7 @@ class BlueIrisHomeAssistant:
             entity = self.get_profile_switch(profile_id, profile_name)
             entity_name = entity.get(ENTITY_NAME)
 
-            self.set_entity(DOMAIN_SWITCH, entity_name, entity)
+            self.entity_manager.set_entity(DOMAIN_SWITCH, entity_name, entity)
         except Exception as ex:
             _LOGGER.error(f'Failed to generate profile switch {profile_name} (#{profile_id}), Error: {str(ex)}')
 
@@ -346,7 +309,7 @@ class BlueIrisHomeAssistant:
 
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-MAIN-{entity_name}"
 
-            binary_sensors = self.get_entities(DOMAIN_BINARY_SENSOR)
+            binary_sensors = self.entity_manager.get_entities(DOMAIN_BINARY_SENSOR)
 
             alerts = {}
             for binary_sensor_name in binary_sensors:
@@ -404,7 +367,7 @@ class BlueIrisHomeAssistant:
             entity = self.get_main_binary_sensor()
             entity_name = entity.get(ENTITY_NAME)
 
-            self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
+            self.entity_manager.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
         except Exception as ex:
             _LOGGER.error(f'Failed to generate main binary sensor, Error: {str(ex)}')
 
@@ -420,7 +383,7 @@ class BlueIrisHomeAssistant:
 
             state_topic = MQTT_ALL_TOPIC.replace('+', camera_id)
 
-            state = self.get_mqtt_state(state_topic, sensor_type_name, default_state)
+            state = self.entity_manager.get_mqtt_state(state_topic, sensor_type_name, default_state)
 
             device_class = SENSOR_DEVICE_CLASS.get(sensor_type_name, sensor_type_name).lower()
 
@@ -483,9 +446,9 @@ class BlueIrisHomeAssistant:
                 topic = entity.get(ENTITY_TOPIC)
                 event_type = entity.get(ENTITY_EVENT)
 
-                self.set_mqtt_state(topic, event_type, state)
+                self.entity_manager.set_mqtt_state(topic, event_type, state)
 
-                self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
+                self.entity_manager.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
 
         except Exception as ex:
             _LOGGER.error(f'Failed to generate binary sensors for {camera}, Error: {str(ex)}')
@@ -566,22 +529,24 @@ class BlueIrisHomeAssistant:
 
                 if not is_system or not self._exclude_system_camera:
                     entity_name = entity.get(CONF_NAME)
-                    self.set_entity(DOMAIN_CAMERA, entity_name, entity)
+                    self.entity_manager.set_entity(DOMAIN_CAMERA, entity_name, entity)
 
         except Exception as ex:
             _LOGGER.error(f'Failed to generate camera for {camera}, Error: {str(ex)}')
 
-    @property
-    def api(self):
-        return self._api
 
-
-def _set_ha(hass, host, instance):
+def _clear_ha(hass, host):
     if DATA_BLUEIRIS not in hass.data:
         hass.data[DATA_BLUEIRIS] = {}
 
-    if instance is None:
-        del hass.data[DATA_BLUEIRIS][host]
+    del hass.data[DATA_BLUEIRIS][host]
+
+
+def _set_ha(hass: HomeAssistant, host, entry: ConfigEntry):
+    if DATA_BLUEIRIS not in hass.data:
+        hass.data[DATA_BLUEIRIS] = {}
+
+    instance = BlueIrisHomeAssistant(hass, entry)
 
     hass.data[DATA_BLUEIRIS][host] = instance
 
@@ -591,18 +556,3 @@ def _get_ha(hass, host) -> BlueIrisHomeAssistant:
     ha = ha_data.get(host)
 
     return ha
-
-
-def _get_api(hass, host) -> BlueIrisApi:
-    api = None
-    ha = _get_ha(hass, host)
-    if ha is not None:
-        api = ha.api
-
-    return api
-
-
-def _get_camera_binary_sensor_key(topic, event_type):
-    key = f"{topic}_{event_type}".lower()
-
-    return key

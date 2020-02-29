@@ -11,8 +11,7 @@ from homeassistant.core import HomeAssistant
 
 from .const import VERSION
 from .const import *
-from .blue_iris_api import BlueIrisApi
-from .home_assistant import BlueIrisHomeAssistant, _get_ha
+from .home_assistant import _get_ha, _set_ha
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,8 +27,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         _LOGGER.debug(f"Starting async_setup_entry of {DOMAIN}")
         entry.add_update_listener(async_options_updated)
+        host = entry.data.get(CONF_HOST)
 
-        bi_ha = BlueIrisHomeAssistant(hass, entry)
+        _set_ha(hass, host, entry)
+
+        bi_ha = _get_ha(hass, host)
 
         await bi_ha.initialize()
 

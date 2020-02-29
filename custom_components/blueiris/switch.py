@@ -12,8 +12,8 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.components.switch import SwitchDevice
 from homeassistant.helpers import device_registry as dr
 
+from .home_assistant import _get_ha
 from .const import *
-from .home_assistant import _get_ha, BlueIrisHomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,19 +32,20 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         entities = []
 
         ha = _get_ha(hass, host)
+        entity_manager = ha.entity_manager
 
-        if ha is not None:
-            entities_data = ha.get_entities(CURRENT_DOMAIN)
+        if entity_manager is not None:
+            entities_data = entity_manager.get_entities(CURRENT_DOMAIN)
             for entity_name in entities_data:
                 entity = entities_data[entity_name]
 
-                entity = BlueIrisProfileSwitch(hass, ha, entity)
+                entity = BlueIrisProfileSwitch(hass, host, entity)
 
                 _LOGGER.debug(f"Setup {CURRENT_DOMAIN}: {entity.name} | {entity.unique_id}")
 
                 entities.append(entity)
 
-                ha.set_domain_entities_state(CURRENT_DOMAIN, True)
+                entity_manager.set_domain_entries_state(CURRENT_DOMAIN, True)
 
         async_add_devices(entities, True)
     except Exception as ex:
@@ -61,27 +62,28 @@ async def async_unload_entry(hass, config_entry):
     host = entry_data.get(CONF_HOST)
 
     ha = _get_ha(hass, host)
+    entity_manager = ha.entity_manager
 
-    if ha is not None:
-        ha.set_domain_entities_state(CURRENT_DOMAIN, False)
+    if entity_manager is not None:
+        entity_manager.set_domain_entries_state(CURRENT_DOMAIN, False)
 
     return True
 
 
 class BlueIrisProfileSwitch(SwitchDevice):
     """An abstract class for an Blue Iris arm switch."""
-    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
+    def __init__(self, hass, integration_name, entity):
         """Initialize the settings switch."""
         super().__init__()
 
         self._hass = hass
-        self._ha = ha
+        self._integration_name = integration_name
         self._entity = entity
         self._remove_dispatcher = None
 
-    @property
-    def api(self):
-        return self._ha.api
+        self._ha = _get_ha(self._hass, self._integration_name)
+        self._entity_manager = self._ha.entity_manager
+        self._api = self._ha.api
 
     @property
     def profile_id(self):
@@ -116,9 +118,7 @@ class BlueIrisProfileSwitch(SwitchDevice):
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
-        await self.api.set_profile(self.profile_id)
-
-        await self._ha.async_update(None)
+        await self.set_profile(self.profile_id)
 
     async def async_turn_off(self, **kwargs):
         """Turn device off."""
@@ -126,7 +126,10 @@ class BlueIrisProfileSwitch(SwitchDevice):
         if self.profile_id == 1:
             to_profile_id = 0
 
-        await self.api.set_profile(to_profile_id)
+        await self.set_profile(to_profile_id)
+
+    async def set_profile(self, profile_id):
+        await self._api.set_profile(profile_id)
 
         await self._ha.async_update(None)
 
@@ -149,17 +152,17 @@ class BlueIrisProfileSwitch(SwitchDevice):
         self.hass.async_add_job(self.async_update_data)
 
     async def async_update_data(self):
-        if self._ha is None:
-            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - HA is None | {self.name}")
+        if self._entity_manager is None:
+            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - Entity Manager is None | {self.name}")
         else:
             previous_state = self.is_on
-            self._entity = self._ha.get_entity(CURRENT_DOMAIN, self.name)
+            self._entity = self._entity_manager.get_entity(CURRENT_DOMAIN, self.name)
 
             current_state = self.is_on
             state_changed = previous_state != current_state
 
             if self._entity is None:
-                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - entity is None | {self.name}")
+                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - Entity was not found | {self.name}")
 
                 self._entity = {}
                 await self.async_remove()

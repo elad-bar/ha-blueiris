@@ -4,7 +4,6 @@ from datetime import datetime
 
 from homeassistant.components.binary_sensor import STATE_OFF
 
-from custom_components.blueiris import BlueIrisHomeAssistant
 from custom_components.blueiris.const import *
 from .base import BlueIrisBinarySensor
 
@@ -14,9 +13,9 @@ _LOGGER = logging.getLogger(__name__)
 class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
+    def __init__(self, hass, integration_name, entity):
         """Initialize the MQTT binary sensor."""
-        super().__init__(hass, ha, entity)
+        super().__init__(hass, integration_name, entity)
 
         self._last_alert = None
 
@@ -42,6 +41,6 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
 
         _LOGGER.info(f"Turn off audio alert for {self.name}")
 
-        self.ha.set_mqtt_state(self.topic, self.event_type, False)
+        self._entity_manager.set_mqtt_state(self.topic, self.event_type, False)
 
         self.hass.async_create_task(self._ha.async_update(None))

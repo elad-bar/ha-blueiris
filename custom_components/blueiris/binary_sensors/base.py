@@ -11,7 +11,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers import device_registry as dr
 
-from custom_components.blueiris import BlueIrisHomeAssistant
+from custom_components.blueiris import _get_ha
 from custom_components.blueiris.const import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,18 +22,17 @@ CURRENT_DOMAIN = DOMAIN_BINARY_SENSOR
 class BlueIrisBinarySensor(BinarySensorDevice):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, hass, ha: BlueIrisHomeAssistant, entity):
+    def __init__(self, hass, integration_name, entity):
         """Initialize the MQTT binary sensor."""
         super().__init__()
 
         self._hass = hass
-        self._ha = ha
+        self._integration_name = integration_name
         self._entity = entity
         self._remove_dispatcher = None
 
-    @property
-    def ha(self):
-        return self._ha
+        self._ha = _get_ha(self._hass, self._integration_name)
+        self._entity_manager = self._ha.entity_manager
 
     @property
     def unique_id(self) -> Optional[str]:
@@ -92,17 +91,17 @@ class BlueIrisBinarySensor(BinarySensorDevice):
         self.hass.async_add_job(self.async_update_data)
 
     async def async_update_data(self):
-        if self._ha is None:
-            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - HA is None | {self.name}")
+        if self._entity_manager is None:
+            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - Entity Manager is None | {self.name}")
         else:
             previous_state = self.is_on
-            self._entity = self._ha.get_entity(CURRENT_DOMAIN, self.name)
+            self._entity = self._entity_manager.get_entity(CURRENT_DOMAIN, self.name)
 
             current_state = self._entity.get(ENTITY_STATE)
             state_changed = previous_state != current_state
 
             if self._entity is None:
-                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - entity is None | {self.name}")
+                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - Entity was not found | {self.name}")
 
                 self._entity = {}
                 await self.async_remove()

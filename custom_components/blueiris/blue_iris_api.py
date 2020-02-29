@@ -1,4 +1,3 @@
-import asyncio
 import sys
 import json
 import hashlib
@@ -30,7 +29,6 @@ class BlueIrisApi:
             self._protocol = PROTOCOLS[self._ssl]
             self._session = None
             self._session_id = None
-            self._is_connected = False
             self._is_logged_in = False
 
             self._status = {}
@@ -74,12 +72,32 @@ class BlueIrisApi:
     def password(self):
         return self._password
 
+    async def async_verified_post(self, data):
+        result = None
+
+        for i in range(2):
+            result = await self.async_post(data)
+
+            result_status = result.get("result")
+
+            if result_status == "fail":
+                error_msg = f"Request #{i} to BlueIris ({self.base_url}) failed, Data: {data}, Response: {result}"
+
+                _LOGGER.warning(error_msg)
+
+                await self.login()
+
+            else:
+                break
+
+        return result
+
     async def async_post(self, data):
         result = None
 
         try:
             async with self._session.post(self._url, data=json.dumps(data), ssl=False) as response:
-                _LOGGER.info(f'Status of {self._url}: {response.status}')
+                _LOGGER.debug(f'Status of {self._url}: {response.status}')
 
                 response.raise_for_status()
 
@@ -87,12 +105,9 @@ class BlueIrisApi:
 
                 _LOGGER.debug(f'Full result of {data}: {result}')
 
-                self._is_connected = True
                 self._last_update = datetime.now()
 
         except Exception as ex:
-            self._is_connected = False
-
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
@@ -101,6 +116,8 @@ class BlueIrisApi:
         return result
 
     async def initialize(self, username, password, update=True):
+        _LOGGER.info(f"Initializing BlueIris ({self.base_url}) connection")
+
         try:
             if username is not None and len(username) < 1:
                 username = None
@@ -124,6 +141,8 @@ class BlueIrisApi:
                 self._session = async_create_clientsession(hass=self._hass)
 
             if update:
+                await self.login()
+
                 await self.async_update()
 
         except Exception as ex:
@@ -133,11 +152,12 @@ class BlueIrisApi:
             _LOGGER.error(f"Failed to initialize BlueIris API, error: {ex}, line: {line_number}")
 
     async def async_update(self):
-        if await self.verify_connection():
-            await self.load_camera()
-            await self.load_status()
+        await self.load_camera()
+        await self.load_status()
 
     async def load_session_id(self):
+        _LOGGER.info(f"BlueIris action: Loading session ID from {self.base_url}")
+
         request_data = {
             "cmd": "login"
         }
@@ -145,8 +165,11 @@ class BlueIrisApi:
         response = await self.async_post(request_data)
 
         self._session_id = response.get("session")
+        self._is_logged_in = False
 
     async def login(self):
+        _LOGGER.info(f"BlueIris action: Login to {self.base_url}")
+
         logged_in = False
 
         try:
@@ -163,15 +186,15 @@ class BlueIrisApi:
                 "response": token
             }
 
-            response = await self.async_post(request_data)
+            result = await self.async_post(request_data)
 
-            if response is not None:
-                result = response.get("result")
+            if result is not None:
+                result_status = result.get("result")
 
-                if result == "success":
+                if result_status == "success":
                     logged_in = True
 
-                    data = response.get("data", {})
+                    data = result.get("data", {})
 
                     for key in data:
                         self._data[key] = data[key]
@@ -187,23 +210,27 @@ class BlueIrisApi:
         return self._is_logged_in
 
     async def load_camera(self):
+        _LOGGER.info(f"BlueIris action: Loading camera list from {self.base_url}")
+
         request_data = {
             "cmd": "camlist",
             "session": self._session_id
         }
 
-        response = await self.async_post(request_data)
+        response = await self.async_verified_post(request_data)
 
         if response is not None:
             self._camera_list = response.get("data", [])
 
     async def load_status(self):
+        _LOGGER.info(f"BlueIris action: Loading status from {self.base_url}")
+
         request_data = {
             "cmd": "status",
             "session": self._session_id
         }
 
-        response = await self.async_post(request_data)
+        response = await self.async_verified_post(request_data)
 
         if response is not None:
             data = response.get("data", {})
@@ -212,33 +239,18 @@ class BlueIrisApi:
                 self._status[key] = data[key]
 
     async def set_profile(self, profile_id):
+        _LOGGER.info(f"BlueIris action: Setting profile (#{profile_id}) to {self.base_url}")
+
         request_data = {
             "cmd": "status",
             "session": self._session_id,
             "profile": profile_id
         }
 
-        response = await self.async_post(request_data)
+        response = await self.async_verified_post(request_data)
 
         if response is not None:
             data = response.get("data", {})
 
             for key in data:
                 self._status[key] = data[key]
-
-    async def verify_connection(self):
-        result = False
-
-        for i in range(1):
-            if not self._is_logged_in:
-                if i > 0:
-                    _LOGGER.warning(f"Try #{i} to reconnect {self._url}")
-
-                if await self.login():
-                    result = True
-                    break
-
-                else:
-                    await asyncio.sleep(RECONNECT_DELAY)
-
-        return result

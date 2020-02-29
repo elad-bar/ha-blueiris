@@ -114,9 +114,11 @@ class AdvancedConfigurationGenerator:
             f"cards:"
         ]
 
-        camera_entities = self._ha.get_entities(DOMAIN_CAMERA)
-        binary_sensors_entities = self._ha.get_entities(DOMAIN_BINARY_SENSOR)
-        switch_entities = self._ha.get_entities(DOMAIN_SWITCH)
+        entity_manager = self._ha.entity_manager
+
+        camera_entities = entity_manager.get_entities(DOMAIN_CAMERA)
+        binary_sensors_entities = entity_manager.get_entities(DOMAIN_BINARY_SENSOR)
+        switch_entities = entity_manager.get_entities(DOMAIN_SWITCH)
 
         ui_system_camera = []
         ui_user_camera = []

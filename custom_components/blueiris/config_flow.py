@@ -6,7 +6,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
-from custom_components.blueiris import BlueIrisApi
+from .blue_iris_api import BlueIrisApi
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ async def _valid_login(hass, host, port, is_ssl, username, password):
     api = BlueIrisApi(hass, host, port, is_ssl)
     await api.initialize(username, password, False)
 
-    if not await api.verify_connection():
+    if not await api.login():
         _LOGGER.warning(f"Failed to access BlueIris Server ({host})")
         errors = {
             "base": "invalid_server_details"

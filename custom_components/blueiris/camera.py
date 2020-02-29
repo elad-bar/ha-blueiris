@@ -9,12 +9,12 @@ from abc import ABC
 from typing import Optional
 
 from homeassistant.core import callback
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.components.generic.camera import GenericCamera
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 from .home_assistant import _get_ha
 from .const import *
-from homeassistant.components.generic.camera import GenericCamera
 
 DEPENDENCIES = [DOMAIN]
 
@@ -33,19 +33,20 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         entities = []
 
         ha = _get_ha(hass, host)
+        entity_manager = ha.entity_manager
 
-        if ha is not None:
-            entities_data = ha.get_entities(CURRENT_DOMAIN)
+        if entity_manager is not None:
+            entities_data = entity_manager.get_entities(CURRENT_DOMAIN)
             for entity_name in entities_data:
                 entity = entities_data[entity_name]
 
-                camera = BlueIrisCamera(hass, ha, entity)
+                camera = BlueIrisCamera(hass, host, entity)
 
                 _LOGGER.debug(f"Setup {CURRENT_DOMAIN}: {camera.name} | {camera.unique_id}")
 
                 entities.append(camera)
 
-                ha.set_domain_entities_state(CURRENT_DOMAIN, True)
+                entity_manager.set_domain_entries_state(CURRENT_DOMAIN, True)
 
         async_add_devices(entities, True)
     except Exception as ex:
@@ -59,25 +60,29 @@ async def async_unload_entry(hass, config_entry):
     _LOGGER.info(f"async_unload_entry {CURRENT_DOMAIN}: {config_entry}")
 
     entry_data = config_entry.data
-    name = entry_data.get(CONF_NAME)
+    host = entry_data.get(CONF_HOST)
 
-    ha = _get_ha(hass, name)
+    ha = _get_ha(hass, host)
+    entity_manager = ha.entity_manager
 
-    if ha is not None:
-        ha.set_domain_entities_state(CURRENT_DOMAIN, False)
+    if entity_manager is not None:
+        entity_manager.set_domain_entries_state(CURRENT_DOMAIN, False)
 
     return True
 
 
 class BlueIrisCamera(GenericCamera, ABC):
-    def __init__(self, hass, ha, entity):
+    def __init__(self, hass, integration_name, entity):
         """Initialize the MQTT binary sensor."""
         self._hass = hass
-        self._ha = ha
+        self._integration_name = integration_name
         self._entity = entity
         self._remove_dispatcher = None
 
         device_info = self._entity.get(ENTITY_CAMERA_DETAILS)
+
+        ha = _get_ha(self._hass, self._integration_name)
+        self._entity_manager = ha.entity_manager
 
         super().__init__(hass, device_info)
 
@@ -114,13 +119,13 @@ class BlueIrisCamera(GenericCamera, ABC):
         self.hass.async_add_job(self.async_update_data)
 
     async def async_update_data(self):
-        if self._ha is None:
-            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - HA is None | {self.name}")
+        if self._entity_manager is None:
+            _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - Entity Manager is None | {self.name}")
         else:
-            self._entity = self._ha.get_entity(CURRENT_DOMAIN, self.name)
+            self._entity = self._entity_manager.get_entity(CURRENT_DOMAIN, self.name)
 
             if self._entity is None:
-                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - entity is None | {self.name}")
+                _LOGGER.debug(f"Cannot update {CURRENT_DOMAIN} - Entity was not found | {self.name}")
 
                 self._entity = {}
                 await self.async_remove()

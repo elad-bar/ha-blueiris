@@ -8,7 +8,6 @@ import logging
 
 from .home_assistant import _get_ha
 from .const import *
-
 from custom_components.blueiris.binary_sensors import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,20 +34,21 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
         entities = []
 
         ha = _get_ha(hass, host)
+        entity_manager = ha.entity_manager
 
-        if ha is not None:
-            entities_data = ha.get_entities(CURRENT_DOMAIN)
+        if entity_manager is not None:
+            entities_data = entity_manager.get_entities(CURRENT_DOMAIN)
             for entity_name in entities_data:
                 entity = entities_data[entity_name]
                 entity_sensor_type = entity.get(ENTITY_BINARY_SENSOR_TYPE)
                 if entity_sensor_type is not None:
-                    binary_sensor = BINARY_SENSOR_TYPES[entity_sensor_type](hass, ha, entity)
+                    binary_sensor = BINARY_SENSOR_TYPES[entity_sensor_type](hass, host, entity)
 
                     _LOGGER.debug(f"Setup {CURRENT_DOMAIN}: {binary_sensor.name} | {binary_sensor.unique_id}")
 
                     entities.append(binary_sensor)
 
-                    ha.set_domain_entities_state(CURRENT_DOMAIN, True)
+                    entity_manager.set_domain_entries_state(CURRENT_DOMAIN, True)
 
         async_add_devices(entities, True)
     except Exception as ex:
@@ -65,8 +65,9 @@ async def async_unload_entry(hass, config_entry):
     host = entry_data.get(CONF_HOST)
 
     ha = _get_ha(hass, host)
+    entity_manager = ha.entity_manager
 
-    if ha is not None:
-        ha.set_domain_entities_state(CURRENT_DOMAIN, False)
+    if entity_manager is not None:
+        entity_manager.set_domain_entries_state(CURRENT_DOMAIN, False)
 
     return True
