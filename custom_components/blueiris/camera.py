@@ -44,7 +44,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
                 entities.append(camera)
 
-                entity_manager.set_domain_entries_state(CURRENT_DOMAIN, True)
+                entity_manager.set_entry_loaded_state(CURRENT_DOMAIN, True)
 
         async_add_devices(entities, True)
     except Exception as ex:
@@ -64,7 +64,7 @@ async def async_unload_entry(hass, config_entry):
     entity_manager = ha.entity_manager
 
     if entity_manager is not None:
-        entity_manager.set_domain_entries_state(CURRENT_DOMAIN, False)
+        entity_manager.set_entry_loaded_state(CURRENT_DOMAIN, False)
 
     return True
 

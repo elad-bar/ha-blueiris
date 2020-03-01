@@ -33,15 +33,12 @@ class BlueIrisHomeAssistant:
         self._port = entry_data.get(CONF_PORT)
         self._ssl = entry_data.get(CONF_SSL)
 
-        self._unload_domain = []
-        self._load_domain = []
         self._is_first_time_online = True
 
         self._remove_async_track_time = None
 
         self._is_initialized = False
         self._is_updating = False
-        self._exclude_system_camera = False
 
         self._api = None
         self._entity_manager = None
@@ -49,20 +46,16 @@ class BlueIrisHomeAssistant:
         self._advanced_configuration_generator = None
 
     @property
-    def api(self):
+    def api(self) -> BlueIrisApi:
         return self._api
 
     @property
-    def entity_manager(self):
+    def entity_manager(self) -> EntityManager:
         return self._entity_manager
 
     @property
-    def device_manager(self):
+    def device_manager(self) -> DeviceManager:
         return self._device_manager
-
-    @property
-    def exclude_system_camera(self):
-        return self._exclude_system_camera
 
     async def initialize(self):
         self._api = BlueIrisApi(self._hass, self._host, self._port, self._ssl)
@@ -83,38 +76,22 @@ class BlueIrisHomeAssistant:
 
         self._config_entry = entry
 
-        self._load_domain = []
-        self._unload_domain = []
-
         entry_data = self._config_entry.data
         entry_options = self._config_entry.options
         username = entry_data.get(CONF_USERNAME)
         password = entry_data.get(CONF_PASSWORD)
-        exclude_system_camera = False
 
         if entry_options is not None:
             username = entry_options.get(CONF_USERNAME, username)
             password = entry_options.get(CONF_PASSWORD, password)
-            exclude_system_camera = entry_options.get(CONF_EXCLUDE_SYSTEM_CAMERA, exclude_system_camera)
 
-        self._exclude_system_camera = exclude_system_camera
+        self._entity_manager.update_options(entry.options)
 
         if clear_all:
             await self._api.initialize(username, password)
 
             await self.device_manager.async_remove_entry(self._config_entry.entry_id)
 
-        for domain in SUPPORTED_DOMAINS:
-            has_entities = self.entity_manager.has_entries(domain)
-            pending_entities = self.entity_manager.get_entities(domain)
-
-            if domain not in self._load_domain and len(pending_entities) > 0:
-                self._load_domain.append(domain)
-
-            if has_entities and domain not in self._unload_domain:
-                self._unload_domain.append(domain)
-
-        if clear_all:
             await self.async_update(datetime.now())
 
     async def async_remove(self):
@@ -131,10 +108,13 @@ class BlueIrisHomeAssistant:
 
         unload = self._hass.config_entries.async_forward_entry_unload
 
-        for domain in SUPPORTED_DOMAINS:
-            has_entities = self.entity_manager.has_entries(domain)
+        self.entity_manager.clear_domain_states()
 
-            if has_entities and domain not in self._unload_domain:
+        for domain in SUPPORTED_DOMAINS:
+            entry_loaded = self.entity_manager.get_entry_loaded_state(domain)
+            self.entity_manager.clear_entities(domain)
+
+            if entry_loaded:
                 self._hass.async_create_task(unload(self._config_entry, domain))
 
         await self._device_manager.async_remove()
@@ -174,25 +154,12 @@ class BlueIrisHomeAssistant:
 
             await self._api.async_update()
 
-            domains_state = await self.entity_manager.async_update()
+            await self.entity_manager.async_update()
 
             if self._is_first_time_online:
                 self._is_first_time_online = False
 
                 await self.async_update_entry(self._config_entry, False)
-            else:
-                for domain in SUPPORTED_DOMAINS:
-                    if domain in domains_state:
-                        domain_state = domains_state.get(domain, {})
-
-                        should_load = domain_state.get(domain, False)
-                        should_unload = domain_state.get(domain, False)
-
-                        if should_load and domain not in self._load_domain:
-                            self._load_domain.append(domain)
-
-                        if should_unload and domain not in self._unload_domain:
-                            self._unload_domain.append(domain)
 
             await self.discover_all()
         except Exception as ex:
@@ -213,6 +180,8 @@ class BlueIrisHomeAssistant:
         for domain in SUPPORTED_DOMAINS:
             await self.discover(domain)
 
+        self.entity_manager.clear_domain_states()
+
     async def discover(self, domain):
         if not self._is_initialized:
             _LOGGER.info(f"NOT INITIALIZED - Failed discovering domain {domain}")
@@ -229,21 +198,21 @@ class BlueIrisHomeAssistant:
 
         entry = self._config_entry
 
-        can_unload = domain in self._unload_domain
-        can_load = domain in self._load_domain
+        can_unload = self.entity_manager.get_domain_state(domain, DOMAIN_UNLOAD)
+        can_load = self.entity_manager.get_domain_state(domain, DOMAIN_LOAD)
         can_notify = not can_load and not can_unload
 
         if can_unload:
             _LOGGER.info(f"Unloading domain {domain}")
 
             self._hass.async_create_task(unload(entry, domain))
-            self._unload_domain.remove(domain)
+            self.entity_manager.set_domain_state(domain, DOMAIN_LOAD, False)
 
         if can_load:
             _LOGGER.info(f"Loading domain {domain}")
 
             self._hass.async_create_task(setup(entry, domain))
-            self._load_domain.remove(domain)
+            self.entity_manager.set_domain_state(domain, DOMAIN_UNLOAD, False)
 
         if can_notify:
             async_dispatcher_send(self._hass, signal)

@@ -53,6 +53,10 @@ class BlueIrisApi:
         return self._session is not None and not self._session.closed
 
     @property
+    def session_id(self):
+        return self._session_id
+
+    @property
     def status(self):
         return self._status
 

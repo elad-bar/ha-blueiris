@@ -23,24 +23,51 @@ class EntityManager:
     def __init__(self, hass, ha):
         self._hass = hass
         self._ha = ha
+        self._api = self._ha.api
 
         self._entities = {}
-        self._entries = {}
+        self._entry_loaded_state = {}
+        self._domain_states: dict = {}
         self._mqtt_states = {}
-
-        self._api = self._ha.api
+        self._exclude_system_camera = False
 
         for domain in SUPPORTED_DOMAINS:
             self.clear_entities(domain)
-            self.set_domain_entries_state(domain, False)
+            self.set_domain_state(domain, DOMAIN_LOAD, False)
+            self.set_domain_state(domain, DOMAIN_UNLOAD, False)
+            self.set_entry_loaded_state(domain, False)
 
-    def has_entries(self, domain):
-        has_entities = self._entries.get(domain, False)
+    def update_options(self, options):
+        if options is None:
+            options = {}
 
-        return has_entities
+        self._exclude_system_camera = options.get(CONF_EXCLUDE_SYSTEM_CAMERA, False)
 
-    def set_domain_entries_state(self, domain, has_entities):
-        self._entries[domain] = has_entities
+    def get_domain_state(self, domain, key):
+        if domain not in self._domain_states:
+            self._domain_states[domain] = {}
+
+        return self._domain_states[domain].get(key, False)
+
+    def set_domain_state(self, domain, key, state):
+        if domain not in self._domain_states:
+            self._domain_states[domain] = {}
+
+        self._domain_states[domain][key] = state
+
+    def clear_domain_states(self):
+        for domain in SIGNALS:
+            self.set_domain_state(domain, DOMAIN_LOAD, False)
+            self.set_domain_state(domain, DOMAIN_UNLOAD, False)
+
+    def get_domain_states(self):
+        return self._domain_states
+
+    def set_entry_loaded_state(self, domain, has_entities):
+        self._entry_loaded_state[domain] = has_entities
+
+    def get_entry_loaded_state(self, domain):
+        return self._entry_loaded_state.get(domain, False)
 
     def clear_entities(self, domain):
         self._entities[domain] = {}
@@ -79,7 +106,6 @@ class EntityManager:
         self._mqtt_states[key] = value
 
     async def async_update(self):
-        result = {}
         has_mqtt = DATA_MQTT in self._hass.data
 
         previous_keys = {}
@@ -107,27 +133,22 @@ class EntityManager:
         if has_mqtt:
             self.generate_main_binary_sensor()
 
-        for domain in SUPPORTED_DOMAINS:
-            domain_result = {}
-
+        for domain in SIGNALS:
             domain_keys = self.get_entities(domain).keys()
             previous_domain_keys = previous_keys[domain]
+            entry_loaded_state = self.get_entry_loaded_state(domain)
 
             if len(domain_keys) > 0:
                 current_keys = ','.join(domain_keys)
 
                 if current_keys != previous_domain_keys:
-                    domain_result[DOMAIN_LOAD] = True
+                    self.set_domain_state(domain, DOMAIN_LOAD, True)
 
                     if len(previous_domain_keys) > 0:
-                        domain_result[DOMAIN_UNLOAD] = True
+                        self.set_domain_state(domain, DOMAIN_UNLOAD, entry_loaded_state)
             else:
                 if len(previous_domain_keys) > 0:
-                    domain_result[DOMAIN_UNLOAD] = True
-
-            result[domain] = domain_result
-
-        return result
+                    self.set_domain_state(domain, DOMAIN_UNLOAD, entry_loaded_state)
 
     def get_profile_switch(self, profile_id, profile_name):
         entity = None
@@ -320,13 +341,14 @@ class EntityManager:
             username = self._api.username
             password = self._api.password
             base_url = self._api.base_url
+            session_id = self._api.session_id
 
             unique_id = f"{DOMAIN}-{DOMAIN_CAMERA}-{entity_name}"
 
-            still_image_url = f'{base_url}/image/{camera_id}?q=100&s=100'
+            still_image_url = f'{base_url}/image/{camera_id}?q=100&s=100&session={session_id}'
             still_image_url_template = cv.template(still_image_url)
 
-            stream_source = f'{base_url}/h264/{camera_id}/temp.m3u8'
+            stream_source = f'{base_url}/h264/{camera_id}/temp.m3u8&session={session_id}'
 
             camera_details = {
                 CONF_NAME: f"{DEFAULT_NAME} {camera_name}",
@@ -375,7 +397,7 @@ class EntityManager:
                 camera_id = entity.get(ENTITY_ID)
                 is_system = camera_id in SYSTEM_CAMERA_ID
 
-                if not is_system or not self._ha.exclude_system_camera:
+                if not is_system or not self._exclude_system_camera:
                     entity_name = entity.get(CONF_NAME)
                     self.set_entity(DOMAIN_CAMERA, entity_name, entity)
 
