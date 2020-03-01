@@ -82,17 +82,18 @@ class BlueIrisApi:
         for i in range(2):
             result = await self.async_post(data)
 
-            result_status = result.get("result")
+            if result is not None:
+                result_status = result.get("result")
 
-            if result_status == "fail":
-                error_msg = f"Request #{i} to BlueIris ({self.base_url}) failed, Data: {data}, Response: {result}"
+                if result_status == "fail":
+                    error_msg = f"Request #{i} to BlueIris ({self.base_url}) failed, Data: {data}, Response: {result}"
 
-                _LOGGER.warning(error_msg)
+                    _LOGGER.warning(error_msg)
 
-                await self.login()
+                    await self.login()
 
-            else:
-                break
+                else:
+                    break
 
         return result
 
