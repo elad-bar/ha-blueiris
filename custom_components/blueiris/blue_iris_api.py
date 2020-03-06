@@ -8,6 +8,7 @@ from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import aiohttp
 
 from .const import *
+from .password_manager import PasswordManager
 
 REQUIREMENTS = ['aiohttp']
 
@@ -30,6 +31,7 @@ class BlueIrisApi:
             self._session = None
             self._session_id = None
             self._is_logged_in = False
+            self._password_manager = PasswordManager(self._hass)
 
             self._status = {}
             self._data = {}
@@ -51,6 +53,10 @@ class BlueIrisApi:
     @property
     def is_initialized(self):
         return self._session is not None and not self._session.closed
+
+    @property
+    def is_logged_in(self):
+        return self._is_logged_in
 
     @property
     def session_id(self):
@@ -120,7 +126,7 @@ class BlueIrisApi:
 
         return result
 
-    async def initialize(self, username, password, update=True):
+    async def initialize(self, username, password):
         _LOGGER.info(f"Initializing BlueIris ({self.base_url}) connection")
 
         try:
@@ -137,6 +143,9 @@ class BlueIrisApi:
             self._username = username
             self._password = password
 
+            if self._password is not None:
+                self._password = self._password_manager.decrypt(self._password)
+
             if self._hass is None:
                 if self._session is not None:
                     await self._session.close()
@@ -145,10 +154,7 @@ class BlueIrisApi:
             else:
                 self._session = async_create_clientsession(hass=self._hass)
 
-            if update:
-                await self.login()
-
-                await self.async_update()
+            await self.login()
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()

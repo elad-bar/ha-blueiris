@@ -30,6 +30,7 @@ class EntityManager:
         self._domain_states: dict = {}
         self._mqtt_states = {}
         self._exclude_system_camera = False
+        self._force_reload = False
 
         for domain in SUPPORTED_DOMAINS:
             self.clear_entities(domain)
@@ -42,6 +43,7 @@ class EntityManager:
             options = {}
 
         self._exclude_system_camera = options.get(CONF_EXCLUDE_SYSTEM_CAMERA, False)
+        self._force_reload = True
 
     def get_domain_state(self, domain, key):
         if domain not in self._domain_states:
@@ -133,6 +135,9 @@ class EntityManager:
         if has_mqtt:
             self.generate_main_binary_sensor()
 
+        force_reload = self._force_reload
+        self._force_reload = False
+
         for domain in SIGNALS:
             domain_keys = self.get_entities(domain).keys()
             previous_domain_keys = previous_keys[domain]
@@ -141,7 +146,7 @@ class EntityManager:
             if len(domain_keys) > 0:
                 current_keys = ','.join(domain_keys)
 
-                if current_keys != previous_domain_keys:
+                if current_keys != previous_domain_keys or force_reload:
                     self.set_domain_state(domain, DOMAIN_LOAD, True)
 
                     if len(previous_domain_keys) > 0:

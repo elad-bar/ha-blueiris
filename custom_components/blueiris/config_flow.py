@@ -6,6 +6,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
+from .password_manager import PasswordManager
 from .blue_iris_api import BlueIrisApi
 from .const import *
 
@@ -16,9 +17,9 @@ async def _valid_login(hass, host, port, is_ssl, username, password):
     errors = None
 
     api = BlueIrisApi(hass, host, port, is_ssl)
-    await api.initialize(username, password, False)
+    await api.initialize(username, password)
 
-    if not await api.login():
+    if not api.is_logged_in:
         _LOGGER.warning(f"Failed to access BlueIris Server ({host})")
         errors = {
             "base": "invalid_server_details"
@@ -67,6 +68,12 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow):
             is_ssl = user_input.get(CONF_SSL)
             username = user_input.get(CONF_USERNAME, "")
             password = user_input.get(CONF_PASSWORD, "")
+
+            if len(password) > 0:
+                password_manager = PasswordManager(self.hass)
+                password = password_manager.encrypt(password)
+
+                user_input[CONF_PASSWORD] = password
 
             result = await _valid_login(self.hass, host, port, is_ssl, username, password)
             errors = result.get("errors")
@@ -130,6 +137,12 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
                 username = user_input.get(CONF_USERNAME, "")
                 password = user_input.get(CONF_PASSWORD, "")
 
+                if len(password) > 0:
+                    password_manager = PasswordManager(self.hass)
+                    password = password_manager.encrypt(password)
+
+                    user_input[CONF_PASSWORD] = password
+
             self.options[CONF_USERNAME] = username
             self.options[CONF_PASSWORD] = password
             self.options[CONF_EXCLUDE_SYSTEM_CAMERA] = user_input.get(CONF_EXCLUDE_SYSTEM_CAMERA, False)
@@ -152,6 +165,12 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
 
         username = options.get(CONF_USERNAME, "")
         password = options.get(CONF_PASSWORD, "")
+
+        if len(password) > 0:
+            password_manager = PasswordManager(self.hass)
+            password = password_manager.decrypt(password)
+
+            options[CONF_PASSWORD] = password
 
         has_credentials = len(username) > 0 or len(password) > 0
 

@@ -33,8 +33,6 @@ class BlueIrisHomeAssistant:
         self._port = entry_data.get(CONF_PORT)
         self._ssl = entry_data.get(CONF_SSL)
 
-        self._is_first_time_online = True
-
         self._remove_async_track_time = None
 
         self._is_initialized = False
@@ -155,11 +153,6 @@ class BlueIrisHomeAssistant:
             await self._api.async_update()
 
             await self.entity_manager.async_update()
-
-            if self._is_first_time_online:
-                self._is_first_time_online = False
-
-                await self.async_update_entry(self._config_entry, False)
 
             await self.discover_all()
         except Exception as ex:
