@@ -61,7 +61,10 @@ class BlueIrisHomeAssistant:
         self._device_manager = DeviceManager(self._hass, self)
         self._advanced_configuration_generator = AdvancedConfigurationGenerator(self._hass, self)
 
-        async_call_later(self._hass, 5, self.async_finalize)
+        def finalize(now):
+            self._hass.async_create_task(self.async_finalize(now))
+
+        async_call_later(self._hass, 5, finalize)
 
         self._is_initialized = True
 
@@ -126,7 +129,7 @@ class BlueIrisHomeAssistant:
             _LOGGER.info(f"NOT INITIALIZED - Failed finalizing initialization of integration ({self._host})")
             return
 
-        _LOGGER.info(f"Finalizing initialization of integration ({self._host})")
+        _LOGGER.info(f"Finalizing initialization of integration ({self._host}) at {event_time}")
 
         self._hass.services.async_register(DOMAIN,
                                            'generate_advanced_configurations',
@@ -134,7 +137,10 @@ class BlueIrisHomeAssistant:
 
         await self.async_update_entry(self._config_entry, True)
 
-        self._remove_async_track_time = async_track_time_interval(self._hass, self.async_update, SCAN_INTERVAL)
+        def update_entities(now):
+            self._hass.async_create_task(self.async_update(now))
+
+        self._remove_async_track_time = async_track_time_interval(self._hass, update_entities, SCAN_INTERVAL)
 
     async def async_update(self, event_time):
         if not self._is_initialized:
