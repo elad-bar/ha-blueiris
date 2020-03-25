@@ -1,5 +1,4 @@
 """Config flow to configure BlueIris."""
-import copy
 import logging
 
 from homeassistant import config_entries
@@ -107,8 +106,15 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
 
     def __init__(self, config_entry: ConfigEntry):
         """Initialize EdgeOS options flow."""
-        self.options = copy.deepcopy(config_entry.options)
-        self._data = copy.deepcopy(config_entry.data)
+
+        self.options = {}
+        self._data = {}
+
+        for key in config_entry.options.keys():
+            self.options[key] = config_entry.options[key]
+
+        for key in config_entry.data.keys():
+            self._data[key] = config_entry.data[key]
 
     async def async_step_init(self, user_input=None):
         """Manage the EdgeOS options."""
