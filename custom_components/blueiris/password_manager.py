@@ -35,7 +35,7 @@ class PasswordManager:
     def decrypt(self, data: str):
         decrypted = data
 
-        if decrypted.endswith("=="):
+        if decrypted.endswith("="):
             decrypted = self._crypto.decrypt(decrypted.encode()).decode()
         else:
             _LOGGER.warning("BlueIris Server password is not encrypted, please remove integration and reintegrate")
