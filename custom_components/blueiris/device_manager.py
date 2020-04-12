@@ -1,6 +1,9 @@
-from homeassistant.helpers import device_registry as dr
+import logging
+from homeassistant.helpers.device_registry import async_get_registry
 
 from .const import *
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class DeviceManager:
@@ -13,22 +16,27 @@ class DeviceManager:
         self._api = self._ha.api
 
     async def async_remove_entry(self, entry_id):
-        device_reg = await dr.async_get_registry(self._hass)
-        device_reg.async_clear_config_entry(entry_id)
+        dr = await async_get_registry(self._hass)
+        dr.async_clear_config_entry(entry_id)
+
+    async def delete_device(self, name):
+        _LOGGER.info(f"Deleting device {name}")
+
+        device = self._devices[name]
+
+        device_identifiers = device.get("identifiers")
+        device_connections = device.get("connections", {})
+
+        dr = await async_get_registry(self._hass)
+
+        device = dr.async_get_device(device_identifiers, device_connections)
+
+        if device is not None:
+            dr.async_remove_device(device.id)
 
     async def async_remove(self):
         for device_name in self._devices:
-            device = self._devices[device_name]
-
-            device_identifiers = device.get("identifiers")
-            device_connections = device.get("connections", {})
-
-            device_reg = await dr.async_get_registry(self._hass)
-
-            device = device_reg.async_get_device(device_identifiers, device_connections)
-
-            if device is not None:
-                device_reg.async_remove_device(device.id)
+            await self.delete_device(device_name)
 
     def get(self, name):
         return self._devices.get(name, {})

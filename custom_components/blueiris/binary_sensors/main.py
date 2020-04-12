@@ -1,63 +1,31 @@
 import json
 import logging
-from typing import Optional
 
 from homeassistant.core import callback
-from homeassistant.components import mqtt
-from homeassistant.components.mqtt import Message
-from homeassistant.components.binary_sensor import (BinarySensorDevice, STATE_ON)
-from homeassistant.components.mqtt import (MqttAvailability)
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.components.binary_sensor import BinarySensorDevice, STATE_ON
+from homeassistant.components.mqtt import MqttAvailability, Message, async_subscribe
 
-from custom_components.blueiris.const import *
+from ..base_entity import BlueIrisEntity
+from ..const import *
 
 _LOGGER = logging.getLogger(__name__)
 
 CURRENT_DOMAIN = DOMAIN_BINARY_SENSOR
 
 
-class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
+class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice, BlueIrisEntity):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, hass, integration_name, entity):
+    def __init__(self):
         """Initialize the MQTT binary sensor."""
         super().__init__(MQTT_AVAILABILITY_CONFIG)
 
-        self._hass = hass
-        self._integration_name = integration_name
-        self._entity = entity
-        self._remove_dispatcher = None
         self._remove_subscription = None
-
-        self._ha = _get_ha(self._hass, self._integration_name)
-        self._entity_manager = self._ha.entity_manager
-        self._device_manager = self._ha.device_manager
-
-    @property
-    def unique_id(self) -> Optional[str]:
-        """Return the name of the node."""
-        return self._entity.get(ENTITY_UNIQUE_ID)
-
-    @property
-    def device_info(self):
-        device_name = self._entity.get(ENTITY_DEVICE_NAME)
-
-        return self._device_manager.get(device_name)
 
     @property
     def should_poll(self):
         """Return the polling state."""
         return False
-
-    @property
-    def name(self):
-        """Return the name of the binary sensor."""
-        return self._entity.get(ENTITY_NAME)
-
-    @property
-    def device_state_attributes(self):
-        """Return true if the binary sensor is on."""
-        return self._entity.get(ENTITY_ATTRIBUTES)
 
     @property
     def is_on(self):
@@ -69,10 +37,8 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
         """Force update."""
         return DEFAULT_FORCE_UPDATE
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass_local(self):
         """Subscribe MQTT events."""
-        await super().async_added_to_hass()
-
         @callback
         def state_message_received(message: Message):
             """Handle a new received MQTT state message."""
@@ -80,17 +46,12 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
             self.process(message)
 
-        self._remove_dispatcher = async_dispatcher_connect(self.hass, SIGNALS[CURRENT_DOMAIN], self.update_data)
+        self._remove_subscription = await async_subscribe(self.hass,
+                                                          MQTT_ALL_TOPIC,
+                                                          state_message_received,
+                                                          DEFAULT_QOS)
 
-        self._remove_subscription = await mqtt.async_subscribe(self.hass,
-                                                               MQTT_ALL_TOPIC,
-                                                               state_message_received,
-                                                               DEFAULT_QOS)
-
-    async def async_will_remove_from_hass(self) -> None:
-        if self._remove_dispatcher is not None:
-            self._remove_dispatcher()
-
+    async def async_will_remove_from_hass_local(self):
         if self._remove_subscription is not None:
             self._remove_subscription()
 
@@ -110,9 +71,13 @@ class BlueIrisMainBinarySensor(MqttAvailability, BinarySensorDevice):
 
         self.hass.async_add_job(self._ha.async_update, None)
 
-    @callback
-    def update_data(self):
-        self.hass.async_add_job(self.async_update_data)
+    def is_dirty(self, updated_entity):
+        previous_state = self.is_on
+        current_state = updated_entity.get(ENTITY_STATE)
+
+        is_dirty = previous_state != current_state
+
+        return is_dirty
 
     async def async_update_data(self):
         if self._entity_manager is None:

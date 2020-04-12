@@ -12,6 +12,13 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 
 ## Change-log
+Apr 12 2020
+* Fix issue #37 - Restart of HASS causes all entities to be renamed to defaults <br/>
+  improving the way the component is loading, unloading and discover new entities (sensors and device trackers).  <br/>
+  the main issue as reported in the past was that once changing the entity_id / name it will return to the original after restart.  <br/>
+  another issue that caused by the way it was handled, upon changing the options (settings) - it took few seconds to present the new entities and sometimes it happened only after restart.  <br/>
+  In that version, the entity_id, name will remain as manually set and changes of options will take place immediately
+
 Feb 28 2020
 * Removed hard-dependency on MQTT, if MQTT integration was not set, binary sensors will not be created - Issue #32
 * Username and password are now optional, if not set, will not create profile's switches

@@ -13,9 +13,9 @@ _LOGGER = logging.getLogger(__name__)
 class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
     """Representation a binary sensor that is updated by MQTT."""
 
-    def __init__(self, hass, integration_name, entity):
+    def __init__(self):
         """Initialize the MQTT binary sensor."""
-        super().__init__(hass, integration_name, entity)
+        super().__init__()
 
         self._last_alert = None
 

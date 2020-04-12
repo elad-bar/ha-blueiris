@@ -61,7 +61,7 @@ async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
     ha = _get_ha(hass, host)
 
     if ha is not None:
-        await ha.async_update_entry(entry, True)
+        await ha.async_update_entry(entry)
 
 
 def _get_ha(hass, host):

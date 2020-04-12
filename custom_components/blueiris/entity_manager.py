@@ -1,3 +1,4 @@
+import sys
 import logging
 
 from homeassistant.components.camera import DEFAULT_CONTENT_TYPE
@@ -7,6 +8,7 @@ from homeassistant.components.generic.camera import (
 from homeassistant.components.mqtt import DATA_MQTT
 from homeassistant.const import CONF_VERIFY_SSL, CONF_AUTHENTICATION
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.entity_registry import EntityRegistry
 
 from .const import *
 
@@ -26,53 +28,56 @@ class EntityManager:
         self._api = self._ha.api
 
         self._entities = {}
-        self._entry_loaded_state = {}
-        self._domain_states: dict = {}
+
+        self._allowed_interfaces = []
+        self._allowed_devices = []
+        self._allowed_track_devices = []
+
+        self._options = None
+
+        self._domain_component_manager: dict = {}
+
         self._mqtt_states = {}
         self._exclude_system_camera = False
-        self._force_reload = False
 
-        for domain in SUPPORTED_DOMAINS:
+        for domain in SIGNALS:
             self.clear_entities(domain)
-            self.set_domain_state(domain, DOMAIN_LOAD, False)
-            self.set_domain_state(domain, DOMAIN_UNLOAD, False)
-            self.set_entry_loaded_state(domain, False)
+
+    @property
+    def entity_registry(self) -> EntityRegistry:
+        return self._ha.entity_registry
+
+    def set_domain_component(self, domain, async_add_entities, component):
+        self._domain_component_manager[domain] = {
+            "async_add_entities": async_add_entities,
+            "component": component
+        }
 
     def update_options(self, options):
         if options is None:
             options = {}
 
+        self._options = options
+
         self._exclude_system_camera = options.get(CONF_EXCLUDE_SYSTEM_CAMERA, False)
-        self._force_reload = True
-
-    def get_domain_state(self, domain, key):
-        if domain not in self._domain_states:
-            self._domain_states[domain] = {}
-
-        return self._domain_states[domain].get(key, False)
-
-    def set_domain_state(self, domain, key, state):
-        if domain not in self._domain_states:
-            self._domain_states[domain] = {}
-
-        self._domain_states[domain][key] = state
-
-    def clear_domain_states(self):
-        for domain in SIGNALS:
-            self.set_domain_state(domain, DOMAIN_LOAD, False)
-            self.set_domain_state(domain, DOMAIN_UNLOAD, False)
-
-    def get_domain_states(self):
-        return self._domain_states
-
-    def set_entry_loaded_state(self, domain, has_entities):
-        self._entry_loaded_state[domain] = has_entities
-
-    def get_entry_loaded_state(self, domain):
-        return self._entry_loaded_state.get(domain, False)
 
     def clear_entities(self, domain):
         self._entities[domain] = {}
+
+    def is_device_name_in_use(self, device_name):
+        result = False
+        for domain in SIGNALS:
+            entities = self._entities.get(domain, {})
+
+            for entity_key in entities:
+                entity = entities[entity_key]
+                current_device_name = entity.get(ENTITY_DEVICE_NAME)
+
+                if device_name == current_device_name:
+                    result = True
+                    break
+
+        return result
 
     def get_entities(self, domain):
         return self._entities.get(domain, {})
@@ -85,15 +90,34 @@ class EntityManager:
 
         return entity
 
-    def set_entity(self, domain, name, data):
-        entities = self._entities.get(domain)
+    def get_entity_status(self, domain, name):
+        entity = self.get_entity(domain, name)
+        status = entity.get(ENTITY_STATUS)
 
-        if entities is None:
+        return status
+
+    def set_entity_status(self, domain, name, status):
+        if domain in self._entities and name in self._entities[domain]:
+            self._entities[domain][name][ENTITY_STATUS] = status
+
+    def delete_entity(self, domain, name):
+        if domain in self._entities and name in self._entities[domain]:
+            del self._entities[domain][name]
+
+    def set_entity(self, domain, name, data):
+        if domain not in self._entities:
             self._entities[domain] = {}
 
-            entities = self._entities.get(domain)
+        status = self.get_entity_status(domain, name)
 
-        entities[name] = data
+        self._entities[domain][name] = data
+
+        if status == ENTITY_STATUS_EMPTY:
+            status = ENTITY_STATUS_CREATED
+        else:
+            status = ENTITY_STATUS_MODIFIED
+
+        self.set_entity_status(domain, name, status)
 
     def get_mqtt_state(self, topic, event_type, default=False):
         key = _get_camera_binary_sensor_key(topic, event_type)
@@ -107,14 +131,8 @@ class EntityManager:
 
         self._mqtt_states[key] = value
 
-    async def async_update(self):
+    def create_components(self):
         has_mqtt = DATA_MQTT in self._hass.data
-
-        previous_keys = {}
-        for domain in SUPPORTED_DOMAINS:
-            previous_keys[domain] = ','.join(self.get_entities(domain).keys())
-
-            self.clear_entities(domain)
 
         available_camera = self._api.camera_list
 
@@ -135,25 +153,66 @@ class EntityManager:
         if has_mqtt:
             self.generate_main_binary_sensor()
 
-        force_reload = self._force_reload
-        self._force_reload = False
+    def update(self):
+        self._hass.async_create_task(self._async_update())
 
-        for domain in SIGNALS:
-            domain_keys = self.get_entities(domain).keys()
-            previous_domain_keys = previous_keys[domain]
-            entry_loaded_state = self.get_entry_loaded_state(domain)
+    async def _async_update(self):
+        step = "Mark as ignore"
+        try:
+            for domain in SIGNALS:
+                for entity_key in self.get_entities(domain):
+                    self.set_entity_status(domain, entity_key, ENTITY_STATUS_IGNORE)
 
-            if len(domain_keys) > 0:
-                current_keys = ','.join(domain_keys)
+            step = "Create components"
 
-                if current_keys != previous_domain_keys or force_reload:
-                    self.set_domain_state(domain, DOMAIN_LOAD, True)
+            self.create_components()
 
-                    if len(previous_domain_keys) > 0:
-                        self.set_domain_state(domain, DOMAIN_UNLOAD, entry_loaded_state)
-            else:
-                if len(previous_domain_keys) > 0:
-                    self.set_domain_state(domain, DOMAIN_UNLOAD, entry_loaded_state)
+            step = "Start updating"
+
+            for domain in SIGNALS:
+                step = f"Start updating domain {domain}"
+
+                entities_to_add = []
+                domain_component_manager = self._domain_component_manager[domain]
+                domain_component = domain_component_manager["component"]
+                async_add_entities = domain_component_manager["async_add_entities"]
+
+                entities = dict(self.get_entities(domain))
+
+                for entity_key in entities:
+                    step = f"Start updating {domain} -> {entity_key}"
+
+                    entity = entities[entity_key]
+                    status = self.get_entity_status(domain, entity_key)
+                    unique_id = entity.get(ENTITY_UNIQUE_ID)
+
+                    entity_id = self.entity_registry.async_get_entity_id(domain, DOMAIN, unique_id)
+
+                    if status == ENTITY_STATUS_IGNORE:
+                        step = f"Mark as removed - {domain} -> {entity_key}"
+
+                        self.set_entity_status(domain, entity_key, ENTITY_STATUS_CANCELLED)
+
+                        self.entity_registry.async_remove(entity_id)
+
+                        await self._ha.delete_entity(domain, entity_key)
+                    elif status == ENTITY_STATUS_CREATED:
+                        step = f"Mark as created - {domain} -> {entity_key}"
+
+                        entity_component = domain_component(self._hass, self._ha.host, entity)
+
+                        if not entity_id:
+                            entity_component.entity_id = entity_id
+
+                        entities_to_add.append(entity_component)
+
+                step = f"Add entities to {domain}"
+
+                if len(entities_to_add) > 0:
+                    async_add_entities(entities_to_add, True)
+
+        except Exception as ex:
+            self.log_exception(ex, f'Failed to update, step: {step}')
 
     def get_profile_switch(self, profile_id, profile_name):
         entity = None
@@ -183,7 +242,7 @@ class EntityManager:
                 ENTITY_DEVICE_NAME: device_name
             }
         except Exception as ex:
-            _LOGGER.error(f'Failed to generate profile switch {profile_name} (#{profile_id}), Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to get profile switch {profile_name} (#{profile_id})')
 
         return entity
 
@@ -194,7 +253,7 @@ class EntityManager:
 
             self.set_entity(DOMAIN_SWITCH, entity_name, entity)
         except Exception as ex:
-            _LOGGER.error(f'Failed to generate profile switch {profile_name} (#{profile_id}), Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to generate profile switch {profile_name} (#{profile_id})')
 
     def get_main_binary_sensor(self):
         entity = None
@@ -247,7 +306,7 @@ class EntityManager:
                 ENTITY_BINARY_SENSOR_TYPE: SENSOR_MAIN_NAME
             }
         except Exception as ex:
-            _LOGGER.error(f'Failed to get main binary sensor, Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to get main binary sensor')
 
         return entity
 
@@ -258,7 +317,7 @@ class EntityManager:
 
             self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
         except Exception as ex:
-            _LOGGER.error(f'Failed to generate main binary sensor, Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to generate main binary sensor')
 
     def get_camera_base_binary_sensor(self, camera, sensor_type_name, default_state=False):
         entity = None
@@ -296,7 +355,7 @@ class EntityManager:
                 ENTITY_BINARY_SENSOR_TYPE: sensor_type_name
             }
         except Exception as ex:
-            _LOGGER.error(f'Failed to get camera motion binary sensor for {camera}, Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to get camera motion binary sensor for {camera}')
 
         return entity
 
@@ -333,7 +392,7 @@ class EntityManager:
                 self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
 
         except Exception as ex:
-            _LOGGER.error(f'Failed to generate binary sensors for {camera}, Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to generate binary sensors for {camera}')
 
     def get_camera_component(self, camera):
         entity = None
@@ -390,7 +449,7 @@ class EntityManager:
                 ENTITY_CAMERA_DETAILS: camera_details
             }
         except Exception as ex:
-            _LOGGER.error(f'Failed to get camera for {camera}, Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to get camera for {camera}')
 
         return entity
 
@@ -407,4 +466,11 @@ class EntityManager:
                     self.set_entity(DOMAIN_CAMERA, entity_name, entity)
 
         except Exception as ex:
-            _LOGGER.error(f'Failed to generate camera for {camera}, Error: {str(ex)}')
+            self.log_exception(ex, f'Failed to generate camera for {camera}')
+
+    @staticmethod
+    def log_exception(ex, message):
+        exc_type, exc_obj, tb = sys.exc_info()
+        line_number = tb.tb_lineno
+
+        _LOGGER.error(f'{message}, Error: {str(ex)}, Line: {line_number}')
