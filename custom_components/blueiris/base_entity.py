@@ -80,11 +80,6 @@ class BlueIrisEntity(Entity):
         return False
 
     @property
-    def icon(self) -> Optional[str]:
-        """Return the icon of the sensor."""
-        return self._entity.get(ENTITY_ICON)
-
-    @property
     def device_state_attributes(self):
         """Return true if the binary sensor is on."""
         return self._entity.get(ENTITY_ATTRIBUTES, {})
@@ -97,6 +92,7 @@ class BlueIrisEntity(Entity):
                                  SIGNALS[self._current_domain],
                                  self._schedule_immediate_update)
 
+        self._entity = self._entity_manager.get_entity(self._current_domain, self.name)
         self._entity_manager.set_entity_status(self._current_domain, self.name, ENTITY_STATUS_READY)
 
         await self.async_added_to_hass_local()
@@ -122,12 +118,12 @@ class BlueIrisEntity(Entity):
             else:
                 self._entity_manager.set_entity_status(self._current_domain, self.name, ENTITY_STATUS_READY)
 
-                if self.is_dirty(updated_entity):
-                    self._entity = updated_entity
+                _LOGGER.debug(f"Update {self._current_domain} -> {self.name} - {updated_entity}")
 
-                    _LOGGER.debug(f"Update {self._current_domain} -> {self.name}")
+                self.perform_update()
 
-                    self.async_schedule_update_ha_state(True)
+    def perform_update(self):
+        self.async_schedule_update_ha_state(True)
 
     @callback
     def _schedule_immediate_update(self):
