@@ -12,6 +12,14 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 
 ## Change-log
+Apr 15 2020
+* Major change of file structure
+* Improved communication between BI API and HA
+* Fix component update upon change
+* Avoid API get details requests upon change of switch or when an MQTT message is being received
+* Better management of entities and devices
+* Added more log messages for faster debugging 
+
 Apr 12 2020
 * Fix issue #37 - Restart of HASS causes all entities to be renamed to defaults <br/>
   improving the way the component is loading, unloading and discover new entities (sensors, camera and switch).  <br/>

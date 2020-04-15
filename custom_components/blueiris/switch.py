@@ -5,10 +5,13 @@ https://home-assistant.io/components/switch.blueiris/
 """
 import logging
 
+from datetime import datetime
 from homeassistant.components.switch import SwitchDevice
+from homeassistant.core import HomeAssistant
 
-from .base_entity import BlueIrisEntity, _async_setup_entry
-from .const import *
+from .models.base_entity import BlueIrisEntity, async_setup_base_entry
+from .helpers.const import *
+from .models.entity_data import EntityData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +22,7 @@ CURRENT_DOMAIN = DOMAIN_SWITCH
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Switch."""
-    await _async_setup_entry(hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_switch)
+    await async_setup_base_entry(hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_switch)
 
 
 async def async_unload_entry(hass, config_entry):
@@ -28,7 +31,7 @@ async def async_unload_entry(hass, config_entry):
     return True
 
 
-def get_switch(hass, host, entity):
+def get_switch(hass: HomeAssistant, host: str, entity: EntityData):
     switch = BlueIrisProfileSwitch()
     switch.initialize(hass, host, entity, CURRENT_DOMAIN)
 
@@ -40,12 +43,12 @@ class BlueIrisProfileSwitch(SwitchDevice, BlueIrisEntity):
 
     @property
     def profile_id(self):
-        return self._entity.get(ENTITY_ID)
+        return self.entity.id
 
     @property
     def is_on(self):
         """Return the boolean response if the node is on."""
-        return self._entity.get(ENTITY_STATE)
+        return self.entity.state
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
@@ -60,9 +63,11 @@ class BlueIrisProfileSwitch(SwitchDevice, BlueIrisEntity):
         await self.set_profile(to_profile_id)
 
     async def set_profile(self, profile_id):
-        await self._api.set_profile(profile_id)
+        await self.api.set_profile(profile_id)
 
-        await self._ha.async_update(None)
+        self.entity_manager.update()
+
+        await self.ha.dispatch_all()
 
     def turn_on(self, **kwargs) -> None:
         pass
@@ -73,10 +78,12 @@ class BlueIrisProfileSwitch(SwitchDevice, BlueIrisEntity):
     async def async_setup(self):
         pass
 
-    def is_dirty(self, updated_entity):
-        previous_state = self.is_on
-        current_state = updated_entity.get(ENTITY_STATE)
+    def _immediate_update(self, previous_state: bool):
+        if previous_state != self.entity.state:
+            _LOGGER.debug(f"{self.name} updated from {previous_state} to {self.entity.state}")
 
-        is_dirty = previous_state != current_state
+        super()._immediate_update(previous_state)
 
-        return is_dirty
+    async def async_added_to_hass_local(self):
+        """Subscribe MQTT events."""
+        _LOGGER.info(f"Added new {self.name}")

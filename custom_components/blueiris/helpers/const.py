@@ -23,6 +23,7 @@ from homeassistant.components.mqtt import (
 VERSION = '2.0.0'
 
 DOMAIN = 'blueiris'
+PASSWORD_MANAGER_BLUEIRIS = f'pm_{DOMAIN}'
 DATA_BLUEIRIS = f'data_{DOMAIN}'
 DATA_BLUEIRIS_API = f'{DATA_BLUEIRIS}_API'
 DATA_BLUEIRIS_HA = f'{DATA_BLUEIRIS}_HA'

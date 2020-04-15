@@ -7,8 +7,9 @@ import logging
 
 from homeassistant.components.binary_sensor import BinarySensorDevice
 
-from ..base_entity import BlueIrisEntity
-from ..const import *
+from ..helpers.const import *
+from ..models.base_entity import BlueIrisEntity
+from ..models.entity_data import EntityData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,12 +20,12 @@ class BlueIrisBinarySensor(BinarySensorDevice, BlueIrisEntity):
     @property
     def topic(self):
         """Return the polling state."""
-        return self._entity.get(ENTITY_TOPIC)
+        return self.entity.topic
 
     @property
     def event_type(self):
         """Return the polling state."""
-        return self._entity.get(ENTITY_EVENT)
+        return self.entity.event
 
     @property
     def should_poll(self):
@@ -34,22 +35,14 @@ class BlueIrisBinarySensor(BinarySensorDevice, BlueIrisEntity):
     @property
     def is_on(self):
         """Return true if the binary sensor is on."""
-        return self._entity.get(ENTITY_STATE)
+        return self.entity.state
 
     @property
     def device_class(self):
         """Return the class of this sensor."""
-        return self._entity.get(ENTITY_DEVICE_CLASS)
+        return self.entity.device_class
 
     @property
     def force_update(self):
         """Force update."""
         return DEFAULT_FORCE_UPDATE
-
-    def is_dirty(self, updated_entity):
-        previous_state = self.is_on
-        current_state = updated_entity.get(ENTITY_STATE)
-
-        is_dirty = previous_state != current_state
-
-        return is_dirty

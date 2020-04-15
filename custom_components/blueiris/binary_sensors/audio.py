@@ -1,12 +1,12 @@
-import asyncio
 import logging
 from datetime import datetime
 
 from homeassistant.components.binary_sensor import STATE_OFF
 from homeassistant.helpers.event import async_call_later
 
-from custom_components.blueiris.const import *
+from ..helpers.const import *
 from .base import BlueIrisBinarySensor
+from ..models.entity_data import EntityData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,26 +20,48 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
 
         self._last_alert = None
 
-    def perform_update(self):
+    async def async_added_to_hass_local(self):
+        """Subscribe MQTT events."""
+        _LOGGER.info(f"Added new {self.name}")
+
+    def _immediate_update(self, previous_state: bool):
+        if previous_state != self.entity.state:
+            _LOGGER.debug(f"{self.name} updated from {previous_state} to {self.entity.state}")
+
         is_trigger_off = self.state == STATE_OFF
         current_timestamp = datetime.now().timestamp()
 
-        _LOGGER.info(f"Performing update, state: {is_trigger_off}, last: {self._last_alert}, ts: {current_timestamp}")
-
         def turn_off_automatically(now):
-            _LOGGER.info(f"Turn off audio alert for {self.name} @{now}")
+            _LOGGER.info(f"Audio alert off | {self.name} @{now}")
 
-            self._entity_manager.set_mqtt_state(self.topic, self.event_type, False)
+            self.entity_manager.set_mqtt_state(self.topic, self.event_type, False)
 
-            self.hass.async_create_task(self._ha.async_update(None))
+            self.hass.async_create_task(self.ha.async_update(None))
 
         if is_trigger_off:
             self._last_alert = None
-            super().perform_update()
+            super()._immediate_update(previous_state)
 
         else:
-            if self._last_alert is None or current_timestamp - self._last_alert > AUDIO_EVENT_LENGTH:
-                self._last_alert = current_timestamp
-                super().perform_update()
+            should_alert = False
 
-                async_call_later(self._hass, 2, turn_off_automatically)
+            if self._last_alert is None:
+                message = "Identified first time"
+                should_alert = True
+            else:
+                time_since = current_timestamp - self._last_alert
+                message = f"{time_since} seconds ago"
+
+                if current_timestamp - self._last_alert > AUDIO_EVENT_LENGTH:
+                    message = f"Identified {message}"
+                    should_alert = True
+                else:
+                    message = f"Irrelevant {message}"
+
+            _LOGGER.info(f"Audio alert on, {message} | {self.name}")
+
+            if should_alert:
+                self._last_alert = current_timestamp
+                super()._immediate_update(previous_state)
+
+                async_call_later(self.hass, 2, turn_off_automatically)

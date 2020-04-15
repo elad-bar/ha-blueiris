@@ -2,17 +2,16 @@ import logging
 
 from os import path
 from cryptography.fernet import Fernet
+from homeassistant.core import HomeAssistant
 
-from .const import *
+from ..helpers.const import *
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class PasswordManager:
-    def __init__(self, hass):
-        self._hass = hass
-
-        domain_key_file = self._hass.config.path(DOMAIN_KEY_FILE)
+    def __init__(self, hass: HomeAssistant):
+        domain_key_file = hass.config.path(DOMAIN_KEY_FILE)
 
         if not path.exists(domain_key_file):
             key_data = Fernet.generate_key()
