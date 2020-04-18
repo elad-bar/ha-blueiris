@@ -142,6 +142,7 @@ class BlueIrisHomeAssistant:
 
         if self._remove_async_track_time is not None:
             self._remove_async_track_time()
+            self._remove_async_track_time = None
 
         unload = self._hass.config_entries.async_forward_entry_unload
 

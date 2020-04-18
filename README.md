@@ -4,47 +4,13 @@
 
 Integration with Blue Iris Video Security Software. Creates the following components:
 
+[Changelog](https://github.com/elad-bar/ha-blueiris/blob/master/CHANGELOG.md)
+
 * Camera - per-camera defined.
 * MQTT Binary Sensors (MOTION, AUDIO, WATCHDOG) - per-camera defined.
 * Switch (Arm / Unarmed) - only when profiles and admin username and password are provided.
 * Support HLS Streams instead of H264.
 * Support SSL with self-signed certificate.
-
-
-## Change-log
-Apr 15 2020
-* Major change of file structure
-* Improved communication between BI API and HA
-* Fix component update upon change
-* Avoid API get details requests upon change of switch or when an MQTT message is being received
-* Better management of entities and devices
-* Added more log messages for faster debugging 
-
-Apr 12 2020
-* Fix issue #37 - Restart of HASS causes all entities to be renamed to defaults <br/>
-  improving the way the component is loading, unloading and discover new entities (sensors, camera and switch).  <br/>
-  the main issue as reported in the past was that once changing the entity_id / name it will return to the original after restart.  <br/>
-  another issue that caused by the way it was handled, upon changing the options (settings) - it took few seconds to present the new entities and sometimes it happened only after restart.  <br/>
-  In that version, the entity_id, name will remain as manually set and changes of options will take place immediately
-
-Feb 28 2020
-* Removed hard-dependency on MQTT, if MQTT integration was not set, binary sensors will not be created - Issue #32
-* Username and password are now optional, if not set, will not create profile's switches
-* Added validation for host, port and SSL state in configuration, if URL is not accessible, will throw an error
-* Validate administrator username and password, in case entered wrong credentials, will throw an error
-* Fix issue #28 - entities not available after restart
-* Fix issue #27 - when changing switch it doesn't work smoothly and after restart
-* Resources (strings) fixed
-
-Feb 07 2020 - v2.0.0 - Breaking change!!! 
-* BlueIris 5 JSON API integration
-* UI configuration support instead of YAML
-* Less configurations, takes configurations from BI server (all cameras are loaded, audio binary sensor will not created unless needed)
-* More details per camera in the attributes 
-* Switch functionality changed, each profile is being represented with a switch, `is armed` switch removed
-* Added support for HACS
-Feb 05 2020 - No need to declare binary_sensor, switch and camera as those are being auto-discoverd 
-Jan 17 2020 - Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
 
 
 ## Configuration

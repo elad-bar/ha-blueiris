@@ -54,6 +54,7 @@ class BlueIrisMainBinarySensor(BinarySensorDevice, BlueIrisEntity):
     async def async_will_remove_from_hass_local(self):
         if self.remove_subscription is not None:
             self.remove_subscription()
+            self.remove_subscription = None
 
     def _state_message_received(self, message: Message):
         topic = message.topic

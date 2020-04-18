@@ -98,6 +98,7 @@ class BlueIrisEntity(Entity):
     async def async_will_remove_from_hass(self) -> None:
         if self.remove_dispatcher is not None:
             self.remove_dispatcher()
+            self.remove_dispatcher = None
 
         await self.async_will_remove_from_hass_local()
 
