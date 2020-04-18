@@ -125,7 +125,7 @@ State: Allows to set the active profile, only one of the profile switches can be
 
 Currently the Stream Component is a bit ragged to use to cast Blue Iris video streams, which don't need proxying.
 
-### Auto-generating configurations service:
+###### Auto-generating configurations service:
 `blueiris.generate_advanced_configurations` service will create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml:
 - Input select (drop-downs)
 - Script to cast based on the selection
@@ -133,7 +133,7 @@ Currently the Stream Component is a bit ragged to use to cast Blue Iris video st
 
 [Example of configuration output](https://github.com/elad-bar/ha-blueiris/blob/master/docs/config/casting/configuration.yaml)
 
-### Lovelace UI Casting Configuration
+###### Lovelace UI for casting
 
 ```YAML
 # Example ui-lovelace.yaml view entry
