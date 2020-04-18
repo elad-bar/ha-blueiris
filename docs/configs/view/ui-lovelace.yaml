@@ -1,0 +1,44 @@
+title: Blue Iris
+icon: mdi:eye
+
+cards:
+  - type: custom:vertical-stack-in-card
+    cards:
+      # System cameras
+      - type: horizontal-stack
+        cards:
+          - type: custom:vertical-stack-in-card
+            cards:
+              - type: picture-entity
+                entity: camera.all
+                name: All
+                show_state: false
+          - type: custom:vertical-stack-in-card
+            cards:
+              - type: picture-entity
+                entity: camera.cycle
+                name: Cycle
+                show_state: false
+      # Blue Iris Armed / Disarm Profiles
+      - type: entities
+        title: Blue Iris
+        show_header_toggle: false
+        entities:
+          - entity: switch.blueiris_alerts
+            name: Arm / Disarm
+
+  # Front Door camera
+  - type: custom:vertical-stack-in-card
+    cards:
+      - type: picture-entity
+        entity: camera.front_door
+        name: Front Door
+        show_state: false
+      - type: glance
+        entities:
+          - entity: binary_sensor.front_door_motion
+            name: Motion
+          - entity: binary_sensor.front_door_audio
+            name: Audio
+          - entity: binary_sensor.front_door_connectivity
+            name: Connectivity

@@ -15,8 +15,7 @@
       }
     },
     "abort": {
-      "already_setup": "Setup already completed",
-      "one_instance_only": "Only one integration supported"
+      "already_configured": "BlueIris integration ({name}) already configured"
     },
     "error": {
       "invalid_admin_credentials": "Invalid administrator credentials",

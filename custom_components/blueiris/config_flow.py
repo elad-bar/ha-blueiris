@@ -5,6 +5,7 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback, HomeAssistant
 
+from . import get_ha
 from .managers.configuration_manager import ConfigManager
 from .managers.password_manager import PasswordManager
 from .api.blue_iris_api import BlueIrisApi
@@ -92,8 +93,18 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow, BlueIrisConfigFlow):
 
             self.update_config_data(user_input)
 
-            result = await self.valid_login(self.hass)
-            errors = result.get("errors")
+            host = self._config_flow.config_data.host
+
+            ha = get_ha(self.hass, host)
+
+            if ha is None:
+                result = await self.valid_login(self.hass)
+                errors = result.get("errors")
+            else:
+                _LOGGER.warning(f"{DEFAULT_NAME} ({host}) already configured")
+
+                return self.async_abort(reason="already_configured",
+                                        description_placeholders=user_input)
 
             if errors is None:
                 return self.async_create_entry(title=self.config_manager.data.host, data=user_input)
@@ -103,9 +114,6 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow, BlueIrisConfigFlow):
     async def async_step_import(self, info):
         """Import existing configuration from BlueIris."""
         _LOGGER.debug(f"Starting async_step_import of {DOMAIN}")
-
-        if self._async_current_entries():
-            return self.async_abort(reason="already_setup")
 
         return self.async_create_entry(
             title="BlueIris (import from configuration.yaml)",

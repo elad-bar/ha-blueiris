@@ -4,7 +4,9 @@
 
 **Implemented enhancements:**
 
-- Added changelog
+- Added CHANGELOG.md
+- Improved README.md
+- Separated BlueIris Server setting from README.md
 
 **Fixed bugs:**
 
