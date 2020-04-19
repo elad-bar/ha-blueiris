@@ -2,6 +2,8 @@ import sys
 import json
 import hashlib
 import logging
+from typing import Optional
+
 import aiohttp
 
 from datetime import datetime
@@ -21,7 +23,7 @@ class BlueIrisApi:
     """The Class for handling the data retrieval."""
 
     is_logged_in: bool
-    session_id: str
+    session_id: Optional[str]
     session: ClientSession
     data: dict
     status: dict
@@ -36,6 +38,7 @@ class BlueIrisApi:
             self._last_update = datetime.now()
             self.hass = hass
             self.config_manager = config_manager
+            self.session_id = None
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
@@ -134,7 +137,11 @@ class BlueIrisApi:
 
         response = await self.async_post(request_data)
 
-        self.session_id = response.get("session")
+        self.session_id = None
+
+        if response is not None:
+            self.session_id = response.get("session")
+
         self.is_logged_in = False
 
     async def login(self):
@@ -145,33 +152,34 @@ class BlueIrisApi:
         try:
             await self.load_session_id()
 
-            config_data = self.config_manager.data
-            username = config_data.username
-            password = config_data.password_clear_text
+            if self.session_id is not None:
+                config_data = self.config_manager.data
+                username = config_data.username
+                password = config_data.password_clear_text
 
-            token_request = f"{username}:{self.session_id}:{password}"
-            m = hashlib.md5()
-            m.update(token_request.encode('utf-8'))
-            token = m.hexdigest()
+                token_request = f"{username}:{self.session_id}:{password}"
+                m = hashlib.md5()
+                m.update(token_request.encode('utf-8'))
+                token = m.hexdigest()
 
-            request_data = {
-                "cmd": "login",
-                "session": self.session_id,
-                "response": token
-            }
+                request_data = {
+                    "cmd": "login",
+                    "session": self.session_id,
+                    "response": token
+                }
 
-            result = await self.async_post(request_data)
+                result = await self.async_post(request_data)
 
-            if result is not None:
-                result_status = result.get("result")
+                if result is not None:
+                    result_status = result.get("result")
 
-                if result_status == "success":
-                    logged_in = True
+                    if result_status == "success":
+                        logged_in = True
 
-                    data = result.get("data", {})
+                        data = result.get("data", {})
 
-                    for key in data:
-                        self.data[key] = data[key]
+                        for key in data:
+                            self.data[key] = data[key]
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()

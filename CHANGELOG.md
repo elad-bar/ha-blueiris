@@ -1,5 +1,12 @@
 # Changelog
 
+## 2020-04-19
+
+**Fixed bugs:**
+
+- Fix issue [\#51](https://github.com/elad-bar/ha-bleuiris/issues/51) in config_flow
+- Validation of server existence made 2 calls to server instead of 1 
+ 
 ## 2020-04-18
 
 **Implemented enhancements:**
