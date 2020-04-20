@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-04-20
+
+**Fixed bugs:**
+
+- Added validation if state is not available to restore it [\#54](https://github.com/elad-bar/ha-bleuiris/issues/54) 
+
 ## 2020-04-19
 
 **Fixed bugs:**
