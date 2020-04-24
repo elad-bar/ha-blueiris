@@ -1,6 +1,13 @@
 # Changelog
 
-## 2020-04-24
+## 2020-04-24 #2
+
+**Fixed bugs:**
+
+- Fix [\#56](https://github.com/elad-bar/ha-bleuiris/issues/51) moved dependency on MQTT to optional
+- Fix missing resources
+
+## 2020-04-24 #1
 
 **Implemented enhancements:**
 

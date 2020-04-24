@@ -2,8 +2,10 @@
     "domain": "blueiris",
     "name": "Blue Iris NVR",
     "documentation": "https://github.com/elad-bar/ha-blueiris",
+    "after_dependencies": [
+        "mqtt"
+    ],
     "dependencies": [
-        "mqtt",
         "camera"
     ],
     "codeowners": ["@elad-bar"],
