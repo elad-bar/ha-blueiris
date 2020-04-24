@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-04-24
+
+**Implemented enhancements:**
+
+- Refactored camera to use basic camera component instead of generic
+
 ## 2020-04-20
 
 **Fixed bugs:**
