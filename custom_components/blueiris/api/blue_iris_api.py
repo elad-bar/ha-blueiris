@@ -1,12 +1,13 @@
+from datetime import datetime
 import hashlib
 import json
 import logging
 import sys
-from datetime import datetime
 from typing import Optional
 
 import aiohttp
 from aiohttp import ClientSession
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 

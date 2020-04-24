@@ -3,8 +3,8 @@ Support for Blue Iris.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/camera.blueiris/
 """
-import logging
 from abc import ABC
+import logging
 
 from homeassistant.components.generic.camera import GenericCamera
 from homeassistant.core import HomeAssistant

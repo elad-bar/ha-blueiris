@@ -1,5 +1,5 @@
-import logging
 from datetime import datetime
+import logging
 
 from homeassistant.components.binary_sensor import STATE_OFF
 from homeassistant.helpers.event import async_call_later

@@ -1,11 +1,11 @@
 import json
 import logging
 
+from custom_components.blueiris.models.base_entity import BlueIrisEntity
+
 from homeassistant.components.binary_sensor import STATE_ON, BinarySensorDevice
 from homeassistant.components.mqtt import Message, async_subscribe
 from homeassistant.core import callback
-
-from custom_components.blueiris.models.base_entity import BlueIrisEntity
 
 from ..helpers.const import *
 

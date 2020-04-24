@@ -6,15 +6,27 @@ https://home-assistant.io/components/switch.blueiris/
 from datetime import timedelta
 
 import voluptuous as vol
-from homeassistant.components.binary_sensor import \
-    DOMAIN as DOMAIN_BINARY_SENSOR
+
+from homeassistant.components.binary_sensor import DOMAIN as DOMAIN_BINARY_SENSOR
 from homeassistant.components.camera import DOMAIN as DOMAIN_CAMERA
 from homeassistant.components.mqtt import (
-    CONF_PAYLOAD_AVAILABLE, CONF_PAYLOAD_NOT_AVAILABLE, CONF_QOS,
-    DEFAULT_PAYLOAD_AVAILABLE, DEFAULT_PAYLOAD_NOT_AVAILABLE, DEFAULT_QOS)
+    CONF_PAYLOAD_AVAILABLE,
+    CONF_PAYLOAD_NOT_AVAILABLE,
+    CONF_QOS,
+    DEFAULT_PAYLOAD_AVAILABLE,
+    DEFAULT_PAYLOAD_NOT_AVAILABLE,
+    DEFAULT_QOS,
+)
 from homeassistant.components.switch import DOMAIN as DOMAIN_SWITCH
-from homeassistant.const import (CONF_HOST, CONF_ID, CONF_NAME, CONF_PASSWORD,
-                                 CONF_PORT, CONF_SSL, CONF_USERNAME)
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_ID,
+    CONF_NAME,
+    CONF_PASSWORD,
+    CONF_PORT,
+    CONF_SSL,
+    CONF_USERNAME,
+)
 
 VERSION = "2.0.0"
 

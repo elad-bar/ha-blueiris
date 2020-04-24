@@ -4,8 +4,12 @@ from typing import Dict, List, Optional
 
 from homeassistant.components.camera import DEFAULT_CONTENT_TYPE
 from homeassistant.components.generic.camera import (
-    CONF_CONTENT_TYPE, CONF_FRAMERATE, CONF_LIMIT_REFETCH_TO_URL_CHANGE,
-    CONF_STILL_IMAGE_URL, CONF_STREAM_SOURCE)
+    CONF_CONTENT_TYPE,
+    CONF_FRAMERATE,
+    CONF_LIMIT_REFETCH_TO_URL_CHANGE,
+    CONF_STILL_IMAGE_URL,
+    CONF_STREAM_SOURCE,
+)
 from homeassistant.components.mqtt import DATA_MQTT
 from homeassistant.const import CONF_AUTHENTICATION, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant

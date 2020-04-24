@@ -2,6 +2,7 @@ import logging
 from os import path
 
 from cryptography.fernet import Fernet
+
 from homeassistant.core import HomeAssistant
 
 from ..helpers.const import *

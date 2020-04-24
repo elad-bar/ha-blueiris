@@ -4,7 +4,6 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 import logging
-from datetime import datetime
 
 from homeassistant.components.switch import SwitchDevice
 from homeassistant.core import HomeAssistant
