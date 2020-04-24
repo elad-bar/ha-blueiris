@@ -1,13 +1,13 @@
-import sys
 import logging
-from typing import Dict, Optional, List
+import sys
+from typing import Dict, List, Optional
 
 from homeassistant.components.camera import DEFAULT_CONTENT_TYPE
 from homeassistant.components.generic.camera import (
-    CONF_LIMIT_REFETCH_TO_URL_CHANGE, CONF_FRAMERATE, CONF_CONTENT_TYPE,
-    CONF_STREAM_SOURCE, CONF_STILL_IMAGE_URL)
+    CONF_CONTENT_TYPE, CONF_FRAMERATE, CONF_LIMIT_REFETCH_TO_URL_CHANGE,
+    CONF_STILL_IMAGE_URL, CONF_STREAM_SOURCE)
 from homeassistant.components.mqtt import DATA_MQTT
-from homeassistant.const import CONF_VERIFY_SSL, CONF_AUTHENTICATION
+from homeassistant.const import CONF_AUTHENTICATION, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_registry import EntityRegistry
@@ -55,7 +55,7 @@ class EntityManager:
     def set_domain_component(self, domain, async_add_entities, component):
         self.domain_component_manager[domain] = {
             "async_add_entities": async_add_entities,
-            "component": component
+            "component": component,
         }
 
     def is_device_name_in_use(self, device_name):
@@ -114,7 +114,9 @@ class EntityManager:
 
             self.entities[domain][name] = data
         except Exception as ex:
-            self.log_exception(ex, f'Failed to set_entity, domain: {domain}, name: {name}')
+            self.log_exception(
+                ex, f"Failed to set_entity, domain: {domain}, name: {name}"
+            )
 
     def get_mqtt_state(self, topic, event_type, default=False):
         key = _get_camera_binary_sensor_key(topic, event_type)
@@ -182,7 +184,9 @@ class EntityManager:
 
                     entity = entities[entity_key]
 
-                    entity_id = self.entity_registry.async_get_entity_id(domain, DOMAIN, entity.unique_id)
+                    entity_id = self.entity_registry.async_get_entity_id(
+                        domain, DOMAIN, entity.unique_id
+                    )
 
                     if entity.status == ENTITY_STATUS_CREATED:
                         if entity.unique_id in entities_to_delete:
@@ -190,7 +194,9 @@ class EntityManager:
 
                         step = f"Mark as created - {domain} -> {entity_key}"
 
-                        entity_component = domain_component(self.hass, self.config_data.host, entity)
+                        entity_component = domain_component(
+                            self.hass, self.config_data.host, entity
+                        )
 
                         if entity_id is not None:
                             entity_component.entity_id = entity_id
@@ -201,7 +207,9 @@ class EntityManager:
                                 restored = True
                             else:
                                 restored = state.attributes.get("restored", False)
-                                _LOGGER.info(f"Entity {entity.name} restored | {entity_id}")
+                                _LOGGER.info(
+                                    f"Entity {entity.name} restored | {entity_id}"
+                                )
 
                             if restored:
                                 entities_to_add.append(entity_component)
@@ -227,7 +235,7 @@ class EntityManager:
                             await self.ha.delete_entity(domain, entity.name)
 
         except Exception as ex:
-            self.log_exception(ex, f'Failed to update, step: {step}')
+            self.log_exception(ex, f"Failed to update, step: {step}")
 
     def get_profile_switch(self, profile_id, profile_name) -> EntityData:
         entity = None
@@ -243,9 +251,7 @@ class EntityManager:
 
             state = current_profile == profile_id
 
-            attributes = {
-                ATTR_FRIENDLY_NAME: entity_name
-            }
+            attributes = {ATTR_FRIENDLY_NAME: entity_name}
 
             entity = EntityData()
 
@@ -257,7 +263,9 @@ class EntityManager:
             entity.icon = DEFAULT_ICON
             entity.device_name = device_name
         except Exception as ex:
-            self.log_exception(ex, f'Failed to get profile switch {profile_name} (#{profile_id})')
+            self.log_exception(
+                ex, f"Failed to get profile switch {profile_name} (#{profile_id})"
+            )
 
         return entity
 
@@ -268,7 +276,9 @@ class EntityManager:
 
             self.set_entity(DOMAIN_SWITCH, entity_name, entity)
         except Exception as ex:
-            self.log_exception(ex, f'Failed to generate profile switch {profile_name} (#{profile_id})')
+            self.log_exception(
+                ex, f"Failed to generate profile switch {profile_name} (#{profile_id})"
+            )
 
     def get_main_binary_sensor(self) -> EntityData:
         entity = None
@@ -303,13 +313,11 @@ class EntityManager:
 
             state = len(alerts.keys()) > 0
 
-            attributes = {
-                ATTR_FRIENDLY_NAME: entity_name
-            }
+            attributes = {ATTR_FRIENDLY_NAME: entity_name}
 
             for alert_name in alerts:
                 current_alerts = alerts[alert_name]
-                attributes[alert_name] = ', '.join(current_alerts)
+                attributes[alert_name] = ", ".join(current_alerts)
 
             entity = EntityData()
 
@@ -321,7 +329,7 @@ class EntityManager:
             entity.device_name = device_name
             entity.type = SENSOR_MAIN_NAME
         except Exception as ex:
-            self.log_exception(ex, f'Failed to get main binary sensor')
+            self.log_exception(ex, f"Failed to get main binary sensor")
 
         return entity
 
@@ -332,9 +340,11 @@ class EntityManager:
 
             self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
         except Exception as ex:
-            self.log_exception(ex, f'Failed to generate main binary sensor')
+            self.log_exception(ex, f"Failed to generate main binary sensor")
 
-    def get_camera_base_binary_sensor(self, camera, sensor_type_name, default_state=False) -> EntityData:
+    def get_camera_base_binary_sensor(
+        self, camera, sensor_type_name, default_state=False
+    ) -> EntityData:
         entity = None
 
         try:
@@ -346,15 +356,15 @@ class EntityManager:
             entity_name = f"{DEFAULT_NAME} {camera_name} {sensor_type_name}"
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{entity_name}"
 
-            state_topic = MQTT_ALL_TOPIC.replace('+', camera_id)
+            state_topic = MQTT_ALL_TOPIC.replace("+", camera_id)
 
             state = self.get_mqtt_state(state_topic, sensor_type_name, default_state)
 
-            device_class = SENSOR_DEVICE_CLASS.get(sensor_type_name, sensor_type_name).lower()
+            device_class = SENSOR_DEVICE_CLASS.get(
+                sensor_type_name, sensor_type_name
+            ).lower()
 
-            attributes = {
-                ATTR_FRIENDLY_NAME: entity_name
-            }
+            attributes = {ATTR_FRIENDLY_NAME: entity_name}
 
             entity = EntityData()
 
@@ -370,7 +380,9 @@ class EntityManager:
             entity.device_class = device_class
             entity.type = sensor_type_name
         except Exception as ex:
-            self.log_exception(ex, f'Failed to get camera motion binary sensor for {camera}')
+            self.log_exception(
+                ex, f"Failed to get camera motion binary sensor for {camera}"
+            )
 
         return entity
 
@@ -383,16 +395,22 @@ class EntityManager:
             entities = []
 
             if not is_system:
-                entity_motion = self.get_camera_base_binary_sensor(camera, SENSOR_MOTION_NAME)
+                entity_motion = self.get_camera_base_binary_sensor(
+                    camera, SENSOR_MOTION_NAME
+                )
 
                 entities.append(entity_motion)
 
-                entity_connectivity = self.get_camera_base_binary_sensor(camera, SENSOR_CONNECTIVITY_NAME, True)
+                entity_connectivity = self.get_camera_base_binary_sensor(
+                    camera, SENSOR_CONNECTIVITY_NAME, True
+                )
 
                 entities.append(entity_connectivity)
 
                 if audio_support:
-                    entity_audio = self.get_camera_base_binary_sensor(camera, SENSOR_AUDIO_NAME)
+                    entity_audio = self.get_camera_base_binary_sensor(
+                        camera, SENSOR_AUDIO_NAME
+                    )
 
                     entities.append(entity_audio)
 
@@ -407,7 +425,7 @@ class EntityManager:
                 self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
 
         except Exception as ex:
-            self.log_exception(ex, f'Failed to generate binary sensors for {camera}')
+            self.log_exception(ex, f"Failed to generate binary sensors for {camera}")
 
     def get_camera_component(self, camera) -> EntityData:
         entity = None
@@ -426,10 +444,14 @@ class EntityManager:
 
             unique_id = f"{DOMAIN}-{DOMAIN_CAMERA}-{entity_name}"
 
-            still_image_url = f'{base_url}/image/{camera_id}?q=100&s=100&session={session_id}'
+            still_image_url = (
+                f"{base_url}/image/{camera_id}?q=100&s=100&session={session_id}"
+            )
             still_image_url_template = cv.template(still_image_url)
 
-            stream_source = f'{base_url}/h264/{camera_id}/temp.m3u8&session={session_id}'
+            stream_source = (
+                f"{base_url}/h264/{camera_id}/temp.m3u8&session={session_id}"
+            )
 
             camera_details = {
                 CONF_NAME: f"{DEFAULT_NAME} {camera_name}",
@@ -441,13 +463,13 @@ class EntityManager:
                 CONF_VERIFY_SSL: False,
                 CONF_USERNAME: username,
                 CONF_PASSWORD: password,
-                CONF_AUTHENTICATION: AUTHENTICATION_BASIC
+                CONF_AUTHENTICATION: AUTHENTICATION_BASIC,
             }
 
             attributes = {
                 ATTR_FRIENDLY_NAME: entity_name,
                 CONF_STREAM_SOURCE: stream_source,
-                CONF_STILL_IMAGE_URL: still_image_url
+                CONF_STILL_IMAGE_URL: still_image_url,
             }
 
             for key in ATTR_BLUE_IRIS_CAMERA:
@@ -468,7 +490,7 @@ class EntityManager:
             entity.state = is_online
 
         except Exception as ex:
-            self.log_exception(ex, f'Failed to get camera for {camera}')
+            self.log_exception(ex, f"Failed to get camera for {camera}")
 
         return entity
 
@@ -485,11 +507,11 @@ class EntityManager:
                     self.set_entity(DOMAIN_CAMERA, entity_name, entity)
 
         except Exception as ex:
-            self.log_exception(ex, f'Failed to generate camera for {camera}')
+            self.log_exception(ex, f"Failed to generate camera for {camera}")
 
     @staticmethod
     def log_exception(ex, message):
         exc_type, exc_obj, tb = sys.exc_info()
         line_number = tb.tb_lineno
 
-        _LOGGER.error(f'{message}, Error: {str(ex)}, Line: {line_number}')
+        _LOGGER.error(f"{message}, Error: {str(ex)}, Line: {line_number}")

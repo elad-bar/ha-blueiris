@@ -1,8 +1,8 @@
 from homeassistant.config_entries import ConfigEntry
 
-from .password_manager import PasswordManager
 from ..helpers.const import *
 from ..models.config_data import ConfigData
+from .password_manager import PasswordManager
 
 
 class ConfigManager:

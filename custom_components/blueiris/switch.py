@@ -4,13 +4,13 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 import logging
-
 from datetime import datetime
+
 from homeassistant.components.switch import SwitchDevice
 from homeassistant.core import HomeAssistant
 
-from .models.base_entity import BlueIrisEntity, async_setup_base_entry
 from .helpers.const import *
+from .models.base_entity import BlueIrisEntity, async_setup_base_entry
 from .models.entity_data import EntityData
 
 _LOGGER = logging.getLogger(__name__)
@@ -22,7 +22,9 @@ CURRENT_DOMAIN = DOMAIN_SWITCH
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Switch."""
-    await async_setup_base_entry(hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_switch)
+    await async_setup_base_entry(
+        hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_switch
+    )
 
 
 async def async_unload_entry(hass, config_entry):
@@ -80,7 +82,9 @@ class BlueIrisProfileSwitch(SwitchDevice, BlueIrisEntity):
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
-            _LOGGER.debug(f"{self.name} updated from {previous_state} to {self.entity.state}")
+            _LOGGER.debug(
+                f"{self.name} updated from {previous_state} to {self.entity.state}"
+            )
 
         super()._immediate_update(previous_state)
 

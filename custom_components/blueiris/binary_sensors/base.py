@@ -9,7 +9,6 @@ from homeassistant.components.binary_sensor import BinarySensorDevice
 
 from ..helpers.const import *
 from ..models.base_entity import BlueIrisEntity
-from ..models.entity_data import EntityData
 
 _LOGGER = logging.getLogger(__name__)
 

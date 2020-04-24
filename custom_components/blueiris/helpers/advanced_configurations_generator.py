@@ -27,18 +27,20 @@ class AdvancedConfigurationGenerator:
 
     def generate_advanced_configurations(self, event_time):
         _LOGGER.info(f"Started to generate advanced configuration @ {event_time}")
-        components_path = self._hass.config.path('blueiris.components.yaml')
-        lovelace_path = self._hass.config.path('blueiris.lovelace.yaml')
+        components_path = self._hass.config.path("blueiris.components.yaml")
+        lovelace_path = self._hass.config.path("blueiris.lovelace.yaml")
 
         camera_list = self._ha.api.camera_list
-        media_players = self._hass.states.entity_ids('media_player')
+        media_players = self._hass.states.entity_ids("media_player")
 
         input_select_camera = self.generate_input_select_camera(camera_list)
-        input_select_media_player = self.generate_input_select_media_player(media_players)
+        input_select_media_player = self.generate_input_select_media_player(
+            media_players
+        )
         script = self.generate_script(camera_list, media_players)
         ui_lovelace = self.generate_ui_lovelace()
 
-        with open(components_path, 'w+') as out:
+        with open(components_path, "w+") as out:
             _add_to_file(out, "input_select:", "INPUT SELECT")
             _add_to_file(out, input_select_camera)
             _add_to_file(out, input_select_media_player)
@@ -46,7 +48,7 @@ class AdvancedConfigurationGenerator:
             _add_to_file(out, "script:", "SCRIPT")
             _add_to_file(out, script)
 
-        with open(lovelace_path, 'w+') as out:
+        with open(lovelace_path, "w+") as out:
             _add_to_file(out, ui_lovelace)
 
     @staticmethod
@@ -71,7 +73,7 @@ class AdvancedConfigurationGenerator:
             f"    name: {entity_name}",
             f"    initial: '{initial_camera}'",
             f"    icon: mdi:camera",
-            f"    options:"
+            f"    options:",
         ]
 
         for camera_name in camera_items:
@@ -87,7 +89,7 @@ class AdvancedConfigurationGenerator:
             f"  {slugify(entity_name)}:",
             f"    name: {entity_name}",
             f"    icon: mdi:cast",
-            f"    options:"
+            f"    options:",
         ]
 
         for entity_id in media_players:
@@ -113,7 +115,7 @@ class AdvancedConfigurationGenerator:
             f"layout: horizontal",
             f"max_columns: 3",
             f"type: horizontal-stack",
-            f"cards:"
+            f"cards:",
         ]
 
         entity_manager = self._ha.entity_manager
@@ -130,19 +132,21 @@ class AdvancedConfigurationGenerator:
             camera_entity = camera_entities[camera_entity_name]
             camera_entity_id = camera_entity.get(ENTITY_ID)
 
-            ui_component = {
-                DOMAIN_CAMERA: camera_entity
-            }
+            ui_component = {DOMAIN_CAMERA: camera_entity}
 
             for binary_sensors_entity_name in binary_sensors_entities:
-                binary_sensors_entity = binary_sensors_entities[binary_sensors_entity_name]
+                binary_sensors_entity = binary_sensors_entities[
+                    binary_sensors_entity_name
+                ]
                 binary_sensors_entity_id = binary_sensors_entity.get(ENTITY_ID)
 
                 if binary_sensors_entity_id == camera_entity_id:
                     if DOMAIN_BINARY_SENSOR not in ui_component:
                         ui_component[DOMAIN_BINARY_SENSOR] = {}
 
-                    ui_component[DOMAIN_BINARY_SENSOR][binary_sensors_entity_name] = binary_sensors_entity
+                    ui_component[DOMAIN_BINARY_SENSOR][
+                        binary_sensors_entity_name
+                    ] = binary_sensors_entity
 
             if camera_entity_id in SYSTEM_CAMERA_ID:
                 ui_system_camera.append(ui_component)
@@ -181,7 +185,9 @@ class AdvancedConfigurationGenerator:
 
             for system_component_domain_entity in system_component_domain:
                 entity_name = system_component_domain_entity.get(ENTITY_NAME)
-                lines.append(f"            - {system_component_domain_name}.{slugify(entity_name)}")
+                lines.append(
+                    f"            - {system_component_domain_name}.{slugify(entity_name)}"
+                )
 
         result = "\n".join(lines)
 
@@ -210,7 +216,9 @@ class AdvancedConfigurationGenerator:
                     binary_sensor = binary_sensors[binary_sensor_name]
                     binary_sensor_type = binary_sensor[ENTITY_EVENT]
 
-                    lines.append(f"            - entity: binary_sensor.{slugify(binary_sensor_name)}")
+                    lines.append(
+                        f"            - entity: binary_sensor.{slugify(binary_sensor_name)}"
+                    )
                     lines.append(f"              name: {binary_sensor_type}")
             else:
                 lines.append(f"        entities: []")
@@ -240,8 +248,12 @@ class AdvancedConfigurationGenerator:
 
         media_player_input_select = slugify("BlueIris Cast Devices")
         media_players_entities = ", ".join(media_player_entity_ids)
-        lines.append(f"            {{% set media_players = {{{media_players_entities}}} %}}")
-        lines.append(f"            {{{{media_players[states.input_select.{media_player_input_select}.state]}}}}")
+        lines.append(
+            f"            {{% set media_players = {{{media_players_entities}}} %}}"
+        )
+        lines.append(
+            f"            {{{{media_players[states.input_select.{media_player_input_select}.state]}}}}"
+        )
 
         lines.append(f"          media_content_id: >")
 
@@ -269,7 +281,7 @@ class AdvancedConfigurationGenerator:
             credentials = f"?user={username}&pw={password}"
 
         camera_input_select = slugify("BlueIris Camera")
-        url = f'{self._ha.api.base_url}/mjpg/'
+        url = f"{self._ha.api.base_url}/mjpg/"
         path = f"camera_list[states.input_select.{camera_input_select}.state]"
         video = f"/video.mjpg{credentials}"
 

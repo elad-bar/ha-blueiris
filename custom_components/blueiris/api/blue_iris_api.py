@@ -1,20 +1,18 @@
-import sys
-import json
 import hashlib
+import json
 import logging
+import sys
+from datetime import datetime
 from typing import Optional
 
 import aiohttp
-
-from datetime import datetime
 from aiohttp import ClientSession
-
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from ..managers.configuration_manager import ConfigManager
 
-REQUIREMENTS = ['aiohttp']
+REQUIREMENTS = ["aiohttp"]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,7 +42,9 @@ class BlueIrisApi:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f"Failed to load BlueIris API, error: {ex}, line: {line_number}")
+            _LOGGER.error(
+                f"Failed to load BlueIris API, error: {ex}, line: {line_number}"
+            )
 
     @property
     def is_initialized(self):
@@ -75,14 +75,16 @@ class BlueIrisApi:
         result = None
 
         try:
-            async with self.session.post(self.url, data=json.dumps(data), ssl=False) as response:
-                _LOGGER.debug(f'Status of {self.url}: {response.status}')
+            async with self.session.post(
+                self.url, data=json.dumps(data), ssl=False
+            ) as response:
+                _LOGGER.debug(f"Status of {self.url}: {response.status}")
 
                 response.raise_for_status()
 
                 result = await response.json()
 
-                _LOGGER.debug(f'Full result of {data}: {result}')
+                _LOGGER.debug(f"Full result of {data}: {result}")
 
                 self._last_update = datetime.now()
 
@@ -90,7 +92,9 @@ class BlueIrisApi:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f'Failed to connect {self.url}, Error: {ex}, Line: {line_number}')
+            _LOGGER.error(
+                f"Failed to connect {self.url}, Error: {ex}, Line: {line_number}"
+            )
 
         return result
 
@@ -100,7 +104,9 @@ class BlueIrisApi:
         try:
             config_data = self.config_manager.data
 
-            self.base_url = f"{config_data.protocol}://{config_data.host}:{config_data.port}"
+            self.base_url = (
+                f"{config_data.protocol}://{config_data.host}:{config_data.port}"
+            )
             self.url = f"{self.base_url}/json"
 
             self.is_logged_in = False
@@ -122,7 +128,9 @@ class BlueIrisApi:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f"Failed to initialize BlueIris API ({self.base_url}), error: {ex}, line: {line_number}")
+            _LOGGER.error(
+                f"Failed to initialize BlueIris API ({self.base_url}), error: {ex}, line: {line_number}"
+            )
 
     async def async_update(self):
         await self.load_camera()
@@ -131,9 +139,7 @@ class BlueIrisApi:
     async def load_session_id(self):
         _LOGGER.info(f"Retrieving session ID")
 
-        request_data = {
-            "cmd": "login"
-        }
+        request_data = {"cmd": "login"}
 
         response = await self.async_post(request_data)
 
@@ -159,13 +165,13 @@ class BlueIrisApi:
 
                 token_request = f"{username}:{self.session_id}:{password}"
                 m = hashlib.md5()
-                m.update(token_request.encode('utf-8'))
+                m.update(token_request.encode("utf-8"))
                 token = m.hexdigest()
 
                 request_data = {
                     "cmd": "login",
                     "session": self.session_id,
-                    "response": token
+                    "response": token,
                 }
 
                 result = await self.async_post(request_data)
@@ -185,7 +191,7 @@ class BlueIrisApi:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f'Failed to login, Error: {ex}, Line: {line_number}')
+            _LOGGER.error(f"Failed to login, Error: {ex}, Line: {line_number}")
 
         self.is_logged_in = logged_in
 
@@ -194,10 +200,7 @@ class BlueIrisApi:
     async def load_camera(self):
         _LOGGER.info(f"Retrieving camera list")
 
-        request_data = {
-            "cmd": "camlist",
-            "session": self.session_id
-        }
+        request_data = {"cmd": "camlist", "session": self.session_id}
 
         response = await self.async_verified_post(request_data)
 
@@ -207,10 +210,7 @@ class BlueIrisApi:
     async def load_status(self):
         _LOGGER.info(f"Retrieving status")
 
-        request_data = {
-            "cmd": "status",
-            "session": self.session_id
-        }
+        request_data = {"cmd": "status", "session": self.session_id}
 
         response = await self.async_verified_post(request_data)
 
@@ -226,7 +226,7 @@ class BlueIrisApi:
         request_data = {
             "cmd": "status",
             "session": self.session_id,
-            "profile": profile_id
+            "profile": profile_id,
         }
 
         response = await self.async_verified_post(request_data)

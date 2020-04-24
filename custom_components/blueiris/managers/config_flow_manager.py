@@ -3,9 +3,8 @@ from typing import Optional
 
 from homeassistant.config_entries import ConfigEntry
 
-from ..helpers.const import *
 from ..api.blue_iris_api import BlueIrisApi
-
+from ..helpers.const import *
 from ..managers.configuration_manager import ConfigManager
 from ..managers.password_manager import PasswordManager
 from ..models.config_data import ConfigData
@@ -70,7 +69,7 @@ class ConfigFlowManager:
         if options is not None:
             if update_entry:
                 self.handle_password(options)
-                
+
             new_options = {}
             for key in options:
                 new_options[key] = options[key]
@@ -124,7 +123,7 @@ class ConfigFlowManager:
             CONF_USERNAME: config_data.username,
             CONF_PASSWORD: config_data.password_clear_text,
             CONF_EXCLUDE_SYSTEM_CAMERA: config_data.exclude_system_camera,
-            CONF_CLEAR_CREDENTIALS: False
+            CONF_CLEAR_CREDENTIALS: False,
         }
 
         fields = {}
@@ -150,19 +149,14 @@ class ConfigFlowManager:
 
         if not api.is_logged_in:
             _LOGGER.warning(f"Failed to access BlueIris Server ({config_data.host})")
-            errors = {
-                "base": "invalid_server_details"
-            }
+            errors = {"base": "invalid_server_details"}
         else:
             has_credentials = config_data.has_credentials
 
             if has_credentials and not api.data.get("admin", False):
-                _LOGGER.warning(f"Failed to login BlueIris ({config_data.host}) due to invalid credentials")
-                errors = {
-                    "base": "invalid_admin_credentials"
-                }
+                _LOGGER.warning(
+                    f"Failed to login BlueIris ({config_data.host}) due to invalid credentials"
+                )
+                errors = {"base": "invalid_admin_credentials"}
 
-        return {
-            "logged-in": errors is None,
-            "errors": errors
-        }
+        return {"logged-in": errors is None, "errors": errors}

@@ -5,26 +5,26 @@ https://home-assistant.io/components/blueiris/
 """
 import logging
 import sys
-
 from datetime import datetime
 from typing import Optional
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.entity_registry import async_get_registry as er_async_get_registry, EntityRegistry
+from homeassistant.helpers.entity_registry import EntityRegistry
+from homeassistant.helpers.entity_registry import (
+    async_get_registry as er_async_get_registry,
+)
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 
-from .configuration_manager import ConfigManager
-from .password_manager import PasswordManager
 from ..api.blue_iris_api import BlueIrisApi
-
 from ..helpers.advanced_configurations_generator import AdvancedConfigurationGenerator
 from ..helpers.const import *
-
+from ..models.config_data import ConfigData
+from .configuration_manager import ConfigManager
 from .device_manager import DeviceManager
 from .entity_manager import EntityManager
-from ..models.config_data import ConfigData
+from .password_manager import PasswordManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -77,7 +77,9 @@ class BlueIrisHomeAssistant:
             self._api = BlueIrisApi(self._hass, self._config_manager)
             self._entity_manager = EntityManager(self._hass, self)
             self._device_manager = DeviceManager(self._hass, self)
-            self._advanced_configuration_generator = AdvancedConfigurationGenerator(self._hass, self)
+            self._advanced_configuration_generator = AdvancedConfigurationGenerator(
+                self._hass, self
+            )
 
             def internal_async_init(now):
                 self._hass.async_create_task(self._async_init(now))
@@ -95,24 +97,34 @@ class BlueIrisHomeAssistant:
 
     async def _async_init(self, event_time):
         if not self._is_initialized:
-            _LOGGER.info(f"NOT INITIALIZED - Failed finalizing initialization of integration ({self.config_data.host})")
+            _LOGGER.info(
+                f"NOT INITIALIZED - Failed finalizing initialization of integration ({self.config_data.host})"
+            )
             return
 
-        _LOGGER.info(f"Finalizing initialization of integration ({self.config_data.host}) at {event_time}")
+        _LOGGER.info(
+            f"Finalizing initialization of integration ({self.config_data.host}) at {event_time}"
+        )
 
         load = self._hass.config_entries.async_forward_entry_setup
 
         for domain in SIGNALS:
-            self._hass.async_create_task(load(self._config_manager.config_entry, domain))
+            self._hass.async_create_task(
+                load(self._config_manager.config_entry, domain)
+            )
 
-        self._hass.services.async_register(DOMAIN,
-                                           'generate_advanced_configurations',
-                                           self._advanced_configuration_generator.generate_advanced_configurations)
+        self._hass.services.async_register(
+            DOMAIN,
+            "generate_advanced_configurations",
+            self._advanced_configuration_generator.generate_advanced_configurations,
+        )
 
         def update_entities(now):
             self._hass.async_create_task(self.async_update(now))
 
-        self._remove_async_track_time = async_track_time_interval(self._hass, update_entities, SCAN_INTERVAL)
+        self._remove_async_track_time = async_track_time_interval(
+            self._hass, update_entities, SCAN_INTERVAL
+        )
 
         await self.async_update_entry()
 
@@ -123,7 +135,9 @@ class BlueIrisHomeAssistant:
             entry = self._config_manager.config_entry
 
         if not self._is_initialized:
-            _LOGGER.info(f"NOT INITIALIZED - Failed handling ConfigEntry change: {entry.as_dict()}")
+            _LOGGER.info(
+                f"NOT INITIALIZED - Failed handling ConfigEntry change: {entry.as_dict()}"
+            )
             return
 
         _LOGGER.info(f"Handling ConfigEntry change: {entry.as_dict()}")
@@ -138,7 +152,7 @@ class BlueIrisHomeAssistant:
     async def async_remove(self):
         _LOGGER.info(f"Removing current integration - {self.config_data.host}")
 
-        self._hass.services.async_remove(DOMAIN, 'generate_advanced_configurations')
+        self._hass.services.async_remove(DOMAIN, "generate_advanced_configurations")
 
         if self._remove_async_track_time is not None:
             self._remove_async_track_time()
@@ -147,7 +161,9 @@ class BlueIrisHomeAssistant:
         unload = self._hass.config_entries.async_forward_entry_unload
 
         for domain in SUPPORTED_DOMAINS:
-            self._hass.async_create_task(unload(self._config_manager.config_entry, domain))
+            self._hass.async_create_task(
+                unload(self._config_manager.config_entry, domain)
+            )
 
         await self._device_manager.async_remove()
 
@@ -177,7 +193,7 @@ class BlueIrisHomeAssistant:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f'Failed to async_update, Error: {ex}, Line: {line_number}')
+            _LOGGER.error(f"Failed to async_update, Error: {ex}, Line: {line_number}")
 
         self._is_updating = False
 
@@ -191,7 +207,9 @@ class BlueIrisHomeAssistant:
 
             device_in_use = self.entity_manager.is_device_name_in_use(device_name)
 
-            entity_id = self.entity_registry.async_get_entity_id(domain, DOMAIN, unique_id)
+            entity_id = self.entity_registry.async_get_entity_id(
+                domain, DOMAIN, unique_id
+            )
             self.entity_registry.async_remove(entity_id)
 
             if not device_in_use:
@@ -200,7 +218,7 @@ class BlueIrisHomeAssistant:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(f'Failed to delete_entity, Error: {ex}, Line: {line_number}')
+            _LOGGER.error(f"Failed to delete_entity, Error: {ex}, Line: {line_number}")
 
     async def dispatch_all(self):
         if not self._is_initialized:

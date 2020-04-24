@@ -1,10 +1,9 @@
-import sys
 import logging
-
-from typing import Optional, Any, Callable
+import sys
+from typing import Any, Callable, Optional
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import callback, HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import Entity
 
@@ -15,11 +14,13 @@ from .entity_data import EntityData
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_base_entry(hass: HomeAssistant,
-                                 entry: ConfigEntry,
-                                 async_add_entities,
-                                 domain: str,
-                                 component: Callable[[HomeAssistant, Any, EntityData], Any]):
+async def async_setup_base_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities,
+    domain: str,
+    component: Callable[[HomeAssistant, Any, EntityData], Any],
+):
 
     """Set up EdgeOS based off an entry."""
     _LOGGER.debug(f"Starting async_setup_entry {domain}")
@@ -40,6 +41,7 @@ async def async_setup_base_entry(hass: HomeAssistant,
 
 class BlueIrisEntity(Entity):
     """Representation a binary sensor that is updated by BlueIris."""
+
     hass: HomeAssistant = None
     integration_name: str = None
     entity: EntityData = None
@@ -51,7 +53,13 @@ class BlueIrisEntity(Entity):
     device_manager = None
     api = None
 
-    def initialize(self, hass: HomeAssistant, integration_name: str, entity: EntityData, current_domain: str):
+    def initialize(
+        self,
+        hass: HomeAssistant,
+        integration_name: str,
+        entity: EntityData,
+        current_domain: str,
+    ):
         self.hass = hass
         self.integration_name = integration_name
         self.entity = entity
@@ -89,9 +97,9 @@ class BlueIrisEntity(Entity):
 
     async def async_added_to_hass(self):
         """Register callbacks."""
-        async_dispatcher_connect(self.hass,
-                                 SIGNALS[self.current_domain],
-                                 self._schedule_immediate_update)
+        async_dispatcher_connect(
+            self.hass, SIGNALS[self.current_domain], self._schedule_immediate_update
+        )
 
         await self.async_added_to_hass_local()
 
@@ -108,12 +116,16 @@ class BlueIrisEntity(Entity):
 
     async def _async_schedule_immediate_update(self):
         if self.entity_manager is None:
-            _LOGGER.debug(f"Cannot update {self.current_domain} - Entity Manager is None | {self.name}")
+            _LOGGER.debug(
+                f"Cannot update {self.current_domain} - Entity Manager is None | {self.name}"
+            )
         else:
             if self.entity is not None:
                 previous_state = self.entity.state
 
-                self.entity = self.entity_manager.get_entity(self.current_domain, self.name)
+                self.entity = self.entity_manager.get_entity(
+                    self.current_domain, self.name
+                )
 
                 if self.entity is not None:
                     self._immediate_update(previous_state)

@@ -6,7 +6,6 @@ from homeassistant.helpers.event import async_call_later
 
 from ..helpers.const import *
 from .base import BlueIrisBinarySensor
-from ..models.entity_data import EntityData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +25,9 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
-            _LOGGER.debug(f"{self.name} updated from {previous_state} to {self.entity.state}")
+            _LOGGER.debug(
+                f"{self.name} updated from {previous_state} to {self.entity.state}"
+            )
 
         is_trigger_off = self.state == STATE_OFF
         current_timestamp = datetime.now().timestamp()

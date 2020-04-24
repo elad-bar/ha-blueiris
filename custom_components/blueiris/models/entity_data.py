@@ -45,7 +45,7 @@ class EntityData:
             ENTITY_EVENT: self.event,
             ENTITY_DEVICE_CLASS: self.device_class,
             ENTITY_BINARY_SENSOR_TYPE: self.type,
-            ENTITY_CAMERA_DETAILS: self.details
+            ENTITY_CAMERA_DETAILS: self.details,
         }
 
         to_string = f"{obj}"

@@ -6,8 +6,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 
 from . import get_ha
-from .managers.config_flow_manager import ConfigFlowManager
 from .helpers.const import *
+from .managers.config_flow_manager import ConfigFlowManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,15 +56,20 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow):
             else:
                 _LOGGER.warning(f"{DEFAULT_NAME} ({host}) already configured")
 
-                return self.async_abort(reason="already_configured",
-                                        description_placeholders=user_input)
+                return self.async_abort(
+                    reason="already_configured", description_placeholders=user_input
+                )
 
             if errors is None:
-                return self.async_create_entry(title=self._config_flow.config_data.host, data=user_input)
+                return self.async_create_entry(
+                    title=self._config_flow.config_data.host, data=user_input
+                )
 
         data_schema = self._config_flow.get_default_data()
 
-        return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
+        return self.async_show_form(
+            step_id="user", data_schema=data_schema, errors=errors
+        )
 
     async def async_step_import(self, info):
         """Import existing configuration from BlueIris."""
@@ -107,5 +112,5 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="blue_iris_additional_settings",
             data_schema=data_schema,
             errors=errors,
-            description_placeholders=self._config_flow.data
+            description_placeholders=self._config_flow.data,
         )

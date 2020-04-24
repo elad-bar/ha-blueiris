@@ -1,4 +1,5 @@
 import logging
+
 from homeassistant.helpers.device_registry import async_get_registry
 
 from ..helpers.const import *
@@ -60,13 +61,11 @@ class DeviceManager:
         device_name = f"{system_name} Server"
 
         device_info = {
-            "identifiers": {
-                (DEFAULT_NAME, device_name)
-            },
+            "identifiers": {(DEFAULT_NAME, device_name)},
             "name": device_name,
             "manufacturer": DEFAULT_NAME,
             "model": "Server",
-            "sw_version": version
+            "sw_version": version,
         }
 
         self.set(device_name, device_info)
@@ -78,12 +77,10 @@ class DeviceManager:
         device_name = f"{camera_name} ({camera_id})"
 
         device_info = {
-            "identifiers": {
-                (DEFAULT_NAME, device_name)
-            },
+            "identifiers": {(DEFAULT_NAME, device_name)},
             "name": device_name,
             "manufacturer": DEFAULT_NAME,
-            "model": "Camera"
+            "model": "Camera",
         }
 
         self.set(device_name, device_info)

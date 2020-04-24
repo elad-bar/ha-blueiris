@@ -1,12 +1,12 @@
 import json
 import logging
 
-from datetime import datetime
-from homeassistant.core import callback
-from homeassistant.components.binary_sensor import BinarySensorDevice, STATE_ON
+from homeassistant.components.binary_sensor import STATE_ON, BinarySensorDevice
 from homeassistant.components.mqtt import Message, async_subscribe
+from homeassistant.core import callback
 
 from custom_components.blueiris.models.base_entity import BlueIrisEntity
+
 from ..helpers.const import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,19 +37,22 @@ class BlueIrisMainBinarySensor(BinarySensorDevice, BlueIrisEntity):
     async def async_added_to_hass_local(self):
         """Subscribe MQTT events."""
         _LOGGER.info(f"Added new {self.name}")
-        _LOGGER.debug(f"Subscribing to MQTT topics '{MQTT_ALL_TOPIC}', QOS: {DEFAULT_QOS}")
+        _LOGGER.debug(
+            f"Subscribing to MQTT topics '{MQTT_ALL_TOPIC}', QOS: {DEFAULT_QOS}"
+        )
 
         @callback
         def state_message_received(message: Message):
             """Handle a new received MQTT state message."""
-            _LOGGER.debug(f"Received BlueIris Message - {message.topic}: {message.payload}")
+            _LOGGER.debug(
+                f"Received BlueIris Message - {message.topic}: {message.payload}"
+            )
 
             self._state_message_received(message)
 
-        self.remove_subscription = await async_subscribe(self.hass,
-                                                         MQTT_ALL_TOPIC,
-                                                         state_message_received,
-                                                         DEFAULT_QOS)
+        self.remove_subscription = await async_subscribe(
+            self.hass, MQTT_ALL_TOPIC, state_message_received, DEFAULT_QOS
+        )
 
     async def async_will_remove_from_hass_local(self):
         if self.remove_subscription is not None:
@@ -76,6 +79,8 @@ class BlueIrisMainBinarySensor(BinarySensorDevice, BlueIrisEntity):
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
-            _LOGGER.debug(f"{self.name} updated from {previous_state} to {self.entity.state}")
+            _LOGGER.debug(
+                f"{self.name} updated from {previous_state} to {self.entity.state}"
+            )
 
         super()._immediate_update(previous_state)

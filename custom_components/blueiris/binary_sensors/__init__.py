@@ -1,18 +1,17 @@
 from homeassistant.core import HomeAssistant
 
-from .main import BlueIrisMainBinarySensor
-from .audio import BlueIrisAudioBinarySensor
-from .connectivity import BlueIrisConnectivityBinarySensor
-from .motion import BlueIrisMotionBinarySensor
-
 from ..helpers.const import *
 from ..models.entity_data import EntityData
+from .audio import BlueIrisAudioBinarySensor
+from .connectivity import BlueIrisConnectivityBinarySensor
+from .main import BlueIrisMainBinarySensor
+from .motion import BlueIrisMotionBinarySensor
 
 BINARY_SENSOR_TYPES = {
     SENSOR_CONNECTIVITY_NAME: BlueIrisConnectivityBinarySensor,
     SENSOR_MOTION_NAME: BlueIrisMotionBinarySensor,
     SENSOR_AUDIO_NAME: BlueIrisAudioBinarySensor,
-    SENSOR_MAIN_NAME: BlueIrisMainBinarySensor
+    SENSOR_MAIN_NAME: BlueIrisMainBinarySensor,
 }
 
 CURRENT_DOMAIN = DOMAIN_BINARY_SENSOR
