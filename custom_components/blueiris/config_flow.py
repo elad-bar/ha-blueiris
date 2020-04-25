@@ -104,6 +104,15 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
             errors = result.get("errors")
 
             if errors is None:
+                if user_input.get(CONF_GENERATE_CONFIG_FILES, False):
+                    ha = get_ha(self.hass, self._config_flow.config_data.host)
+
+                    if ha is not None:
+                        ha.generate_config_files()
+
+                del user_input[CONF_CLEAR_CREDENTIALS]
+                del user_input[CONF_GENERATE_CONFIG_FILES]
+
                 return self.async_create_entry(title="", data=user_input)
 
         data_schema = self._config_flow.get_default_options()

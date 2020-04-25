@@ -9,6 +9,7 @@ class ConfigData:
     password: str
     password_clear_text: str
     exclude_system_camera: bool
+    log_level: str
 
     def __init__(self):
         self.host = ""
@@ -18,6 +19,7 @@ class ConfigData:
         self.password = ""
         self.password_clear_text = ""
         self.exclude_system_camera = False
+        self.log_level = LOG_LEVEL_DEFAULT
 
     @property
     def protocol(self):
@@ -33,3 +35,18 @@ class ConfigData:
         has_credentials = has_username or has_password
 
         return has_credentials
+
+    def __repr__(self):
+        obj = {
+            CONF_HOST: self.host,
+            CONF_PORT: self.port,
+            CONF_SSL: self.ssl,
+            CONF_USERNAME: self.username,
+            CONF_PASSWORD: self.password,
+            CONF_EXCLUDE_SYSTEM_CAMERA: self.exclude_system_camera,
+            CONF_LOG_LEVEL: self.log_level,
+        }
+
+        to_string = f"{obj}"
+
+        return to_string

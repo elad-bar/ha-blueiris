@@ -4,6 +4,7 @@ from homeassistant.components.media_player import SUPPORT_PLAY_MEDIA
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
 
+from ..models.entity_data import EntityData
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,15 +24,14 @@ class AdvancedConfigurationGenerator:
         self._hass = hass
 
         self._ha = ha
-        self._api = self._ha.api
 
-    def generate_advanced_configurations(self, event_time):
+    def generate(self, event_time):
         _LOGGER.info(f"Started to generate advanced configuration @ {event_time}")
         components_path = self._hass.config.path("blueiris.components.yaml")
         lovelace_path = self._hass.config.path("blueiris.lovelace.yaml")
 
         camera_list = self._ha.api.camera_list
-        media_players = self._hass.states.entity_ids("media_player")
+        media_players = self._hass.states.async_entity_ids("media_player")
 
         input_select_camera = self.generate_input_select_camera(camera_list)
         input_select_media_player = self.generate_input_select_media_player(
@@ -130,7 +130,7 @@ class AdvancedConfigurationGenerator:
 
         for camera_entity_name in camera_entities:
             camera_entity = camera_entities[camera_entity_name]
-            camera_entity_id = camera_entity.get(ENTITY_ID)
+            camera_entity_id = camera_entity.id
 
             ui_component = {DOMAIN_CAMERA: camera_entity}
 
@@ -138,7 +138,7 @@ class AdvancedConfigurationGenerator:
                 binary_sensors_entity = binary_sensors_entities[
                     binary_sensors_entity_name
                 ]
-                binary_sensors_entity_id = binary_sensors_entity.get(ENTITY_ID)
+                binary_sensors_entity_id = binary_sensors_entity.id
 
                 if binary_sensors_entity_id == camera_entity_id:
                     if DOMAIN_BINARY_SENSOR not in ui_component:
@@ -155,7 +155,7 @@ class AdvancedConfigurationGenerator:
 
         for binary_sensors_entity_name in binary_sensors_entities:
             binary_sensors_entity = binary_sensors_entities[binary_sensors_entity_name]
-            binary_sensors_entity_id = binary_sensors_entity.get(ENTITY_ID)
+            binary_sensors_entity_id = binary_sensors_entity.id
 
             if binary_sensors_entity_id is None:
                 if DOMAIN_BINARY_SENSOR not in ui_system_components:
@@ -184,7 +184,7 @@ class AdvancedConfigurationGenerator:
             system_component_domain = ui_system_components[system_component_domain_name]
 
             for system_component_domain_entity in system_component_domain:
-                entity_name = system_component_domain_entity.get(ENTITY_NAME)
+                entity_name = system_component_domain_entity.name
                 lines.append(
                     f"            - {system_component_domain_name}.{slugify(entity_name)}"
                 )
@@ -201,8 +201,8 @@ class AdvancedConfigurationGenerator:
         lines.append(f"    cards:")
 
         for camera_item in camera_list:
-            camera = camera_item[DOMAIN_CAMERA]
-            camera_name = camera.get(ENTITY_NAME)
+            camera: EntityData = camera_item[DOMAIN_CAMERA]
+            camera_name = camera.name
 
             lines.append(f"      - camera_image: camera.{slugify(camera_name)}")
             lines.append(f"        type: picture-glance")
@@ -213,8 +213,8 @@ class AdvancedConfigurationGenerator:
                 binary_sensors = camera_item[DOMAIN_BINARY_SENSOR]
 
                 for binary_sensor_name in binary_sensors:
-                    binary_sensor = binary_sensors[binary_sensor_name]
-                    binary_sensor_type = binary_sensor[ENTITY_EVENT]
+                    binary_sensor: EntityData = binary_sensors[binary_sensor_name]
+                    binary_sensor_type = binary_sensor.event
 
                     lines.append(
                         f"            - entity: binary_sensor.{slugify(binary_sensor_name)}"
@@ -273,8 +273,8 @@ class AdvancedConfigurationGenerator:
         return result
 
     def get_cast_template(self):
-        username = self._ha.api.username
-        password = self._ha.api.password
+        username = self._ha.config_data.username
+        password = self._ha.config_data.password_clear_text
 
         credentials = ""
         if username is not None and password is not None:

@@ -119,21 +119,18 @@ class ConfigFlowManager:
     def get_default_options(self):
         config_data = self.config_data
 
-        options = {
-            CONF_USERNAME: config_data.username,
-            CONF_PASSWORD: config_data.password_clear_text,
-            CONF_EXCLUDE_SYSTEM_CAMERA: config_data.exclude_system_camera,
-            CONF_CLEAR_CREDENTIALS: False,
+        fields = {
+            vol.Optional(CONF_USERNAME, default=config_data.username): str,
+            vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text): str,
+            vol.Optional(CONF_CLEAR_CREDENTIALS, default=False): bool,
+            vol.Optional(
+                CONF_EXCLUDE_SYSTEM_CAMERA, default=config_data.exclude_system_camera
+            ): bool,
+            vol.Optional(CONF_GENERATE_CONFIG_FILES, default=False): bool,
+            vol.Required(CONF_LOG_LEVEL, default=config_data.log_level): vol.In(
+                LOG_LEVELS
+            ),
         }
-
-        fields = {}
-        for option in options:
-            current_value = options[option]
-            obj_type = str
-            if option in [CONF_EXCLUDE_SYSTEM_CAMERA, CONF_CLEAR_CREDENTIALS]:
-                obj_type = bool
-
-            fields[vol.Optional(option, default=current_value)] = obj_type
 
         data_schema = vol.Schema(fields)
 

@@ -31,7 +31,9 @@
                   "username": "Username",
                   "password": "Password",
                   "exclude-system-camera": "Exclude system camera",
-                  "clear-credentials": "Clear credentials"
+                  "clear-credentials": "Clear credentials",
+                  "log_level": "Log level",
+                  "generate-config-files": "Generate configuration files"
               }
           }
       },

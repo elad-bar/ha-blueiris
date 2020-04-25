@@ -1,4 +1,0 @@
-update:
-  description: "Updates the data from Blue Iris WebServer"
-generate_advanced_configurations:
-  description: "Create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml"

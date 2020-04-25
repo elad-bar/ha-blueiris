@@ -25,21 +25,38 @@ Look for "Integration with Blue Iris NVR" and install
 
 #### Integration settings
 ###### Basic configuration (Configuration -> Integrations -> Add BlueIris)
-```
-host: hostname or ip
-port: port 
-username: Username of admin user for BI
-password: Password of admin user for BI 
-ssl: should use ssl?
-```
+Fields name | Type | Required | Default | Description
+--- | --- | --- | --- | --- |
+Host | Texbox | + | None | Hostname or IP address of the BlueIris server
+Host | Textbox | + | 0 | HTTP Port to access BlueIris server
+SSL | Check-box | + | Unchecked | Is SSL supported?
+Username | Textbox | - | | Username of admin user for BlueIris server
+Password | Textbox | - | | Password of admin user for BlueIris server
 
 ###### Integration options (Configuration -> Integrations -> BlueIris Integration -> Options)  
-```
-Username: Username of admin user for BI 
-Password: Password of admin user for BI
-Clear credentials: Checkbox, workaround to clear the textbox of username & password due to an issue while filling partially form in HA Options, default=False
-Exclude system camera: should include / exclude system camera (All / Cycle), default=False
-```
+Fields name | Type | Required | Default | Description
+--- | --- | --- | --- | --- |
+Username | Textbox | - | Last stored username | Username of admin user for BlueIris server
+Password | Textbox | - | Last stored password | Password of admin user for BlueIris server
+Clear credentials | Check-box | + | Unchecked | Workaround to clear the username & password since there is not support for optional fields (Not being stored under options)
+SSL | Check-box | + | Unchecked |  Will take generate store and configuration for HA, more details below (Not being stored under options)
+SSL | Drop-down | + | Default | Changes component's log level (more details below)
+
+######## Log Level's drop-down
+New feature to set the log level for the component without need to set log_level in `customization:` and restart or call manually `logger.set_level` and loose it after restart.
+
+Upon startup or integration's option update, based on the value chosen, the component will make a service call to `logger.set_level` for that component with the desired value,
+
+In case `Default` option is chosen, flow will skip calling the service, after changing from any other option to `Default`, it will not take place automatically, only after restart
+
+###### Auto-generating configurations files:
+Will create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml:
+- Input select (drop-downs)
+- Script to cast based on the selection
+- UI of all the components created by BlueIris based on the description above
+
+[Example of configuration output](https://github.com/elad-bar/ha-blueiris/blob/master/docs/configs/casting/configuration.yaml)
+
 
 ###### Configuration validations
 Upon submitting the form of creating an integration or updating options,
@@ -62,76 +79,59 @@ EdgeOS password is not encrypted, please remove integration and reintegrate
 ## Components
 
 ###### Binary Sensor - Alerts
-```
-State: represents whether there is an active alert or not
-Attributes:
-    Active alerts #
-    System name
-    Version
-    License
-    Support expiration
-    Logged in User
-    Latitude
-    Longitude
-```
+Represents whether there is an active alert or not
+
+Attributes | 
+--- | 
+Active alerts # |
+System name |
+Version |
+License |
+Support expiration |
+Logged in User |
+Latitude |
+Longitude |
 
 ###### Binary Sensor - Connectivity - Non-system-camera
-```
-State: represents whether the camera is online or not (based on MQTT message)
-```
+Represents whether the camera is online or not (based on MQTT message)
 
 ###### Binary Sensor - Audio - Non-system-camera and camera supports audio
-```
-State: represents whether the camera is triggered for noise or not (based on MQTT message)
-```
+Represents whether the camera is triggered for noise or not (based on MQTT message)
 
 ###### Binary Sensor - Motion - Non-system-camera
-```
-State: represents whether the camera is triggered for motion or not (based on MQTT message)
-```
+Represents whether the camera is triggered for motion or not (based on MQTT message)
 
 ###### Camera
-```
 State: Idle
-Attributes:
-    FPS
-    Audio support
-    Width
-    Height
-    Is Online
-    Is Recording
-    Issue (Camera is yellow)
-    Alerts #
-    Triggers #
-    Clips #
-    No Signal #
-    Error
-```
+
+Attributes | 
+--- | 
+FPS |
+Audio support |
+Width |
+Height |
+Is Online |
+Is Recording |
+Issue (Camera is yellow) |
+Alerts # |
+Triggers # |
+Clips # |
+No Signal # |
+Error |
 
 ###### Switch - Profile (Per profile)
+Allows to set the active profile, only one of the profile switches can be turned on at a time
+
 If you are turning off one of the switch it will work according to the following order:
 Profile #1 turned off, will turn on Profile #0
 All the other profiles upon turning off, will turn on Profile #1
 
-```
-State: Allows to set the active profile, only one of the profile switches can be turned on at a time
-```
-
-
 ## Lovelace UI Configuration
-[Example of UI layout](https://github.com/elad-bar/ha-blueiris/blob/master/docs/config/casting/configuration.yaml)
+[Example of UI layout](https://github.com/elad-bar/ha-blueiris/blob/master/docs/configs/casting/configuration.yaml)
 
 ## Casting
 
 Currently the Stream Component is a bit ragged to use to cast Blue Iris video streams, which don't need proxying.
-
-#### Auto-generating configurations service:
-`blueiris.generate_advanced_configurations` service will create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml:
-- Input select (drop-downs)
-- Script to cast based on the selection
-- UI of all the components created by BlueIris based on the description above
-
-[Example of configuration output](https://github.com/elad-bar/ha-blueiris/blob/master/docs/config/casting/configuration.yaml)
 
 #### Lovelace UI for casting
 
@@ -146,7 +146,7 @@ Currently the Stream Component is a bit ragged to use to cast Blue Iris video st
       - entity: script.execute_cast_dropdown
 ```
 
-[Example of configuration output](https://github.com/elad-bar/ha-blueiris/blob/master/docs/config/casting/ui-lovelace.yaml)
+[Example of configuration output](https://github.com/elad-bar/ha-blueiris/blob/master/docs/configs/casting/ui-lovelace.yaml)
 
 ## Contributors
 

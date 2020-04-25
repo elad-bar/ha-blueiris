@@ -30,6 +30,7 @@ class ConfigManager:
             result.password_clear_text = self.password_manager.decrypt(result.password)
 
         result.exclude_system_camera = options.get(CONF_EXCLUDE_SYSTEM_CAMERA, False)
+        result.log_level = options.get(CONF_LOG_LEVEL, LOG_LEVEL_DEFAULT)
 
         self.config_entry = config_entry
         self.data = result

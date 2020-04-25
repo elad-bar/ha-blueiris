@@ -28,6 +28,8 @@ from homeassistant.const import (
     CONF_USERNAME,
 )
 
+CONF_LOG_LEVEL = "log_level"
+
 VERSION = "2.0.0"
 
 DOMAIN = "blueiris"
@@ -40,6 +42,9 @@ DEFAULT_NAME = "BlueIris"
 DEFAULT_PORT = 80
 
 DOMAIN_KEY_FILE = f"{DOMAIN}.key"
+
+DOMAIN_LOGGER = "logger"
+SERVICE_SET_LEVEL = "set_level"
 
 ATTR_ADMIN_PROFILE = "Profile"
 ATTR_SYSTEM_CAMERA_ALL_NAME = "All"
@@ -173,6 +178,7 @@ ENTITY_STATUS_CANCELLED = f"{ENTITY_STATUS}-cancelled"
 
 CONF_EXCLUDE_SYSTEM_CAMERA = "exclude-system-camera"
 CONF_CLEAR_CREDENTIALS = "clear-credentials"
+CONF_GENERATE_CONFIG_FILES = "generate-config-files"
 
 DOMAIN_LOAD = "load"
 DOMAIN_UNLOAD = "unload"
@@ -182,3 +188,17 @@ CONF_LIMIT_REFETCH_TO_URL_CHANGE = "limit_refetch_to_url_change"
 CONF_STILL_IMAGE_URL = "still_image_url"
 CONF_STREAM_SOURCE = "stream_source"
 CONF_FRAMERATE = "framerate"
+
+LOG_LEVEL_DEFAULT = "Default"
+LOG_LEVEL_DEBUG = "Debug"
+LOG_LEVEL_INFO = "Info"
+LOG_LEVEL_WARNING = "Warning"
+LOG_LEVEL_ERROR = "Error"
+
+LOG_LEVELS = [
+    LOG_LEVEL_DEFAULT,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_ERROR,
+]

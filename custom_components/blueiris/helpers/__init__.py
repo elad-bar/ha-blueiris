@@ -45,3 +45,14 @@ async def async_set_ha(hass: HomeAssistant, host, entry: ConfigEntry):
         line_number = tb.tb_lineno
 
         _LOGGER.error(f"Failed to async_set_ha, error: {ex}, line: {line_number}")
+
+
+async def handle_log_level(hass: HomeAssistant, entry: ConfigEntry):
+    log_level = entry.options.get(CONF_LOG_LEVEL, LOG_LEVEL_DEFAULT)
+
+    if log_level == LOG_LEVEL_DEFAULT:
+        return
+
+    log_level_data = {f"custom_components.{DOMAIN}": log_level.lower()}
+
+    await hass.services.async_call(DOMAIN_LOGGER, SERVICE_SET_LEVEL, log_level_data)

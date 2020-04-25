@@ -1,5 +1,16 @@
 # Changelog
 
+## 2020-04-25
+
+**Implemented enhancements:**
+
+- Moved auto-generating configurations service `blueiris.generate_advanced_configurations` to Integration -> Options
+- Added ability to configure the log level of the component from Integration - Options, more details in README
+
+**Fixed bugs:**
+
+- Fix [\#56](https://github.com/elad-bar/ha-bleuiris/issues/51) configuration generating process and README links
+
 ## 2020-04-24 #2
 
 **Fixed bugs:**

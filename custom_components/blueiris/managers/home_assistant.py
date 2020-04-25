@@ -43,7 +43,7 @@ class BlueIrisHomeAssistant:
         self._api = None
         self._entity_manager = None
         self._device_manager = None
-        self._advanced_configuration_generator = None
+        self._config_generator: Optional[AdvancedConfigurationGenerator] = None
 
         self._config_manager = ConfigManager(password_manager)
 
@@ -77,9 +77,7 @@ class BlueIrisHomeAssistant:
             self._api = BlueIrisApi(self._hass, self._config_manager)
             self._entity_manager = EntityManager(self._hass, self)
             self._device_manager = DeviceManager(self._hass, self)
-            self._advanced_configuration_generator = AdvancedConfigurationGenerator(
-                self._hass, self
-            )
+            self._config_generator = AdvancedConfigurationGenerator(self._hass, self)
 
             def internal_async_init(now):
                 self._hass.async_create_task(self._async_init(now))
@@ -113,12 +111,6 @@ class BlueIrisHomeAssistant:
                 load(self._config_manager.config_entry, domain)
             )
 
-        self._hass.services.async_register(
-            DOMAIN,
-            "generate_advanced_configurations",
-            self._advanced_configuration_generator.generate_advanced_configurations,
-        )
-
         def update_entities(now):
             self._hass.async_create_task(self.async_update(now))
 
@@ -151,8 +143,6 @@ class BlueIrisHomeAssistant:
 
     async def async_remove(self):
         _LOGGER.info(f"Removing current integration - {self.config_data.host}")
-
-        self._hass.services.async_remove(DOMAIN, "generate_advanced_configurations")
 
         if self._remove_async_track_time is not None:
             self._remove_async_track_time()
@@ -229,3 +219,6 @@ class BlueIrisHomeAssistant:
             signal = SIGNALS.get(domain)
 
             async_dispatcher_send(self._hass, signal)
+
+    def generate_config_files(self):
+        self._config_generator.generate(datetime.now())
