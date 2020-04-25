@@ -39,8 +39,8 @@ Fields name | Type | Required | Default | Description
 Username | Textbox | - | Last stored username | Username of admin user for BlueIris server
 Password | Textbox | - | Last stored password | Password of admin user for BlueIris server
 Clear credentials | Check-box | + | Unchecked | Workaround to clear the username & password since there is not support for optional fields (Not being stored under options)
-SSL | Check-box | + | Unchecked |  Will take generate store and configuration for HA, more details below (Not being stored under options)
-SSL | Drop-down | + | Default | Changes component's log level (more details below)
+Generate configurations | Check-box | + | Unchecked |  Will take generate store and configuration for HA, more details below (Not being stored under options)
+Log level | Drop-down | + | Default | Changes component's log level (more details below)
 
 ######## Log Level's drop-down
 New feature to set the log level for the component without need to set log_level in `customization:` and restart or call manually `logger.set_level` and loose it after restart.

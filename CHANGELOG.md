@@ -1,6 +1,12 @@
 # Changelog
 
-## 2020-04-25
+## 2020-04-25 #2
+
+**Fixed bugs:**
+
+- Fix log message restored appeared when it shouldn't
+
+## 2020-04-25 #1
 
 **Implemented enhancements:**
 

@@ -204,9 +204,11 @@ class EntityManager:
                                 restored = True
                             else:
                                 restored = state.attributes.get("restored", False)
-                                _LOGGER.info(
-                                    f"Entity {entity.name} restored | {entity_id}"
-                                )
+
+                                if restored:
+                                    _LOGGER.info(
+                                        f"Entity {entity.name} restored | {entity_id}"
+                                    )
 
                             if restored:
                                 entities_to_add.append(entity_component)
