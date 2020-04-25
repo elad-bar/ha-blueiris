@@ -9,7 +9,7 @@
 
 **Fixed bugs:**
 
-- Fix [\#56](https://github.com/elad-bar/ha-bleuiris/issues/51) configuration generating process and README links
+- Fix [\#60](https://github.com/elad-bar/ha-bleuiris/issues/60) configuration generating process and README links
 
 ## 2020-04-24 #2
 
