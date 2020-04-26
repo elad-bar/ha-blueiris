@@ -211,7 +211,10 @@ class EntityManager:
                                     )
 
                             if restored:
-                                entities_to_add.append(entity_component)
+                                entity_item = self.entity_registry.async_get(entity_id)
+
+                                if entity_item is None or not entity_item.disabled:
+                                    entities_to_add.append(entity_component)
                         else:
                             entities_to_add.append(entity_component)
 

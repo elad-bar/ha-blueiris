@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-04-26
+
+**Fixed bugs:**
+
+- Fix [\#62](https://github.com/elad-bar/ha-bleuiris/issues/62) disabled entities are getting enabled after periodic update (update interval)
+
 ## 2020-04-25 #2
 
 **Fixed bugs:**
