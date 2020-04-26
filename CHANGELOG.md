@@ -4,6 +4,7 @@
 
 **Fixed bugs:**
 
+- Removed limitation of one instance only
 - Fix [\#62](https://github.com/elad-bar/ha-bleuiris/issues/62) disabled entities are getting enabled after periodic update (update interval)
 
 ## 2020-04-25 #2

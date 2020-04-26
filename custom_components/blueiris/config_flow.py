@@ -36,9 +36,6 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow):
         """Handle a flow start."""
         _LOGGER.debug(f"Starting async_step_user of {DOMAIN}")
 
-        if self._async_current_entries():
-            return self.async_abort(reason="one_instance_only")
-
         errors = None
 
         self._config_flow.initialize(self.hass)
