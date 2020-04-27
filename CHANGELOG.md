@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-04-27
+
+**Fixed bugs:**
+
+- Fix disabled entities still being triggered for updates
+
 ## 2020-04-26
 
 **Fixed bugs:**

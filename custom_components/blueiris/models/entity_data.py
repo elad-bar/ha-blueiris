@@ -15,6 +15,7 @@ class EntityData:
     device_class: str
     type: str
     details: dict
+    disabled: bool
 
     def __init__(self):
         self.id = ""
@@ -30,6 +31,7 @@ class EntityData:
         self.device_class = ""
         self.type = ""
         self.details = {}
+        self.disabled = False
 
     def __repr__(self):
         obj = {
@@ -46,6 +48,7 @@ class EntityData:
             ENTITY_DEVICE_CLASS: self.device_class,
             ENTITY_BINARY_SENSOR_TYPE: self.type,
             ENTITY_CAMERA_DETAILS: self.details,
+            ENTITY_DISABLED: self.disabled,
         }
 
         to_string = f"{obj}"

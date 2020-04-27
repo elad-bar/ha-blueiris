@@ -166,6 +166,7 @@ ENTITY_DEVICE_CLASS = "device-class"
 ENTITY_DEVICE_NAME = "device-name"
 ENTITY_CAMERA_DETAILS = "camera-details"
 ENTITY_BINARY_SENSOR_TYPE = "binary-sensor-type"
+ENTITY_DISABLED = "disabled"
 
 
 ENTITY_STATUS = "entity-status"
