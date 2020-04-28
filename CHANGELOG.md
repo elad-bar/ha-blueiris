@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-04-28
+
+**Fixed bugs:**
+
+- Fix disabled entity check throws an exception in logs
+
 ## 2020-04-27
 
 **Fixed bugs:**

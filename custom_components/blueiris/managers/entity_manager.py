@@ -219,7 +219,9 @@ class EntityManager:
                             entities_to_add.append(entity_component)
 
                         entity.status = ENTITY_STATUS_READY
-                        entity.disabled = entity_item.disabled
+
+                        if entity_item is not None:
+                            entity.disabled = entity_item.disabled
 
                 step = f"Add entities to {domain}"
 
