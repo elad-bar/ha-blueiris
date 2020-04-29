@@ -30,10 +30,15 @@
               "data": {
                   "username": "Username",
                   "password": "Password",
-                  "exclude-system-camera": "Exclude system camera",
                   "clear-credentials": "Clear credentials",
                   "log_level": "Log level",
-                  "generate-config-files": "Generate configuration files"
+                  "generate-config-files": "Generate configuration files",
+                  "allowed_camera": "Camera components",
+                  "allowed_profile": "Profile switches",
+                  "allowed_motion_sensor": "Motion sensors",
+                  "allowed_audio_sensor": "Audio sensors",
+                  "allowed_connectivity_sensor": "Connectivity sensors",
+                  "reset-components-settings": "Reset components settings to default"
               }
           }
       },

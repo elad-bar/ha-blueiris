@@ -125,7 +125,10 @@ class BlueIrisEntity(Entity):
 
                 entity = self.entity_manager.get_entity(self.current_domain, self.name)
 
-                if entity.disabled:
+                if entity is None:
+                    _LOGGER.debug(f"Skip updating {self.name}, Entity is None")
+
+                elif entity.disabled:
                     _LOGGER.debug(f"Skip updating {self.name}, Entity is disabled")
 
                 else:

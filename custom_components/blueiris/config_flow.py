@@ -62,7 +62,7 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow):
                     title=self._config_flow.config_data.host, data=user_input
                 )
 
-        data_schema = self._config_flow.get_default_data()
+        data_schema = self._config_flow.get_default_data(user_input)
 
         return self.async_show_form(
             step_id="user", data_schema=data_schema, errors=errors
@@ -101,6 +101,22 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
             errors = result.get("errors")
 
             if errors is None:
+                if user_input.get(CONF_RESET_COMPONENTS_SETTINGS, False):
+                    if CONF_ALLOWED_CAMERA in user_input:
+                        del user_input[CONF_ALLOWED_CAMERA]
+
+                    if CONF_ALLOWED_AUDIO_SENSOR in user_input:
+                        del user_input[CONF_ALLOWED_AUDIO_SENSOR]
+
+                    if CONF_ALLOWED_MOTION_SENSOR in user_input:
+                        del user_input[CONF_ALLOWED_MOTION_SENSOR]
+
+                    if CONF_ALLOWED_CONNECTIVITY_SENSOR in user_input:
+                        del user_input[CONF_ALLOWED_CONNECTIVITY_SENSOR]
+
+                    if CONF_ALLOWED_PROFILE in user_input:
+                        del user_input[CONF_ALLOWED_PROFILE]
+
                 if user_input.get(CONF_GENERATE_CONFIG_FILES, False):
                     ha = get_ha(self.hass, self._config_flow.config_data.host)
 
@@ -109,6 +125,7 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
 
                 del user_input[CONF_CLEAR_CREDENTIALS]
                 del user_input[CONF_GENERATE_CONFIG_FILES]
+                del user_input[CONF_RESET_COMPONENTS_SETTINGS]
 
                 return self.async_create_entry(title="", data=user_input)
 

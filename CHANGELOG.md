@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-04-29
+
+**Implemented enhancements:**
+
+- New feature under options - Control which camera, binary sensor or profile switch are being created 
+
 ## 2020-04-28
 
 **Fixed bugs:**

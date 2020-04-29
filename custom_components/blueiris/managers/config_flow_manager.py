@@ -1,13 +1,17 @@
 import logging
 from typing import Optional
 
+from homeassistant.components.mqtt import DATA_MQTT
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers import config_validation as cv
 
+from .. import get_ha
 from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.const import *
 from ..managers.configuration_manager import ConfigManager
 from ..managers.password_manager import PasswordManager
 from ..models.config_data import ConfigData
+from .home_assistant import BlueIrisHomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,13 +107,18 @@ class ConfigFlowManager:
         self.config_manager.update(entry)
 
     @staticmethod
-    def get_default_data():
+    def get_default_data(user_input=None):
+        if user_input is None:
+            user_input = {}
+
         fields = {
-            vol.Required(CONF_HOST): str,
-            vol.Required(CONF_PORT): int,
-            vol.Optional(CONF_SSL, default=False): bool,
-            vol.Optional(CONF_USERNAME): str,
-            vol.Optional(CONF_PASSWORD): str,
+            vol.Required(CONF_HOST, default=user_input.get(CONF_HOST, "")): str,
+            vol.Required(
+                CONF_PORT, default=user_input.get(CONF_PORT, DEFAULT_PORT)
+            ): int,
+            vol.Optional(CONF_SSL, default=user_input.get(CONF_SSL, False)): bool,
+            vol.Optional(CONF_USERNAME, default=user_input.get(CONF_USERNAME, "")): str,
+            vol.Optional(CONF_PASSWORD, default=user_input.get(CONF_PASSWORD, "")): str,
         }
 
         data_schema = vol.Schema(fields)
@@ -118,23 +127,135 @@ class ConfigFlowManager:
 
     def get_default_options(self):
         config_data = self.config_data
+        host = config_data.host
+
+        ha: BlueIrisHomeAssistant = get_ha(self._hass, host)
+        data = ha.api.data
+        camera_list = ha.api.camera_list
+        is_admin = data.get("admin", False)
+
+        profiles_list = data.get("profiles", [])
+
+        available_profiles = []
+        available_camera = []
+        available_camera_audio = []
+        available_camera_motion_connectivity = []
+
+        for camera in camera_list:
+            camera_id = camera.get("optionValue")
+            camera_name = camera.get("optionDisplay")
+
+            item = {CONF_NAME: camera_name, CONF_ID: str(camera_id)}
+
+            available_camera.append(item)
+
+            if self.config_manager.is_supports_sensors(camera):
+                available_camera_motion_connectivity.append(item)
+
+                if self.config_manager.is_supports_audio_sensor(camera):
+                    available_camera_audio.append(item)
+
+        for profile_name in profiles_list:
+            profile_id = profiles_list.index(profile_name)
+
+            item = {CONF_NAME: profile_name, CONF_ID: str(profile_id)}
+
+            available_profiles.append(item)
+
+        supported_audio_sensor = self.get_available_options(available_camera_audio)
+        supported_camera = self.get_available_options(available_camera)
+        supported_connectivity_sensor = self.get_available_options(
+            available_camera_motion_connectivity
+        )
+        supported_motion_sensor = self.get_available_options(
+            available_camera_motion_connectivity
+        )
+        supported_profile = self.get_available_options(available_profiles)
+
+        allowed_audio_sensor = self.get_options(
+            config_data.allowed_audio_sensor, supported_audio_sensor
+        )
+        allowed_camera = self.get_options(config_data.allowed_camera, supported_camera)
+        allowed_connectivity_sensor = self.get_options(
+            config_data.allowed_connectivity_sensor, supported_connectivity_sensor
+        )
+        allowed_motion_sensor = self.get_options(
+            config_data.allowed_motion_sensor, supported_motion_sensor
+        )
+        allowed_profile = self.get_options(
+            config_data.allowed_profile, supported_profile
+        )
 
         fields = {
             vol.Optional(CONF_USERNAME, default=config_data.username): str,
             vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text): str,
             vol.Optional(CONF_CLEAR_CREDENTIALS, default=False): bool,
-            vol.Optional(
-                CONF_EXCLUDE_SYSTEM_CAMERA, default=config_data.exclude_system_camera
-            ): bool,
             vol.Optional(CONF_GENERATE_CONFIG_FILES, default=False): bool,
             vol.Required(CONF_LOG_LEVEL, default=config_data.log_level): vol.In(
                 LOG_LEVELS
             ),
+            vol.Optional(CONF_RESET_COMPONENTS_SETTINGS, default=False): bool,
+            vol.Optional(CONF_ALLOWED_CAMERA, default=allowed_camera): cv.multi_select(
+                supported_camera
+            ),
         }
+
+        if DATA_MQTT in self._hass.data:
+            fields[
+                vol.Optional(
+                    CONF_ALLOWED_CONNECTIVITY_SENSOR,
+                    default=allowed_connectivity_sensor,
+                )
+            ] = cv.multi_select(supported_connectivity_sensor)
+
+            fields[
+                vol.Optional(CONF_ALLOWED_AUDIO_SENSOR, default=allowed_audio_sensor)
+            ] = cv.multi_select(supported_audio_sensor)
+
+            fields[
+                vol.Optional(CONF_ALLOWED_MOTION_SENSOR, default=allowed_motion_sensor)
+            ] = cv.multi_select(supported_motion_sensor)
+
+        if is_admin:
+            fields[
+                vol.Optional(CONF_ALLOWED_PROFILE, default=allowed_profile)
+            ] = cv.multi_select(supported_profile)
 
         data_schema = vol.Schema(fields)
 
         return data_schema
+
+    @staticmethod
+    def get_options(data, all_available_options):
+        result = []
+
+        if data is None:
+            for item_id in all_available_options:
+                if item_id != OPTION_EMPTY:
+                    result.append(item_id)
+        else:
+            if isinstance(data, list):
+                result = data
+            else:
+                clean_data = data.replace(" ", "")
+                result = clean_data.split(",")
+
+        if len(result) == 0 or OPTION_EMPTY in result:
+            result = [OPTION_EMPTY]
+
+        return result
+
+    @staticmethod
+    def get_available_options(all_items):
+        available_items = {OPTION_EMPTY: OPTION_EMPTY}
+
+        for item in all_items:
+            item_name = item.get(CONF_NAME)
+            item_id = item.get(CONF_ID)
+
+            available_items[item_id] = item_name
+
+        return available_items
 
     async def valid_login(self, hass):
         errors = None

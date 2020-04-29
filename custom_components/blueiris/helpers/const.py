@@ -29,6 +29,11 @@ from homeassistant.const import (
 )
 
 CONF_LOG_LEVEL = "log_level"
+CONF_ALLOWED_CAMERA = "allowed_camera"
+CONF_ALLOWED_PROFILE = "allowed_profile"
+CONF_ALLOWED_MOTION_SENSOR = "allowed_motion_sensor"
+CONF_ALLOWED_AUDIO_SENSOR = "allowed_audio_sensor"
+CONF_ALLOWED_CONNECTIVITY_SENSOR = "allowed_connectivity_sensor"
 
 VERSION = "2.0.0"
 
@@ -177,9 +182,12 @@ ENTITY_STATUS_MODIFIED = f"{ENTITY_STATUS}-modified"
 ENTITY_STATUS_IGNORE = f"{ENTITY_STATUS}-ignore"
 ENTITY_STATUS_CANCELLED = f"{ENTITY_STATUS}-cancelled"
 
-CONF_EXCLUDE_SYSTEM_CAMERA = "exclude-system-camera"
 CONF_CLEAR_CREDENTIALS = "clear-credentials"
 CONF_GENERATE_CONFIG_FILES = "generate-config-files"
+CONF_RESET_COMPONENTS_SETTINGS = "reset-components-settings"
+
+OPTION_EMPTY = " NONE "
+
 
 DOMAIN_LOAD = "load"
 DOMAIN_UNLOAD = "unload"

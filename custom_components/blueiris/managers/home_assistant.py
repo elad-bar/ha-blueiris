@@ -70,6 +70,10 @@ class BlueIrisHomeAssistant:
 
         return None
 
+    @property
+    def config_manager(self) -> ConfigManager:
+        return self._config_manager
+
     async def async_init(self, entry: ConfigEntry):
         try:
             self._config_manager.update(entry)

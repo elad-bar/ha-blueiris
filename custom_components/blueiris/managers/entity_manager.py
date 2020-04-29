@@ -3,7 +3,6 @@ import sys
 from typing import Dict, List, Optional
 
 from homeassistant.components.camera import DEFAULT_CONTENT_TYPE
-from homeassistant.components.mqtt import DATA_MQTT
 from homeassistant.const import CONF_AUTHENTICATION, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -13,6 +12,7 @@ from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.const import *
 from ..models.config_data import ConfigData
 from ..models.entity_data import EntityData
+from .configuration_manager import ConfigManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,6 +44,10 @@ class EntityManager:
     @property
     def config_data(self) -> ConfigData:
         return self.ha.config_data
+
+    @property
+    def config_manager(self) -> ConfigManager:
+        return self.ha.config_manager
 
     @property
     def api(self) -> BlueIrisApi:
@@ -128,25 +132,26 @@ class EntityManager:
         self.mqtt_states[key] = value
 
     def create_components(self):
-        has_mqtt = DATA_MQTT in self.hass.data
-
+        config_data = self.config_data
         available_camera = self.api.camera_list
+        available_profiles = self.api.data.get("profiles", [])
+        allowed_profile = config_data.allowed_profile
 
-        if self.api.data.get("admin", False):
-            available_profiles = self.api.data.get("profiles", [])
-
+        if allowed_profile is None or len(allowed_profile) > 0:
             for profile_name in available_profiles:
                 profile_id = available_profiles.index(profile_name)
 
-                self.generate_profile_switch(profile_id, profile_name)
+                if allowed_profile is None or str(profile_id) in allowed_profile:
+                    self.generate_profile_switch(profile_id, profile_name)
 
+        mqtt_binary_sensors = []
         for camera in available_camera:
             self.generate_camera_component(camera)
+            current_mqtt_binary_sensors = self.generate_camera_binary_sensors(camera)
 
-            if has_mqtt:
-                self.generate_camera_binary_sensors(camera)
+            mqtt_binary_sensors.extend(current_mqtt_binary_sensors)
 
-        if has_mqtt:
+        if len(mqtt_binary_sensors) > 0:
             self.generate_main_binary_sensor()
 
     def update(self):
@@ -392,32 +397,29 @@ class EntityManager:
         return entity
 
     def generate_camera_binary_sensors(self, camera):
+        entities = []
+
         try:
-            camera_id = camera.get("optionValue")
-            audio_support = camera.get("audio", False)
-            is_system = camera_id in SYSTEM_CAMERA_ID
-
-            entities = []
-
-            if not is_system:
+            if self.config_manager.is_allowed_motion_sensor(camera):
                 entity_motion = self.get_camera_base_binary_sensor(
                     camera, SENSOR_MOTION_NAME
                 )
 
                 entities.append(entity_motion)
 
+            if self.config_manager.is_allowed_connectivity_sensor(camera):
                 entity_connectivity = self.get_camera_base_binary_sensor(
                     camera, SENSOR_CONNECTIVITY_NAME, True
                 )
 
                 entities.append(entity_connectivity)
 
-                if audio_support:
-                    entity_audio = self.get_camera_base_binary_sensor(
-                        camera, SENSOR_AUDIO_NAME
-                    )
+            if self.config_manager.is_allowed_audio_sensor(camera):
+                entity_audio = self.get_camera_base_binary_sensor(
+                    camera, SENSOR_AUDIO_NAME
+                )
 
-                    entities.append(entity_audio)
+                entities.append(entity_audio)
 
             for entity in entities:
                 entity_name = entity.name
@@ -431,6 +433,8 @@ class EntityManager:
 
         except Exception as ex:
             self.log_exception(ex, f"Failed to generate binary sensors for {camera}")
+
+        return entities
 
     def get_camera_component(self, camera) -> EntityData:
         entity = None
@@ -505,9 +509,9 @@ class EntityManager:
 
             if entity is not None:
                 camera_id = entity.id
-                is_system = camera_id in SYSTEM_CAMERA_ID
+                allowed_camera = self.config_data.allowed_camera
 
-                if not is_system or not self.config_data.exclude_system_camera:
+                if allowed_camera is None or camera_id in allowed_camera:
                     entity_name = entity.name
                     self.set_entity(DOMAIN_CAMERA, entity_name, entity)
 
