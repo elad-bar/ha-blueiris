@@ -43,9 +43,9 @@ Generate configurations | Check-box | + | Unchecked |  Will take generate store 
 Log level | Drop-down | + | Default | Changes component's log level (more details below)
 Reset components settings to default | Check-box | + | Unchecked |  Will reset drown-downs of componet's creation to their default (Not being stored under options) 
 Camera components | Drop-down | - | All camera | Will create camera for each of the chosen camera
-Motion sensors | Drop-down | - | All non-system camera | Will create switch for each of the chosen profiles
-Connectivity sensors | Drop-down | - | All non-system camera | Will create switch for each of the chosen profiles
-Audio sensors | Drop-down | - | All audio supported non-system camera | Will create switch for each of the chosen profiles
+Motion sensors | Drop-down | - | All non-system camera | Will create binary sensor for each of the chosen camera
+Connectivity sensors | Drop-down | - | All non-system camera | Will create connectivity binary sensor for each of the chosen camera
+Audio sensors | Drop-down | - | All audio supported non-system camera | Will create audio binary sensor for each of the chosen camera
 Profile switches | Drop-down | - | All profiles | Will create switch for each of the chosen profiles
 
 ######## Log Level's drop-down
@@ -61,6 +61,7 @@ New feature to control which of the components will be created:
 - Sensors drop-down will be available only when MQTT component is defined
 - Audio sensors drop-down will include only audio support non-system camera
 - Connectivity and Motion sensors will be created only for non-system camera
+- In case none of the Audio, Connectivity and Motion binary sensors are being created, main binary sensor of Alerts will not be created as well  
 - Profile's drop-down will be available only when admin user's credentials set to the integration
 - Once configuration manually changed, new camera that will be added will require manually setting configuration
 - To restore defaults which allows automatically adding new camera, check the check-box of Reset components settings to default
