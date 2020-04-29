@@ -48,14 +48,14 @@ Connectivity sensors | Drop-down | - | All non-system camera | Will create conne
 Audio sensors | Drop-down | - | All audio supported non-system camera | Will create audio binary sensor for each of the chosen camera
 Profile switches | Drop-down | - | All profiles | Will create switch for each of the chosen profiles
 
-######## Log Level's drop-down
+**Log Level's drop-down**
 New feature to set the log level for the component without need to set log_level in `customization:` and restart or call manually `logger.set_level` and loose it after restart.
 
 Upon startup or integration's option update, based on the value chosen, the component will make a service call to `logger.set_level` for that component with the desired value,
 
 In case `Default` option is chosen, flow will skip calling the service, after changing from any other option to `Default`, it will not take place automatically, only after restart
 
-######## Control component's creation
+**Control component's creation**
 New feature to control which of the components will be created:
 
 - Sensors drop-down will be available only when MQTT component is defined
@@ -66,7 +66,7 @@ New feature to control which of the components will be created:
 - Once configuration manually changed, new camera that will be added will require manually setting configuration
 - To restore defaults which allows automatically adding new camera, check the check-box of Reset components settings to default
 
-######### Drop-downs work-around
+**Component's drop-downs NONE option - work-around**
 As workaround for UI not allowing submitting the form without all fields with values,
 First option in each drop-down is NONE, 
 as long as this option is checked, 
