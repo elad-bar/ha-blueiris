@@ -1,5 +1,12 @@
 # Changelog
 
+## 2020-04-30
+
+**Implemented enhancements:**
+
+- More enhancements to options, ability to change setup details (Edit hostname, port and SSL flag)
+- Support new translation format of HA 0.109.0
+
 ## 2020-04-29
 
 **Implemented enhancements:**

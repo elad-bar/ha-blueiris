@@ -28,7 +28,7 @@ Look for "Integration with Blue Iris NVR" and install
 Fields name | Type | Required | Default | Description
 --- | --- | --- | --- | --- |
 Host | Texbox | + | None | Hostname or IP address of the BlueIris server
-Host | Textbox | + | 0 | HTTP Port to access BlueIris server
+Port | Textbox | + | 0 | HTTP Port to access BlueIris server
 SSL | Check-box | + | Unchecked | Is SSL supported?
 Username | Textbox | - | | Username of admin user for BlueIris server
 Password | Textbox | - | | Password of admin user for BlueIris server
@@ -36,6 +36,9 @@ Password | Textbox | - | | Password of admin user for BlueIris server
 ###### Integration options (Configuration -> Integrations -> BlueIris Integration -> Options)  
 Fields name | Type | Required | Default | Description
 --- | --- | --- | --- | --- |
+Host | Texbox | + | ast stored hostname | Hostname or IP address of the BlueIris server
+Port | Textbox | + | 0ast stored port | HTTP Port to access BlueIris server
+SSL | Check-box | + | Last stored SSL flag | Is SSL supported?
 Username | Textbox | - | Last stored username | Username of admin user for BlueIris server
 Password | Textbox | - | Last stored password | Password of admin user for BlueIris server
 Clear credentials | Check-box | + | Unchecked | Workaround to clear the username & password since there is not support for optional fields (Not being stored under options)

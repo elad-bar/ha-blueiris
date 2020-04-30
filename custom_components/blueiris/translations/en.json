@@ -28,6 +28,9 @@
               "title": "Options for BlueIris.",
               "description": "Set up username and password to control profiles / exclude system camera.",
               "data": {
+                  "host": "Host",
+                  "port": "Port",
+                  "ssl": "Is SSL",
                   "username": "Username",
                   "password": "Password",
                   "clear-credentials": "Clear credentials",
@@ -44,7 +47,8 @@
       },
       "error": {
         "invalid_admin_credentials": "Invalid administrator credentials",
-        "invalid_server_details": "Invalid server details"
+        "invalid_server_details": "Invalid server details",
+        "already_configured": "BlueIris integration ({name}) already configured"
       }
   }
 }

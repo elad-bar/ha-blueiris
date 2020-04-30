@@ -8,6 +8,7 @@ from homeassistant.core import callback
 from . import get_ha
 from .helpers.const import *
 from .managers.config_flow_manager import ConfigFlowManager
+from .models import AlreadyExistsError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -95,39 +96,22 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
         self._config_flow.initialize(self.hass)
 
         if user_input is not None:
-            self._config_flow.update_options(user_input, True)
+            new_user_input = None
 
-            result = await self._config_flow.valid_login(self.hass)
-            errors = result.get("errors")
+            try:
+                new_user_input = self._config_flow.update_options(user_input, True)
+
+                result = await self._config_flow.valid_login(self.hass)
+                errors = result.get("errors")
+            except AlreadyExistsError as ex:
+                new_host = ex.entry.data.get(CONF_HOST)
+
+                _LOGGER.warning(f"Cannot update host to: {new_host}")
+
+                errors = {"base": "already_configured"}
 
             if errors is None:
-                if user_input.get(CONF_RESET_COMPONENTS_SETTINGS, False):
-                    if CONF_ALLOWED_CAMERA in user_input:
-                        del user_input[CONF_ALLOWED_CAMERA]
-
-                    if CONF_ALLOWED_AUDIO_SENSOR in user_input:
-                        del user_input[CONF_ALLOWED_AUDIO_SENSOR]
-
-                    if CONF_ALLOWED_MOTION_SENSOR in user_input:
-                        del user_input[CONF_ALLOWED_MOTION_SENSOR]
-
-                    if CONF_ALLOWED_CONNECTIVITY_SENSOR in user_input:
-                        del user_input[CONF_ALLOWED_CONNECTIVITY_SENSOR]
-
-                    if CONF_ALLOWED_PROFILE in user_input:
-                        del user_input[CONF_ALLOWED_PROFILE]
-
-                if user_input.get(CONF_GENERATE_CONFIG_FILES, False):
-                    ha = get_ha(self.hass, self._config_flow.config_data.host)
-
-                    if ha is not None:
-                        ha.generate_config_files()
-
-                del user_input[CONF_CLEAR_CREDENTIALS]
-                del user_input[CONF_GENERATE_CONFIG_FILES]
-                del user_input[CONF_RESET_COMPONENTS_SETTINGS]
-
-                return self.async_create_entry(title="", data=user_input)
+                return self.async_create_entry(title="", data=new_user_input)
 
         data_schema = self._config_flow.get_default_options()
 

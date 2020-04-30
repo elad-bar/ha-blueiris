@@ -10,10 +10,13 @@ from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.const import *
 from ..managers.configuration_manager import ConfigManager
 from ..managers.password_manager import PasswordManager
+from ..models import AlreadyExistsError
 from ..models.config_data import ConfigData
 from .home_assistant import BlueIrisHomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
+
+_CONF_ARR = [CONF_USERNAME, CONF_PASSWORD, CONF_HOST, CONF_PORT, CONF_SSL]
 
 
 class ConfigFlowManager:
@@ -70,20 +73,76 @@ class ConfigFlowManager:
                 user_input[CONF_PASSWORD] = password
 
     def update_options(self, options: dict, update_entry: bool = False):
+        new_options = {}
+
         if options is not None:
             if update_entry:
+                current_host = self.config_entry.data.get(CONF_HOST)
+                new_host = new_options.get(CONF_HOST)
+                host_changed = current_host != new_host
+
+                if host_changed:
+                    entries = self._hass.config_entries.async_entries(DOMAIN)
+
+                    for entry in entries:
+                        entry_item: ConfigEntry = entry
+
+                        if entry_item.unique_id == self.config_entry.unique_id:
+                            continue
+
+                        if new_host == entry_item.data.get(CONF_HOST):
+                            raise AlreadyExistsError(entry_item)
+
                 self.handle_password(options)
 
             new_options = {}
             for key in options:
                 new_options[key] = options[key]
 
-            self.options = new_options
-        else:
-            self.options = {}
-
         if update_entry:
+            if new_options.get(CONF_RESET_COMPONENTS_SETTINGS, False):
+                if CONF_ALLOWED_CAMERA in new_options:
+                    del new_options[CONF_ALLOWED_CAMERA]
+
+                if CONF_ALLOWED_AUDIO_SENSOR in new_options:
+                    del new_options[CONF_ALLOWED_AUDIO_SENSOR]
+
+                if CONF_ALLOWED_MOTION_SENSOR in new_options:
+                    del new_options[CONF_ALLOWED_MOTION_SENSOR]
+
+                if CONF_ALLOWED_CONNECTIVITY_SENSOR in new_options:
+                    del new_options[CONF_ALLOWED_CONNECTIVITY_SENSOR]
+
+                if CONF_ALLOWED_PROFILE in new_options:
+                    del new_options[CONF_ALLOWED_PROFILE]
+
+            for conf in _CONF_ARR:
+                if conf in new_options:
+                    self.data[conf] = new_options[conf]
+
+                    del new_options[conf]
+
+            if new_options.get(CONF_GENERATE_CONFIG_FILES, False):
+                host = self.data[CONF_HOST]
+
+                ha = get_ha(self._hass, host)
+
+                if ha is not None:
+                    ha.generate_config_files()
+
+            del new_options[CONF_CLEAR_CREDENTIALS]
+            del new_options[CONF_GENERATE_CONFIG_FILES]
+            del new_options[CONF_RESET_COMPONENTS_SETTINGS]
+
+            self._hass.config_entries.async_update_entry(
+                self.config_entry, data=self.data
+            )
+
+            self.options = new_options
+
             self._update_entry()
+
+            return new_options
 
     def update_data(self, data: dict, update_entry: bool = False):
         new_data = None
@@ -187,6 +246,9 @@ class ConfigFlowManager:
         )
 
         fields = {
+            vol.Required(CONF_HOST, default=config_data.host): str,
+            vol.Required(CONF_PORT, default=config_data.port): int,
+            vol.Optional(CONF_SSL, default=config_data.ssl): bool,
             vol.Optional(CONF_USERNAME, default=config_data.username): str,
             vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text): str,
             vol.Optional(CONF_CLEAR_CREDENTIALS, default=False): bool,
