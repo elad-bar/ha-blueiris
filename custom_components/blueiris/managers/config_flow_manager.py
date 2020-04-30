@@ -94,7 +94,7 @@ class ConfigFlowManager:
                 host_changed = False
 
                 for conf in _CONF_ARR:
-                    if data.get(conf) != new_options.get(conf):
+                    if data.get(conf) != options.get(conf):
                         validate_login = True
 
                         if conf == CONF_HOST:
@@ -109,7 +109,7 @@ class ConfigFlowManager:
                         if entry_item.unique_id == self.config_entry.unique_id:
                             continue
 
-                        if new_options.get(CONF_HOST) == entry_item.data.get(CONF_HOST):
+                        if options.get(CONF_HOST) == entry_item.data.get(CONF_HOST):
                             raise AlreadyExistsError(entry_item)
 
                 self.handle_password(options)
