@@ -7,3 +7,10 @@ class AlreadyExistsError(HomeAssistantError):
 
     def __init__(self, entry: ConfigEntry):
         self.entry = entry
+
+
+class LoginError(HomeAssistantError):
+    errors: dict
+
+    def __init__(self, errors):
+        self.errors = errors

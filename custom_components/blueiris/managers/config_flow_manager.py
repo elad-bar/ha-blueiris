@@ -10,7 +10,7 @@ from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.const import *
 from ..managers.configuration_manager import ConfigManager
 from ..managers.password_manager import PasswordManager
-from ..models import AlreadyExistsError
+from ..models import AlreadyExistsError, LoginError
 from ..models.config_data import ConfigData
 from .home_assistant import BlueIrisHomeAssistant
 
@@ -25,9 +25,11 @@ class ConfigFlowManager:
     options: Optional[dict]
     data: Optional[dict]
     config_entry: ConfigEntry
+    api: Optional[BlueIrisApi]
 
     def __init__(self, config_entry: Optional[ConfigEntry] = None):
         self.config_entry = config_entry
+        self.api = None
 
         self.options = None
         self.data = None
@@ -37,7 +39,6 @@ class ConfigFlowManager:
             self._pre_config = True
 
             self.update_data(self.config_entry.data)
-            self.update_options(self.config_entry.options)
 
         self._is_initialized = True
         self._auth_error = False
@@ -54,6 +55,14 @@ class ConfigFlowManager:
         self.config_manager = ConfigManager(self.password_manager)
 
         self._update_entry()
+
+        host = self.data.get(CONF_HOST)
+
+        if host is not None:
+            ha: BlueIrisHomeAssistant = get_ha(self._hass, host)
+
+            if ha is not None:
+                self.api = ha.api
 
     @property
     def config_data(self) -> ConfigData:
@@ -72,17 +81,27 @@ class ConfigFlowManager:
 
                 user_input[CONF_PASSWORD] = password
 
-    def update_options(self, options: dict, update_entry: bool = False):
+    async def update_options(self, options: dict, update_entry: bool = False):
         new_options = {}
+        validate_login = False
+        config_entries = None
 
         if options is not None:
             if update_entry:
-                current_host = self.config_entry.data.get(CONF_HOST)
-                new_host = new_options.get(CONF_HOST)
-                host_changed = current_host != new_host
+                config_entries = self._hass.config_entries
+
+                data = self.config_entry.data
+                host_changed = False
+
+                for conf in _CONF_ARR:
+                    if data.get(conf) != new_options.get(conf):
+                        validate_login = True
+
+                        if conf == CONF_HOST:
+                            host_changed = True
 
                 if host_changed:
-                    entries = self._hass.config_entries.async_entries(DOMAIN)
+                    entries = config_entries.async_entries(DOMAIN)
 
                     for entry in entries:
                         entry_item: ConfigEntry = entry
@@ -90,7 +109,7 @@ class ConfigFlowManager:
                         if entry_item.unique_id == self.config_entry.unique_id:
                             continue
 
-                        if new_host == entry_item.data.get(CONF_HOST):
+                        if new_options.get(CONF_HOST) == entry_item.data.get(CONF_HOST):
                             raise AlreadyExistsError(entry_item)
 
                 self.handle_password(options)
@@ -134,13 +153,17 @@ class ConfigFlowManager:
             del new_options[CONF_GENERATE_CONFIG_FILES]
             del new_options[CONF_RESET_COMPONENTS_SETTINGS]
 
-            self._hass.config_entries.async_update_entry(
-                self.config_entry, data=self.data
-            )
-
             self.options = new_options
 
             self._update_entry()
+
+            if validate_login:
+                errors = await self.valid_login()
+
+                if errors is None:
+                    config_entries.async_update_entry(self.config_entry, data=self.data)
+                else:
+                    raise LoginError(errors)
 
             return new_options
 
@@ -186,14 +209,11 @@ class ConfigFlowManager:
 
     def get_default_options(self):
         config_data = self.config_data
-        host = config_data.host
 
-        ha: BlueIrisHomeAssistant = get_ha(self._hass, host)
-        data = ha.api.data
-        camera_list = ha.api.camera_list
-        is_admin = data.get("admin", False)
+        camera_list = self.api.camera_list
+        is_admin = self.api.data.get("admin", False)
 
-        profiles_list = data.get("profiles", [])
+        profiles_list = self.api.data.get("profiles", [])
 
         available_profiles = []
         available_camera = []
@@ -319,12 +339,12 @@ class ConfigFlowManager:
 
         return available_items
 
-    async def valid_login(self, hass):
+    async def valid_login(self):
         errors = None
 
         config_data = self.config_manager.data
 
-        api = BlueIrisApi(hass, self.config_manager)
+        api = BlueIrisApi(self._hass, self.config_manager)
         await api.initialize()
 
         if not api.is_logged_in:
@@ -339,4 +359,4 @@ class ConfigFlowManager:
                 )
                 errors = {"base": "invalid_admin_credentials"}
 
-        return {"logged-in": errors is None, "errors": errors}
+        return errors

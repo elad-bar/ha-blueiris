@@ -88,7 +88,7 @@ Will create YAML with all the configurations in the config directory under bluei
 Upon submitting the form of creating an integration or updating options,
 
 Component will try to login to the BlueIris server to verify new settings, following errors can appear:
-- BlueIris integration ({name}) already configured
+- BlueIris integration ({host}) already configured
 - Invalid administrator credentials - credentials are invalid or user is not an admin
 - Invalid server details - Cannot reach the server
 

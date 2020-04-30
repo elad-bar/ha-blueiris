@@ -8,7 +8,7 @@ from homeassistant.core import callback
 from . import get_ha
 from .helpers.const import *
 from .managers.config_flow_manager import ConfigFlowManager
-from .models import AlreadyExistsError
+from .models import AlreadyExistsError, LoginError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -49,8 +49,7 @@ class BlueIrisFlowHandler(config_entries.ConfigFlow):
             ha = get_ha(self.hass, host)
 
             if ha is None:
-                result = await self._config_flow.valid_login(self.hass)
-                errors = result.get("errors")
+                errors = await self._config_flow.valid_login()
             else:
                 _LOGGER.warning(f"{DEFAULT_NAME} ({host}) already configured")
 
@@ -99,12 +98,17 @@ class BlueIrisOptionsFlowHandler(config_entries.OptionsFlow):
             new_user_input = None
 
             try:
-                new_user_input = self._config_flow.update_options(user_input, True)
+                new_user_input = await self._config_flow.update_options(
+                    user_input, True
+                )
 
-                result = await self._config_flow.valid_login(self.hass)
-                errors = result.get("errors")
-            except AlreadyExistsError as ex:
-                new_host = ex.entry.data.get(CONF_HOST)
+            except LoginError as lex:
+                _LOGGER.warning(f"Cannot complete login")
+
+                errors = lex.errors
+
+            except AlreadyExistsError as aeex:
+                new_host = aeex.entry.data.get(CONF_HOST)
 
                 _LOGGER.warning(f"Cannot update host to: {new_host}")
 
