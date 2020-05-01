@@ -1,5 +1,12 @@
 # Changelog
 
+## 2020-05-01
+
+**Implemented enhancements:**
+
+- Better handling configuration changes
+- Integration's title is now being taken from BlueIris server
+
 ## 2020-04-30
 
 **Implemented enhancements:**

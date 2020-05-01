@@ -10,198 +10,113 @@ from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.const import *
 from ..managers.configuration_manager import ConfigManager
 from ..managers.password_manager import PasswordManager
-from ..models import AlreadyExistsError, LoginError
+from ..models import LoginError
 from ..models.config_data import ConfigData
-from .home_assistant import BlueIrisHomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
-_CONF_ARR = [CONF_USERNAME, CONF_PASSWORD, CONF_HOST, CONF_PORT, CONF_SSL]
-
 
 class ConfigFlowManager:
-    config_manager: ConfigManager
-    password_manager: PasswordManager
-    options: Optional[dict]
-    data: Optional[dict]
-    config_entry: ConfigEntry
+    _config_manager: ConfigManager
+    _password_manager: PasswordManager
+    _options: Optional[dict]
+    _data: Optional[dict]
+    _config_entry: Optional[ConfigEntry]
     api: Optional[BlueIrisApi]
+    title: str
 
-    def __init__(self, config_entry: Optional[ConfigEntry] = None):
-        self.config_entry = config_entry
-        self.api = None
+    def __init__(self):
+        self._config_entry = None
 
-        self.options = None
-        self.data = None
-        self._pre_config = False
-
-        if config_entry is not None:
-            self._pre_config = True
-
-            self.update_data(self.config_entry.data)
+        self._options = None
+        self._data = None
 
         self._is_initialized = True
-        self._auth_error = False
         self._hass = None
+        self.api = None
+        self.title = DEFAULT_NAME
 
-    def initialize(self, hass):
+        self._available_actions = {
+            CONF_GENERATE_CONFIG_FILES: self._execute_generate_config_files
+        }
+
+    async def initialize(self, hass, config_entry: Optional[ConfigEntry] = None):
+        self._config_entry = config_entry
         self._hass = hass
 
-        if not self._pre_config:
-            self.options = {}
-            self.data = {}
+        self._password_manager = PasswordManager(self._hass)
+        self._config_manager = ConfigManager(self._password_manager)
 
-        self.password_manager = PasswordManager(self._hass)
-        self.config_manager = ConfigManager(self.password_manager)
+        data = {}
+        options = {}
 
-        self._update_entry()
+        if self._config_entry is not None:
+            data = self._config_entry.data
+            options = self._config_entry.options
 
-        host = self.data.get(CONF_HOST)
+            self.title = self._config_entry.title
 
-        if host is not None:
-            ha: BlueIrisHomeAssistant = get_ha(self._hass, host)
-
-            if ha is not None:
-                self.api = ha.api
+        await self.update_data(data, CONFIG_FLOW_INIT)
+        await self.update_options(options, CONFIG_FLOW_INIT)
 
     @property
     def config_data(self) -> ConfigData:
-        return self.config_manager.data
+        return self._config_manager.data
 
-    def handle_password(self, user_input):
-        clear_credentials = user_input.get(CONF_CLEAR_CREDENTIALS, False)
-
-        if clear_credentials:
-            del user_input[CONF_USERNAME]
-            del user_input[CONF_PASSWORD]
-        else:
-            if CONF_PASSWORD in user_input:
-                password_clear_text = user_input[CONF_PASSWORD]
-                password = self.password_manager.encrypt(password_clear_text)
-
-                user_input[CONF_PASSWORD] = password
-
-    async def update_options(self, options: dict, update_entry: bool = False):
-        new_options = {}
+    async def update_options(self, options: dict, flow: str):
         validate_login = False
-        config_entries = None
+        actions = []
 
-        if options is not None:
-            if update_entry:
-                config_entries = self._hass.config_entries
+        new_options = self._clone_items(options, flow)
 
-                data = self.config_entry.data
-                host_changed = False
+        if flow == CONFIG_FLOW_OPTIONS:
+            validate_login = self._should_validate_login(new_options)
 
-                for conf in _CONF_ARR:
-                    if data.get(conf) != options.get(conf):
-                        validate_login = True
+            self._move_option_to_data(new_options)
 
-                        if conf == CONF_HOST:
-                            host_changed = True
+            actions = self._get_actions(new_options)
 
-                if host_changed:
-                    entries = config_entries.async_entries(DOMAIN)
+        self._options = new_options
 
-                    for entry in entries:
-                        entry_item: ConfigEntry = entry
+        self._update_entry()
 
-                        if entry_item.unique_id == self.config_entry.unique_id:
-                            continue
+        if validate_login:
+            await self._handle_data(flow)
 
-                        if options.get(CONF_HOST) == entry_item.data.get(CONF_HOST):
-                            raise AlreadyExistsError(entry_item)
+        for action in actions:
+            action()
 
-                self.handle_password(options)
+        return new_options
 
-            new_options = {}
-            for key in options:
-                new_options[key] = options[key]
+    async def update_data(self, data: dict, flow: str):
+        self._data = self._clone_items(data, flow)
 
-        if update_entry:
-            if new_options.get(CONF_RESET_COMPONENTS_SETTINGS, False):
-                if CONF_ALLOWED_CAMERA in new_options:
-                    del new_options[CONF_ALLOWED_CAMERA]
+        self._update_entry()
 
-                if CONF_ALLOWED_AUDIO_SENSOR in new_options:
-                    del new_options[CONF_ALLOWED_AUDIO_SENSOR]
+        await self._handle_data(flow)
 
-                if CONF_ALLOWED_MOTION_SENSOR in new_options:
-                    del new_options[CONF_ALLOWED_MOTION_SENSOR]
+        return self._data
 
-                if CONF_ALLOWED_CONNECTIVITY_SENSOR in new_options:
-                    del new_options[CONF_ALLOWED_CONNECTIVITY_SENSOR]
+    def _get_default_fields(self, flow, config_data: Optional[ConfigData] = None):
+        if config_data is None:
+            config_data = self.config_data
 
-                if CONF_ALLOWED_PROFILE in new_options:
-                    del new_options[CONF_ALLOWED_PROFILE]
+        fields = {}
 
-            for conf in _CONF_ARR:
-                if conf in new_options:
-                    self.data[conf] = new_options[conf]
+        fields[vol.Optional(CONF_HOST, default=config_data.host)] = str
+        fields[vol.Optional(CONF_PORT, default=config_data.port)] = str
+        fields[vol.Optional(CONF_SSL, default=config_data.ssl)] = bool
+        fields[vol.Optional(CONF_USERNAME, default=config_data.username)] = str
+        fields[
+            vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text)
+        ] = str
 
-                    del new_options[conf]
+        return fields
 
-            if new_options.get(CONF_GENERATE_CONFIG_FILES, False):
-                host = self.data[CONF_HOST]
+    def get_default_data(self, user_input):
+        config_data = self._config_manager.get_basic_data(user_input)
 
-                ha = get_ha(self._hass, host)
-
-                if ha is not None:
-                    ha.generate_config_files()
-
-            del new_options[CONF_CLEAR_CREDENTIALS]
-            del new_options[CONF_GENERATE_CONFIG_FILES]
-            del new_options[CONF_RESET_COMPONENTS_SETTINGS]
-
-            self.options = new_options
-
-            self._update_entry()
-
-            if validate_login:
-                errors = await self.valid_login()
-
-                if errors is None:
-                    config_entries.async_update_entry(self.config_entry, data=self.data)
-                else:
-                    raise LoginError(errors)
-
-            return new_options
-
-    def update_data(self, data: dict, update_entry: bool = False):
-        new_data = None
-
-        if data is not None:
-            if update_entry:
-                self.handle_password(data)
-
-            new_data = {}
-            for key in data:
-                new_data[key] = data[key]
-
-        self.data = new_data
-
-        if update_entry:
-            self._update_entry()
-
-    def _update_entry(self):
-        entry = ConfigEntry(0, "", "", self.data, "", "", {}, options=self.options)
-
-        self.config_manager.update(entry)
-
-    @staticmethod
-    def get_default_data(user_input=None):
-        if user_input is None:
-            user_input = {}
-
-        fields = {
-            vol.Required(CONF_HOST, default=user_input.get(CONF_HOST, "")): str,
-            vol.Required(
-                CONF_PORT, default=user_input.get(CONF_PORT, DEFAULT_PORT)
-            ): int,
-            vol.Optional(CONF_SSL, default=user_input.get(CONF_SSL, False)): bool,
-            vol.Optional(CONF_USERNAME, default=user_input.get(CONF_USERNAME, "")): str,
-            vol.Optional(CONF_PASSWORD, default=user_input.get(CONF_PASSWORD, "")): str,
-        }
+        fields = self._get_default_fields(CONFIG_FLOW_DATA, config_data)
 
         data_schema = vol.Schema(fields)
 
@@ -209,11 +124,12 @@ class ConfigFlowManager:
 
     def get_default_options(self):
         config_data = self.config_data
+        ha = self._get_ha(self._config_entry.entry_id)
 
-        camera_list = self.api.camera_list
-        is_admin = self.api.data.get("admin", False)
+        camera_list = ha.api.camera_list
+        is_admin = ha.api.data.get("admin", False)
 
-        profiles_list = self.api.data.get("profiles", [])
+        profiles_list = ha.api.data.get("profiles", [])
 
         available_profiles = []
         available_camera = []
@@ -228,10 +144,10 @@ class ConfigFlowManager:
 
             available_camera.append(item)
 
-            if self.config_manager.is_supports_sensors(camera):
+            if self._config_manager.is_supports_sensors(camera):
                 available_camera_motion_connectivity.append(item)
 
-                if self.config_manager.is_supports_audio_sensor(camera):
+                if self._config_manager.is_supports_audio_sensor(camera):
                     available_camera_audio.append(item)
 
         for profile_name in profiles_list:
@@ -241,46 +157,44 @@ class ConfigFlowManager:
 
             available_profiles.append(item)
 
-        supported_audio_sensor = self.get_available_options(available_camera_audio)
-        supported_camera = self.get_available_options(available_camera)
-        supported_connectivity_sensor = self.get_available_options(
+        supported_audio_sensor = self._get_available_options(available_camera_audio)
+        supported_camera = self._get_available_options(available_camera)
+        supported_connectivity_sensor = self._get_available_options(
             available_camera_motion_connectivity
         )
-        supported_motion_sensor = self.get_available_options(
+        supported_motion_sensor = self._get_available_options(
             available_camera_motion_connectivity
         )
-        supported_profile = self.get_available_options(available_profiles)
+        supported_profile = self._get_available_options(available_profiles)
 
-        allowed_audio_sensor = self.get_options(
+        allowed_audio_sensor = self._get_options(
             config_data.allowed_audio_sensor, supported_audio_sensor
         )
-        allowed_camera = self.get_options(config_data.allowed_camera, supported_camera)
-        allowed_connectivity_sensor = self.get_options(
+        allowed_camera = self._get_options(config_data.allowed_camera, supported_camera)
+        allowed_connectivity_sensor = self._get_options(
             config_data.allowed_connectivity_sensor, supported_connectivity_sensor
         )
-        allowed_motion_sensor = self.get_options(
+        allowed_motion_sensor = self._get_options(
             config_data.allowed_motion_sensor, supported_motion_sensor
         )
-        allowed_profile = self.get_options(
+        allowed_profile = self._get_options(
             config_data.allowed_profile, supported_profile
         )
 
-        fields = {
-            vol.Required(CONF_HOST, default=config_data.host): str,
-            vol.Required(CONF_PORT, default=config_data.port): int,
-            vol.Optional(CONF_SSL, default=config_data.ssl): bool,
-            vol.Optional(CONF_USERNAME, default=config_data.username): str,
-            vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text): str,
-            vol.Optional(CONF_CLEAR_CREDENTIALS, default=False): bool,
-            vol.Optional(CONF_GENERATE_CONFIG_FILES, default=False): bool,
-            vol.Required(CONF_LOG_LEVEL, default=config_data.log_level): vol.In(
-                LOG_LEVELS
-            ),
-            vol.Optional(CONF_RESET_COMPONENTS_SETTINGS, default=False): bool,
-            vol.Optional(CONF_ALLOWED_CAMERA, default=allowed_camera): cv.multi_select(
-                supported_camera
-            ),
-        }
+        fields = self._get_default_fields(CONFIG_FLOW_OPTIONS)
+
+        fields[vol.Optional(CONF_CLEAR_CREDENTIALS, default=False)] = bool
+
+        fields[vol.Optional(CONF_GENERATE_CONFIG_FILES, default=False)] = bool
+
+        fields[vol.Optional(CONF_LOG_LEVEL, default=config_data.log_level)] = vol.In(
+            LOG_LEVELS
+        )
+
+        fields[vol.Optional(CONF_RESET_COMPONENTS_SETTINGS, default=False)] = bool
+        fields[
+            vol.Optional(CONF_ALLOWED_CAMERA, default=allowed_camera)
+        ] = cv.multi_select(supported_camera)
 
         if DATA_MQTT in self._hass.data:
             fields[
@@ -307,8 +221,144 @@ class ConfigFlowManager:
 
         return data_schema
 
+    def _update_entry(self):
+        entry = ConfigEntry(0, "", "", self._data, "", "", {}, options=self._options)
+
+        self._config_manager.update(entry)
+
     @staticmethod
-    def get_options(data, all_available_options):
+    def _get_user_input_option(options, key):
+        result = options.get(key, [OPTION_EMPTY])
+
+        if OPTION_EMPTY in result:
+            result.clear()
+
+        return result
+
+    def _handle_password(self, user_input):
+        if CONF_CLEAR_CREDENTIALS in user_input:
+            clear_credentials = user_input.get(CONF_CLEAR_CREDENTIALS)
+
+            if clear_credentials:
+                del user_input[CONF_USERNAME]
+                del user_input[CONF_PASSWORD]
+
+            del user_input[CONF_CLEAR_CREDENTIALS]
+
+        if CONF_PASSWORD in user_input:
+            password_clear_text = user_input[CONF_PASSWORD]
+            password = self._password_manager.encrypt(password_clear_text)
+
+            user_input[CONF_PASSWORD] = password
+
+    def _clone_items(self, user_input, flow: str):
+        new_user_input = {}
+
+        if user_input is not None:
+            for key in user_input:
+                user_input_data = user_input[key]
+
+                if key in DROP_DOWNS_CONF and OPTION_EMPTY in user_input_data:
+                    user_input_data = []
+
+                new_user_input[key] = user_input_data
+
+            if flow != CONFIG_FLOW_INIT:
+                self._handle_password(new_user_input)
+
+        return new_user_input
+
+    @staticmethod
+    def clone_items(user_input):
+        new_user_input = {}
+
+        if user_input is not None:
+            for key in user_input:
+                user_input_data = user_input[key]
+
+                if key in DROP_DOWNS_CONF and OPTION_EMPTY in user_input_data:
+                    user_input_data = []
+
+                new_user_input[key] = user_input_data
+
+        return new_user_input
+
+    def _should_validate_login(self, user_input: dict):
+        validate_login = False
+        data = self._data
+
+        for conf in CONF_ARR:
+            if data.get(conf) != user_input.get(conf):
+                validate_login = True
+
+                break
+
+        return validate_login
+
+    def _get_actions(self, options):
+        actions = []
+
+        for action in self._available_actions:
+            if action in options:
+                if options.get(action, False):
+                    execute_action = self._available_actions[action]
+
+                    actions.append(execute_action)
+
+            del options[action]
+
+        return actions
+
+    def _execute_generate_config_files(self):
+        ha = self._get_ha()
+
+        if ha is not None:
+            ha.generate_config_files()
+
+    def _get_ha(self, key: str = None):
+        if key is None:
+            key = self.title
+
+        ha = get_ha(self._hass, key)
+
+        return ha
+
+    def _move_option_to_data(self, options):
+        if CONF_RESET_COMPONENTS_SETTINGS in options:
+            if options.get(CONF_RESET_COMPONENTS_SETTINGS, False):
+                if CONF_ALLOWED_CAMERA in options:
+                    del options[CONF_ALLOWED_CAMERA]
+
+                if CONF_ALLOWED_AUDIO_SENSOR in options:
+                    del options[CONF_ALLOWED_AUDIO_SENSOR]
+
+                if CONF_ALLOWED_MOTION_SENSOR in options:
+                    del options[CONF_ALLOWED_MOTION_SENSOR]
+
+                if CONF_ALLOWED_CONNECTIVITY_SENSOR in options:
+                    del options[CONF_ALLOWED_CONNECTIVITY_SENSOR]
+
+                if CONF_ALLOWED_PROFILE in options:
+                    del options[CONF_ALLOWED_PROFILE]
+
+            del options[CONF_RESET_COMPONENTS_SETTINGS]
+
+        for conf in CONF_ARR:
+            if conf in options:
+                self._data[conf] = options[conf]
+
+                del options[conf]
+
+    async def _handle_data(self, flow):
+        if flow != CONFIG_FLOW_INIT:
+            await self._valid_login()
+
+        if flow == CONFIG_FLOW_OPTIONS:
+            config_entries = self._hass.config_entries
+            config_entries.async_update_entry(self._config_entry, data=self._data)
+
+    @staticmethod
+    def _get_options(data, all_available_options):
         result = []
 
         if data is None:
@@ -328,7 +378,7 @@ class ConfigFlowManager:
         return result
 
     @staticmethod
-    def get_available_options(all_items):
+    def _get_available_options(all_items):
         available_items = {OPTION_EMPTY: OPTION_EMPTY}
 
         for item in all_items:
@@ -339,12 +389,12 @@ class ConfigFlowManager:
 
         return available_items
 
-    async def valid_login(self):
+    async def _valid_login(self):
         errors = None
 
-        config_data = self.config_manager.data
+        config_data = self._config_manager.data
 
-        api = BlueIrisApi(self._hass, self.config_manager)
+        api = BlueIrisApi(self._hass, self._config_manager)
         await api.initialize()
 
         if not api.is_logged_in:
@@ -359,4 +409,10 @@ class ConfigFlowManager:
                 )
                 errors = {"base": "invalid_admin_credentials"}
 
-        return errors
+            system_name = api.status.get("system name")
+
+            if system_name is not None:
+                self.title = system_name
+
+        if errors is not None:
+            raise LoginError(errors)

@@ -17,17 +17,7 @@ class ConfigManager:
         data = config_entry.data
         options = config_entry.options
 
-        result = ConfigData()
-
-        result.host = data.get(CONF_HOST)
-        result.port = data.get(CONF_PORT, DEFAULT_PORT)
-        result.ssl = data.get(CONF_SSL, False)
-
-        result.username = self._get_config_data_item(CONF_USERNAME, options, data)
-        result.password = self._get_config_data_item(CONF_PASSWORD, options, data)
-
-        if len(result.password) > 0:
-            result.password_clear_text = self.password_manager.decrypt(result.password)
+        result: ConfigData = self.get_basic_data(data)
 
         result.log_level = options.get(CONF_LOG_LEVEL, LOG_LEVEL_DEFAULT)
 
@@ -45,6 +35,26 @@ class ConfigManager:
 
         self.config_entry = config_entry
         self.data = result
+
+    def get_basic_data(self, data):
+        result = ConfigData()
+
+        if data is not None:
+            result.host = data.get(CONF_HOST)
+            result.port = data.get(CONF_PORT, DEFAULT_PORT)
+            result.ssl = data.get(CONF_SSL, False)
+
+            result.username = data.get(CONF_USERNAME)
+            result.password = data.get(CONF_PASSWORD)
+
+            if result.password is not None and len(result.password) > 0:
+                result.password_clear_text = self.password_manager.decrypt(
+                    result.password
+                )
+            else:
+                result.password_clear_text = result.password
+
+        return result
 
     def is_supports_audio_sensor(self, camera):
         audio_support = camera.get("audio", False)

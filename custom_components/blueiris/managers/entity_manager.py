@@ -13,6 +13,7 @@ from ..helpers.const import *
 from ..models.config_data import ConfigData
 from ..models.entity_data import EntityData
 from .configuration_manager import ConfigManager
+from .device_manager import DeviceManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +53,14 @@ class EntityManager:
     @property
     def api(self) -> BlueIrisApi:
         return self.ha.api
+
+    @property
+    def device_manager(self) -> DeviceManager:
+        return self.ha.device_manager
+
+    @property
+    def integration_title(self) -> str:
+        return self.config_manager.config_entry.title
 
     def set_domain_component(self, domain, async_add_entities, component):
         self.domain_component_manager[domain] = {
@@ -199,7 +208,7 @@ class EntityManager:
                         step = f"Mark as created - {domain} -> {entity_key}"
 
                         entity_component = domain_component(
-                            self.hass, self.config_data.host, entity
+                            self.hass, self.config_manager.config_entry.entry_id, entity
                         )
 
                         if entity_id is not None:
@@ -252,11 +261,12 @@ class EntityManager:
 
         try:
             current_profile = self.api.status.get("profile", 0)
-            system_name = self.api.status.get("system name", DEFAULT_NAME)
 
-            device_name = f"{system_name} Server"
+            device_name = self.device_manager.get_system_device_name()
 
-            entity_name = f"{DEFAULT_NAME} {ATTR_ADMIN_PROFILE} {profile_name}"
+            entity_name = (
+                f"{self.integration_title} {ATTR_ADMIN_PROFILE} {profile_name}"
+            )
             unique_id = f"{DOMAIN}-{DOMAIN_SWITCH}-{ATTR_ADMIN_PROFILE}-{entity_name}"
 
             state = current_profile == profile_id
@@ -294,10 +304,9 @@ class EntityManager:
         entity = None
 
         try:
-            entity_name = f"{DEFAULT_NAME} Alerts"
-            system_name = self.api.status.get("system name", DEFAULT_NAME)
+            entity_name = f"{self.integration_title} Alerts"
 
-            device_name = f"{system_name} Server"
+            device_name = self.device_manager.get_system_device_name()
 
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-MAIN-{entity_name}"
 
@@ -361,9 +370,9 @@ class EntityManager:
             camera_id = camera.get("optionValue")
             camera_name = camera.get("optionDisplay")
 
-            device_name = f"{camera_name} ({camera_id})"
+            device_name = self.device_manager.get_camera_device_name(camera)
 
-            entity_name = f"{DEFAULT_NAME} {camera_name} {sensor_type_name}"
+            entity_name = f"{self.integration_title} {camera_name} {sensor_type_name}"
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{entity_name}"
 
             state_topic = MQTT_ALL_TOPIC.replace("+", camera_id)
@@ -443,9 +452,9 @@ class EntityManager:
             camera_name = camera.get("optionDisplay")
             is_online = camera.get("isOnline")
 
-            device_name = f"{camera_name} ({camera_id})"
+            device_name = self.device_manager.get_camera_device_name(camera)
 
-            entity_name = f"{DEFAULT_NAME} {camera_name}"
+            entity_name = f"{self.integration_title} {camera_name}"
             username = self.config_data.username
             password = self.config_data.password_clear_text
             base_url = self.api.base_url
@@ -463,7 +472,7 @@ class EntityManager:
             )
 
             camera_details = {
-                CONF_NAME: f"{DEFAULT_NAME} {camera_name}",
+                CONF_NAME: f"{entity_name}",
                 CONF_STILL_IMAGE_URL: still_image_url_template,
                 CONF_STREAM_SOURCE: stream_source,
                 CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,

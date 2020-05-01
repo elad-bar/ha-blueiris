@@ -13,12 +13,10 @@
         }
       }
     },
-    "abort": {
-      "already_configured": "BlueIris integration ({host}) already configured"
-    },
     "error": {
       "invalid_admin_credentials": "Invalid administrator credentials",
-      "invalid_server_details": "Invalid server details"
+      "invalid_server_details": "Invalid server details",
+      "already_configured": "BlueIris integration already configured with the name"
     }
   },
   "options": {
@@ -47,7 +45,7 @@
       "error": {
         "invalid_admin_credentials": "Invalid administrator credentials",
         "invalid_server_details": "Invalid server details",
-        "already_configured": "BlueIris integration ({host}) already configured"
+        "already_configured": "BlueIris integration already configured with the name"
       }
   }
 }

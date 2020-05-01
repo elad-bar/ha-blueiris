@@ -22,15 +22,13 @@ async def async_setup_base_entry(
     component: Callable[[HomeAssistant, Any, EntityData], Any],
 ):
 
-    """Set up EdgeOS based off an entry."""
+    """Set up BlueIris based off an entry."""
     _LOGGER.debug(f"Starting async_setup_entry {domain}")
 
     try:
-        entry_data = entry.data
-        host = entry_data.get(CONF_HOST)
-
-        ha = get_ha(hass, host)
+        ha = get_ha(hass, entry.entry_id)
         entity_manager = ha.entity_manager
+
         entity_manager.set_domain_component(domain, async_add_entities, component)
     except Exception as ex:
         exc_type, exc_obj, tb = sys.exc_info()

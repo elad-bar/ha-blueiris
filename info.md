@@ -99,7 +99,7 @@ In the past password saved in clear text, to use the encryption, please remove t
 
 As long as the password will remain in clear text saved in integration setting, the following warning log message will appear during restart:
 ```
-EdgeOS password is not encrypted, please remove integration and reintegrate
+BlueIris password is not encrypted, please remove integration and reintegrate
 ```
 
 ## Components

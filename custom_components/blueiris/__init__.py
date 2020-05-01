@@ -20,7 +20,7 @@ async def async_setup(hass, config):
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up a Blue Iris component."""
+    """Set up a BlueIris component."""
     initialized = False
 
     try:
@@ -28,9 +28,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         _LOGGER.debug(f"Starting async_setup_entry of {DOMAIN}")
         entry.add_update_listener(async_options_updated)
-        host = entry.data.get(CONF_HOST)
 
-        await async_set_ha(hass, host, entry)
+        await async_set_ha(hass, entry)
 
         initialized = True
 
@@ -45,13 +44,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
-    host = entry.data.get(CONF_HOST)
-    ha = get_ha(hass, host)
+    ha = get_ha(hass, entry.entry_id)
 
     if ha is not None:
         await ha.async_remove()
 
-    clear_ha(hass, host)
+    clear_ha(hass, entry.entry_id)
 
     return True
 
@@ -62,8 +60,7 @@ async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
 
     _LOGGER.info(f"async_options_updated, Entry: {entry.as_dict()} ")
 
-    host = entry.data.get(CONF_HOST)
-    ha = get_ha(hass, host)
+    ha = get_ha(hass, entry.entry_id)
 
     if ha is not None:
         await ha.async_update_entry(entry)

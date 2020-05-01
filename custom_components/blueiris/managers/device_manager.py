@@ -3,6 +3,7 @@ import logging
 from homeassistant.helpers.device_registry import async_get_registry
 
 from ..helpers.const import *
+from .configuration_manager import ConfigManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -15,6 +16,10 @@ class DeviceManager:
         self._devices = {}
 
         self._api = self._ha.api
+
+    @property
+    def config_manager(self) -> ConfigManager:
+        return self._ha.config_manager
 
     async def async_remove_entry(self, entry_id):
         dr = await async_get_registry(self._hass)
@@ -52,13 +57,29 @@ class DeviceManager:
         for camera in camera_list:
             self.generate_camera_device(camera)
 
+    def get_system_device_name(self):
+        title = self.config_manager.config_entry.title
+
+        device_name = f"{title} Server"
+
+        return device_name
+
+    def get_camera_device_name(self, camera):
+        camera_id = camera.get("optionValue", "")
+        camera_name = camera.get("optionDisplay", "")
+
+        title = self.config_manager.config_entry.title
+
+        device_name = f"{title} {camera_name} ({camera_id})"
+
+        return device_name
+
     def generate_system_device(self):
         server_status = self._api.status
 
-        system_name = server_status.get("system name", DEFAULT_NAME)
         version = server_status.get("version")
 
-        device_name = f"{system_name} Server"
+        device_name = self.get_system_device_name()
 
         device_info = {
             "identifiers": {(DEFAULT_NAME, device_name)},
@@ -71,10 +92,7 @@ class DeviceManager:
         self.set(device_name, device_info)
 
     def generate_camera_device(self, camera):
-        camera_id = camera.get("optionValue", "")
-        camera_name = camera.get("optionDisplay", "")
-
-        device_name = f"{camera_name} ({camera_id})"
+        device_name = self.get_camera_device_name(camera)
 
         device_info = {
             "identifiers": {(DEFAULT_NAME, device_name)},

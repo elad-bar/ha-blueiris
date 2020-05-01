@@ -11,21 +11,21 @@ from .const import *
 _LOGGER = logging.getLogger(__name__)
 
 
-def clear_ha(hass: HomeAssistant, host):
+def clear_ha(hass: HomeAssistant, entry_id):
     if DATA_BLUEIRIS not in hass.data:
         hass.data[DATA_BLUEIRIS] = dict()
 
-    del hass.data[DATA_BLUEIRIS][host]
+    del hass.data[DATA_BLUEIRIS][entry_id]
 
 
-def get_ha(hass: HomeAssistant, host):
+def get_ha(hass: HomeAssistant, entry_id):
     ha_data = hass.data.get(DATA_BLUEIRIS, dict())
-    ha = ha_data.get(host)
+    ha = ha_data.get(entry_id)
 
     return ha
 
 
-async def async_set_ha(hass: HomeAssistant, host, entry: ConfigEntry):
+async def async_set_ha(hass: HomeAssistant, entry: ConfigEntry):
     try:
         if DATA_BLUEIRIS not in hass.data:
             hass.data[DATA_BLUEIRIS] = dict()
@@ -39,7 +39,7 @@ async def async_set_ha(hass: HomeAssistant, host, entry: ConfigEntry):
 
         await instance.async_init(entry)
 
-        hass.data[DATA_BLUEIRIS][host] = instance
+        hass.data[DATA_BLUEIRIS][entry.entry_id] = instance
     except Exception as ex:
         exc_type, exc_obj, tb = sys.exc_info()
         line_number = tb.tb_lineno

@@ -1,12 +1,11 @@
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import HomeAssistantError
 
 
 class AlreadyExistsError(HomeAssistantError):
-    entry: ConfigEntry
+    title: str
 
-    def __init__(self, entry: ConfigEntry):
-        self.entry = entry
+    def __init__(self, title: str):
+        self.title = title
 
 
 class LoginError(HomeAssistantError):

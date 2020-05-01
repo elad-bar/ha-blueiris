@@ -64,15 +64,15 @@ class BlueIrisHomeAssistant:
         return self._entity_registry
 
     @property
+    def config_manager(self) -> ConfigManager:
+        return self._config_manager
+
+    @property
     def config_data(self) -> Optional[ConfigData]:
         if self._config_manager is not None:
             return self._config_manager.data
 
         return None
-
-    @property
-    def config_manager(self) -> ConfigManager:
-        return self._config_manager
 
     async def async_init(self, entry: ConfigEntry):
         try:

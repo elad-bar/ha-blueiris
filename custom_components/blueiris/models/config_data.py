@@ -2,6 +2,7 @@ from ..helpers.const import *
 
 
 class ConfigData:
+    name: str
     host: str
     port: int
     ssl: bool
@@ -16,8 +17,9 @@ class ConfigData:
     allowed_connectivity_sensor: list
 
     def __init__(self):
+        self.name = DEFAULT_NAME
         self.host = ""
-        self.port = 0
+        self.port = DEFAULT_PORT
         self.ssl = False
         self.username = ""
         self.password = ""
@@ -47,6 +49,7 @@ class ConfigData:
 
     def __repr__(self):
         obj = {
+            CONF_NAME: self.name,
             CONF_HOST: self.host,
             CONF_PORT: self.port,
             CONF_SSL: self.ssl,
