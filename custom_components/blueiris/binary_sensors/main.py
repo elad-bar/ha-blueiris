@@ -3,7 +3,7 @@ import logging
 
 from custom_components.blueiris.models.base_entity import BlueIrisEntity
 
-from homeassistant.components.binary_sensor import STATE_ON, BinarySensorDevice
+from homeassistant.components.binary_sensor import STATE_ON, BinarySensorEntity
 from homeassistant.components.mqtt import Message, async_subscribe
 from homeassistant.core import callback
 
@@ -14,7 +14,7 @@ _LOGGER = logging.getLogger(__name__)
 CURRENT_DOMAIN = DOMAIN_BINARY_SENSOR
 
 
-class BlueIrisMainBinarySensor(BinarySensorDevice, BlueIrisEntity):
+class BlueIrisMainBinarySensor(BinarySensorEntity, BlueIrisEntity):
     """Representation a binary sensor that is updated by MQTT."""
 
     remove_subscription = None

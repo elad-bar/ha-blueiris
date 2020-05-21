@@ -5,7 +5,7 @@ https://home-assistant.io/components/binary_sensor.blueiris/
 """
 import logging
 
-from homeassistant.components.binary_sensor import BinarySensorDevice
+from homeassistant.components.binary_sensor import BinarySensorEntity
 
 from ..helpers.const import *
 from ..models.base_entity import BlueIrisEntity
@@ -13,7 +13,7 @@ from ..models.base_entity import BlueIrisEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-class BlueIrisBinarySensor(BinarySensorDevice, BlueIrisEntity):
+class BlueIrisBinarySensor(BinarySensorEntity, BlueIrisEntity):
     """Representation a binary sensor that is updated by MQTT."""
 
     @property

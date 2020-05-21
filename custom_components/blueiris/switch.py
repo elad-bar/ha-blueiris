@@ -5,7 +5,7 @@ https://home-assistant.io/components/switch.blueiris/
 """
 import logging
 
-from homeassistant.components.switch import SwitchDevice
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 
 from .helpers.const import *
@@ -39,7 +39,7 @@ def get_switch(hass: HomeAssistant, host: str, entity: EntityData):
     return switch
 
 
-class BlueIrisProfileSwitch(SwitchDevice, BlueIrisEntity):
+class BlueIrisProfileSwitch(SwitchEntity, BlueIrisEntity):
     """Class for an BlueIris switch."""
 
     @property

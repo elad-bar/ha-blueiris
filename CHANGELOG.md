@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-05-21
+
+**Fixed bugs:**
+
+- BinarySensorDevice is deprecated [\#69](https://github.com/elad-bar/ha-bleuiris/issues/69)
+
 ## 2020-05-01
 
 **Implemented enhancements:**
