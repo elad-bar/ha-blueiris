@@ -228,11 +228,11 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
     async def set_profile(self, profile_id):
+        _LOGGER.info(f"Setting profile (#{profile_id})")
+
         await self._set_profile(profile_id)
 
     async def _set_profile(self, profile_id, check_lock=True):
-        _LOGGER.info(f"Setting profile (#{profile_id})")
-
         request_data = {
             "cmd": "status",
             "session": self.session_id,
