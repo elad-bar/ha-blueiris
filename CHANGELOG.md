@@ -1,5 +1,16 @@
 # Changelog
 
+## 2020-06-30
+
+**Fixed bugs:**
+
+- Profile Switch [\#70](https://github.com/elad-bar/ha-bleuiris/issues/70) - Set lock=1 (Schedule=HOLD) when changing profile to lock the profile as set in switch
+
+**Implemented enhancements:**
+
+- Moved some of INFO log level messages into DEBUG for clearer debugging
+- Added CircleCI support to build and run tests
+
 ## 2020-05-21
 
 **Fixed bugs:**

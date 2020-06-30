@@ -51,6 +51,10 @@ class BlueIrisApi:
     def is_initialized(self):
         return self.session is not None and not self.session.closed
 
+    @property
+    def config_data(self):
+        return self.config_manager.data
+
     async def async_verified_post(self, data):
         result = None
 
@@ -103,7 +107,7 @@ class BlueIrisApi:
         _LOGGER.info(f"Initializing BlueIris")
 
         try:
-            config_data = self.config_manager.data
+            config_data = self.config_data
 
             self.base_url = (
                 f"{config_data.protocol}://{config_data.host}:{config_data.port}"
@@ -134,6 +138,8 @@ class BlueIrisApi:
             )
 
     async def async_update(self):
+        _LOGGER.info(f"Updating data from BI Server ({self.config_data.name})")
+
         await self.load_camera()
         await self.load_status()
 
@@ -199,7 +205,7 @@ class BlueIrisApi:
         return self.is_logged_in
 
     async def load_camera(self):
-        _LOGGER.info(f"Retrieving camera list")
+        _LOGGER.debug(f"Retrieving camera list")
 
         request_data = {"cmd": "camlist", "session": self.session_id}
 
@@ -209,7 +215,7 @@ class BlueIrisApi:
             self.camera_list = response.get("data", [])
 
     async def load_status(self):
-        _LOGGER.info(f"Retrieving status")
+        _LOGGER.debug(f"Retrieving status")
 
         request_data = {"cmd": "status", "session": self.session_id}
 
@@ -222,6 +228,9 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
     async def set_profile(self, profile_id):
+        await self._set_profile(profile_id)
+
+    async def _set_profile(self, profile_id, check_lock=True):
         _LOGGER.info(f"Setting profile (#{profile_id})")
 
         request_data = {
@@ -234,6 +243,13 @@ class BlueIrisApi:
 
         if response is not None:
             data = response.get("data", {})
+
+            lock = data.get("lock")
+
+            if check_lock and lock != 1:
+                await self._set_profile(profile_id, False)
+
+                return
 
             for key in data:
                 self.status[key] = data[key]

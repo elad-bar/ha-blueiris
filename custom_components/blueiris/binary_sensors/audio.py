@@ -44,25 +44,26 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
             super()._immediate_update(previous_state)
 
         else:
-            should_alert = False
+            should_alert = True
 
             if self._last_alert is None:
                 message = "Identified first time"
-                should_alert = True
             else:
                 time_since = current_timestamp - self._last_alert
                 message = f"{time_since} seconds ago"
 
                 if current_timestamp - self._last_alert > AUDIO_EVENT_LENGTH:
                     message = f"Identified {message}"
-                    should_alert = True
                 else:
                     message = f"Irrelevant {message}"
-
-            _LOGGER.info(f"Audio alert on, {message} | {self.name}")
+                    should_alert = False
 
             if should_alert:
+                _LOGGER.info(f"Audio alert on, {message} | {self.name}")
+
                 self._last_alert = current_timestamp
                 super()._immediate_update(previous_state)
 
                 async_call_later(self.hass, 2, turn_off_automatically)
+            else:
+                _LOGGER.debug(f"Audio alert on, {message} | {self.name}")
