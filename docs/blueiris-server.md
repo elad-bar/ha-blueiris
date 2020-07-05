@@ -1,18 +1,12 @@
 # BlueIris Server Settings
 
 #### User
-If you intent to use any of the Blue Iris REST API commands (such as profile switching), 
-
-it's recommended you create a separate Administrator user for Home Assitant to connect to, and limit access to LAN only.  
-
-Use this username and password in your Home Assistant configuration (shown in the next section). 
-
-This keeps any accesses or limitations you may wish to set on Home Assistant separate from the primary Administrator.
+If you intend to use any of the Blue Iris REST API commands (such as profile switching), it's recommended you create a separate Administrator user for Home Assitant to connect to, and limit access to LAN only. Use this username and password in your Home Assistant configuration (shown in the next section). This keeps any accesses or limitations you may wish to set on Home Assistant separate from the primary Administrator.
 
 ![Blue Iris Edit User](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-edit_user.png)
 
 #### Web Server 
-Enable the Blue Iris Web Server. Select the  `Advanced...` button to proceed to the next step.
+Enable the Blue Iris Web Server. Select the  `Advanced…` button to proceed to the next step.
 
 ![Blue Iris Web Server](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-web_server.png)
 
@@ -32,23 +26,17 @@ Finally, enable re-encoding. Set `Hardware accelerated decode (restart)` to a se
 
 In order to support the MQTT binary sensors for the camera, some additional configuration needs to be performed on both Home Assistant and Blue Iris:
 
-Assuming you are using the built-in MQTT server or the add-on Mosquitto broker, 
+Assuming you are using the built-in MQTT server or the add-on Mosquitto broker, in the Home Assistant `Configuration | Users panel`, create a new user that Blue Iris can use to connect to the MQTT broker. This user may be placed in the Users Group, to limit the scope of its access, since it is only required to connect to the MQTT broker. 
 
-in the Home Assistant `Configuration | Users panel`, 
+If you are using another MQTT broker, create a user appropriate for Blue Iris there.
 
-create a new user for Blue Iris to connect to the MQTT broker with. 
-
-This user may be placed in the Users Group, to limit the scope of its access, since it is only required to connect to the MQTT broker. 
-
-Otherwise, create a user appropriate for Blue Iris in your chosen MQTT broker.
-
-In the Blue Iris Options panel, on the `Digital IO and IoT` tab under `MQTT`, select `"Configure..."` and enter the host and port of the Home Assistant MQTT server, and the username and password created for the Blue Iris user.
+To connect Blue Iris to MQTT broker go to the Blue Iris `Settings/Info` options panel, then on the `Digital IO and IoT` tab under `MQTT`, select `Configure…` and enter the host and port of the Home Assistant MQTT server, and the username and password created for the Blue Iris user.
 
 ![Blue Iris Edit MQTT Server](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-edit_mqtt_server.png)
 
 ###### Troubleshooting
 
-* Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
+* Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust and the built-in broke is deprecated. Check that the broker is starting up cleanly and the topics are coming in without pitching errors. [MQTT Explorer](http://mqtt-explorer.com) is a useful free tool for checking the flow of MQTT messages.
 * Do you have the [MQTT Integration configured](https://www.home-assistant.io/addons/mosquitto/#home-assistant-configuration)? It's not sufficient to just install/start the broker. Make sure to check the `Enable discovery` box when you configure the integration.
   
   ![Integrations MQTT](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/ha-integrations_mqtt.png)
@@ -57,62 +45,67 @@ In the Blue Iris Options panel, on the `Digital IO and IoT` tab under `MQTT`, se
 
 
 #### Event triggers
-For each camera you wish to monitor, select `"Camera properties..."` and on the `Alerts` tab, check `"Post to a web address or MQTT server"` and then select `"Configure..."`.
 
-Binary sensors for motion, audio and watchdog (connectivity) per camera,
-In order to configure it in BlueIris you will need to go to:
-##### Motion
-Camera settings -> Alerts:
-Fire when: This camera is triggered
+We'll need to individually configure MQTT alerts for motion, audio, and connectivity for each camera you wish to monitor. For all three of these alert types, start by selecting `Camera Settings…` for a given camera in Blue Iris then follow the steps below.
 
-Motion zones must be checked
+##### Motion Alerts
 
-At least 1 zone must be checked (A-H) with Any selected in the camera's drop-down
-OR
+- `Camera settings` -> `Alerts` tab
+- In the `Trigger sources and zones` section:
+  - Fire when: This camera is triggered
+  - Motion zones must be checked
+  - At least 1 zone must be checked (A-H) with Any selected in the camera's drop-down
+  - OR All selected in the camera's drop-down
 
-All selected in the camera's drop-down
-
-Action section:
-Click on `On alert`, 
-
-in the popup window, create new (or modify) alert for MQTT with the following settings:
-```
-Topic - BlueIris/&CAM/Status
-Payload - { "type": "&TYPE", "trigger": "ON" }
-```
-
-for `On reset` do the same with payload:
-`{ "type": "&TYPE", "trigger": "OFF" }`
-
-
-The alert should be sent for the profile you would like it to trigger
+- In the `Actions` section:
+  - Click on `On alert…`
+  - Click the `+` button to add a new alert. Select `Web request or MQTT`
+  - In the dialog that comes up, check all of the trigger sources (such as `DIO`, `Extern`, etc) other than `Audio`
+  - Change the drop down from `http:` to `MQTT topic`
+  - Configure the fields like so:
+     - MQTT topic - `BlueIris/&CAM/Status`
+     - Post/payload - `{ "type": "Motion", "trigger": "ON" }`
+  - Click `OK` to save.
+  - Click on `On reset…` and repeat the steps above, but with a payload of `{ "type": "Motion", "trigger": "OFF" }`
+  
+- Repeat the above steps for each profile from which you want alerts.
 
 ![Blue Iris Motion](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-motion-alerts.png)
 
 ![Blue Iris MQTT Alert](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-alerts-list.png)
 ![Blue Iris MQTT Alert](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-alerts-settings.png)
 
-##### Audio
-Camera settings -> Audio -> Options:<br/>
-Check the `Trigger the camera during profiles` and mark all profiles you would like it to trigger<br/>
-Check the `Use 1 second average intensity` and set the sensitivity level to the desired level<br/>
+##### Audio Alerts
 
-Payloads will be sent according to the definition in the Alert's section defined above using the same settings.
+- `Camera settings` -> `Audio` tab
+- In the `Options` section:
+  - Check the `Trigger the camera during profiles` and mark all profiles you would like it to trigger
+  - Check the `Use 1 second average intensity` and set the sensitivity level to the desired level
+
+- Go back to the `Alerts` tab to set up alerts for the audio triggers
+  - Repeat all of the steps for the motion alerts above, but for audio:
+    - Click on `On alert…`
+    - Click the `+` button to create a new alert, in addition to the existing motion one. Select `Web request or MQTT`
+    - In the dialog, select _only_ the `Audio` trigger source
+    - Configure the MQTT topic and payload like so:
+      - MQTT topic - `BlueIris/&CAM/Status`
+      - Post/payload - `{ "type": "Audio", "trigger": "ON" }`
+    - Click `OK` and repeat for `On reset…` using the payload `{ "type": "Audio", "trigger": "OFF" }`
+    - Repeat for each profile where you want audio alerts.
 
 ![Blue Iris Alerts](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-audio-alerts.png)
 
-##### Watchdog (Connectivity)
-Camera settings -> Watchdog<br/>
-in the action's section click on `On loss of signal`, <br/>
-then in the popup window, create new (or modify) alert for MQTT with the following settings:
-```
-Topic - BlueIris/&CAM/Status
-Payload - { "type": "Connectivity", "trigger": "OFF" }
-```
+##### Watchdog (Connectivity) Alerts
 
-for `On signal restoration` do the same with payload:
-`{ "type": "&TYPE", "trigger": "ON" }` 
-
-The alert should be sent for the profile you would like it to trigger
+- `Camera settings` -> `Watchdog` tab
+- In the `Signal loss` section:
+  - Click on `On loss of signal…`
+  - In the dialog, create a new MQTT alert from the `+` button
+  - In the alert dialog, leave everything checked in `Trigger sources and zones`
+  - Set the MQTT topic and payload to:
+    - MQTT topic - `BlueIris/&CAM/Status`
+    - Post/payload - `{ "type": "Connectivity", "trigger": "OFF" }` (Note that the `trigger` is reversed from other alerts).
+  - For `On signal restoration…` do the same, but with the payload `{ "type": "Connectivity", "trigger": "ON" }` 
+- Repeat the above steps for each profile from which you want alerts.
 
 ![Blue Iris Alerts](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-watchdog-alerts.png)
