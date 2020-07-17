@@ -4,12 +4,16 @@ from ..helpers.const import *
 from ..models.entity_data import EntityData
 from .audio import BlueIrisAudioBinarySensor
 from .connectivity import BlueIrisConnectivityBinarySensor
+from .dio import BlueIrisDIOBinarySensor
+from .external import BlueIrisExternalBinarySensor
 from .main import BlueIrisMainBinarySensor
 from .motion import BlueIrisMotionBinarySensor
 
 BINARY_SENSOR_TYPES = {
     SENSOR_CONNECTIVITY_NAME: BlueIrisConnectivityBinarySensor,
     SENSOR_MOTION_NAME: BlueIrisMotionBinarySensor,
+    SENSOR_EXTERNAL_NAME: BlueIrisExternalBinarySensor,
+    SENSOR_DIO_NAME: BlueIrisDIOBinarySensor,
     SENSOR_AUDIO_NAME: BlueIrisAudioBinarySensor,
     SENSOR_MAIN_NAME: BlueIrisMainBinarySensor,
 }

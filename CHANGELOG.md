@@ -1,12 +1,15 @@
 # Changelog
 
-## 2020-06-30
+## 2020-07-17
 
 **Implemented enhancements:**
 
 - Added ability to set stream type in integration's options (Originally was hard-coded), Default=H264, initiated due to [\#75](https://github.com/elad-bar/ha-bleuiris/issues/75)
 - Upgrade pre-commit to 2.6.0
 - Fix pre-commit errors (F541 f-string is missing placeholders)
+- Added support for External and DIO events (Related to #74)
+
+**Note:** All camera will have 2 additional sensors, to disable use integration's options
 
 ## 2020-06-30
 

@@ -15,6 +15,8 @@ class ConfigData:
     allowed_motion_sensor: list
     allowed_audio_sensor: list
     allowed_connectivity_sensor: list
+    allowed_dio_sensor: list
+    allowed_external_sensor: list
     stream_type: str
 
     def __init__(self):
@@ -33,6 +35,8 @@ class ConfigData:
         self.allowed_motion_sensor = []
         self.allowed_audio_sensor = []
         self.allowed_connectivity_sensor = []
+        self.allowed_dio_sensor = []
+        self.allowed_external_sensor = []
 
     @property
     def protocol(self):
@@ -63,6 +67,8 @@ class ConfigData:
             CONF_ALLOWED_MOTION_SENSOR: self.allowed_motion_sensor,
             CONF_ALLOWED_AUDIO_SENSOR: self.allowed_audio_sensor,
             CONF_ALLOWED_CONNECTIVITY_SENSOR: self.allowed_connectivity_sensor,
+            CONF_ALLOWED_DIO_SENSOR: self.allowed_dio_sensor,
+            CONF_ALLOWED_EXTERNAL_SENSOR: self.allowed_external_sensor,
             CONF_STREAM_TYPE: self.stream_type,
         }
 

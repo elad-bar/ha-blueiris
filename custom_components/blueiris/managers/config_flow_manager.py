@@ -145,7 +145,7 @@ class ConfigFlowManager:
             if self._config_manager.is_supports_sensors(camera):
                 available_camera_motion_connectivity.append(item)
 
-                if self._config_manager.is_supports_audio_sensor(camera):
+                if self._config_manager.is_supports_audio(camera):
                     available_camera_audio.append(item)
 
         for profile_name in profiles_list:
@@ -163,6 +163,12 @@ class ConfigFlowManager:
         supported_motion_sensor = self._get_available_options(
             available_camera_motion_connectivity
         )
+        supported_dio_sensor = self._get_available_options(
+            available_camera_motion_connectivity
+        )
+        supported_external_sensor = self._get_available_options(
+            available_camera_motion_connectivity
+        )
         supported_profile = self._get_available_options(available_profiles)
 
         allowed_audio_sensor = self._get_options(
@@ -175,6 +181,12 @@ class ConfigFlowManager:
         allowed_motion_sensor = self._get_options(
             config_data.allowed_motion_sensor, supported_motion_sensor
         )
+        allowed_dio_sensor = self._get_options(
+            config_data.allowed_dio_sensor, supported_dio_sensor
+        )
+        allowed_external_sensor = self._get_options(
+            config_data.allowed_external_sensor, supported_external_sensor
+        )
         allowed_profile = self._get_options(
             config_data.allowed_profile, supported_profile
         )
@@ -185,13 +197,13 @@ class ConfigFlowManager:
 
         fields[vol.Optional(CONF_GENERATE_CONFIG_FILES, default=False)] = bool
 
-        fields[vol.Optional(CONF_LOG_LEVEL, default=config_data.log_level)] = vol.In(
-            LOG_LEVELS
-        )
-
         fields[
             vol.Optional(CONF_STREAM_TYPE, default=config_data.stream_type)
         ] = vol.In(STREAM_VIDEO.keys())
+
+        fields[vol.Optional(CONF_LOG_LEVEL, default=config_data.log_level)] = vol.In(
+            LOG_LEVELS
+        )
 
         fields[vol.Optional(CONF_RESET_COMPONENTS_SETTINGS, default=False)] = bool
         fields[
@@ -213,6 +225,16 @@ class ConfigFlowManager:
             fields[
                 vol.Optional(CONF_ALLOWED_MOTION_SENSOR, default=allowed_motion_sensor)
             ] = cv.multi_select(supported_motion_sensor)
+
+            fields[
+                vol.Optional(CONF_ALLOWED_DIO_SENSOR, default=allowed_dio_sensor)
+            ] = cv.multi_select(supported_dio_sensor)
+
+            fields[
+                vol.Optional(
+                    CONF_ALLOWED_EXTERNAL_SENSOR, default=allowed_external_sensor
+                )
+            ] = cv.multi_select(supported_external_sensor)
 
         if is_admin:
             fields[
@@ -339,6 +361,12 @@ class ConfigFlowManager:
 
                 if CONF_ALLOWED_CONNECTIVITY_SENSOR in options:
                     del options[CONF_ALLOWED_CONNECTIVITY_SENSOR]
+
+                if CONF_ALLOWED_DIO_SENSOR in options:
+                    del options[CONF_ALLOWED_DIO_SENSOR]
+
+                if CONF_ALLOWED_EXTERNAL_SENSOR in options:
+                    del options[CONF_ALLOWED_EXTERNAL_SENSOR]
 
                 if CONF_ALLOWED_PROFILE in options:
                     del options[CONF_ALLOWED_PROFILE]

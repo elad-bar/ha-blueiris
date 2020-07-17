@@ -409,26 +409,17 @@ class EntityManager:
         entities = []
 
         try:
-            if self.config_manager.is_allowed_motion_sensor(camera):
-                entity_motion = self.get_camera_base_binary_sensor(
-                    camera, SENSOR_MOTION_NAME
-                )
+            for sensor_type_name in BINARY_SENSOR_SIMPLE_TYPES:
+                if self.config_manager.is_allowed_sensor(camera, sensor_type_name):
+                    default_state = BINARY_SENSOR_SIMPLE_TYPES.get(
+                        sensor_type_name, False
+                    )
 
-                entities.append(entity_motion)
+                    entity = self.get_camera_base_binary_sensor(
+                        camera, sensor_type_name, default_state
+                    )
 
-            if self.config_manager.is_allowed_connectivity_sensor(camera):
-                entity_connectivity = self.get_camera_base_binary_sensor(
-                    camera, SENSOR_CONNECTIVITY_NAME, True
-                )
-
-                entities.append(entity_connectivity)
-
-            if self.config_manager.is_allowed_audio_sensor(camera):
-                entity_audio = self.get_camera_base_binary_sensor(
-                    camera, SENSOR_AUDIO_NAME
-                )
-
-                entities.append(entity_audio)
+                    entities.append(entity)
 
             for entity in entities:
                 entity_name = entity.name

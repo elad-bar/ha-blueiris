@@ -133,6 +133,12 @@ Represents whether the camera is triggered for noise or not (based on MQTT messa
 ###### Binary Sensor - Motion - Non-system-camera
 Represents whether the camera is triggered for motion or not (based on MQTT message)
 
+###### Binary Sensor - DIO - Non-system-camera
+Represents whether the camera is triggered for digital I/O event or not (based on MQTT message)
+
+###### Binary Sensor - External - Non-system-camera
+Represents whether the camera is triggered for external / ONVIF event or not (based on MQTT message)
+
 ###### Camera
 State: Idle
 

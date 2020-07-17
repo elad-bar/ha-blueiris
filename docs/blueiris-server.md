@@ -59,9 +59,9 @@ In the Blue Iris Options panel, on the `Digital IO and IoT` tab under `MQTT`, se
 #### Event triggers
 For each camera you wish to monitor, select `"Camera properties..."` and on the `Alerts` tab, check `"Post to a web address or MQTT server"` and then select `"Configure..."`.
 
-Binary sensors for motion, audio and watchdog (connectivity) per camera,
+Binary sensors for motion, external, DIO, audio and watchdog (connectivity) per camera,
 In order to configure it in BlueIris you will need to go to:
-##### Motion
+##### Motion / External / DIO
 Camera settings -> Alerts:
 Fire when: This camera is triggered
 

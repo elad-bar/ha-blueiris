@@ -31,6 +31,12 @@ class ConfigManager:
         result.allowed_motion_sensor = self._get_allowed_option(
             CONF_ALLOWED_MOTION_SENSOR, options
         )
+        result.allowed_dio_sensor = self._get_allowed_option(
+            CONF_ALLOWED_DIO_SENSOR, options
+        )
+        result.allowed_external_sensor = self._get_allowed_option(
+            CONF_ALLOWED_EXTERNAL_SENSOR, options
+        )
         result.allowed_profile = self._get_allowed_option(CONF_ALLOWED_PROFILE, options)
 
         result.stream_type = options.get(CONF_STREAM_TYPE, DEFAULT_STREAM_TYPE)
@@ -58,48 +64,30 @@ class ConfigManager:
 
         return result
 
-    def is_supports_audio_sensor(self, camera):
-        audio_support = camera.get("audio", False)
-        supports_sensors = self.is_supports_sensors(camera)
+    def get_allowed_sensor_state(self, sensor_type):
+        sensor_states = {
+            SENSOR_CONNECTIVITY_NAME: self.data.allowed_connectivity_sensor,
+            SENSOR_MOTION_NAME: self.data.allowed_motion_sensor,
+            SENSOR_EXTERNAL_NAME: self.data.allowed_external_sensor,
+            SENSOR_DIO_NAME: self.data.allowed_dio_sensor,
+            SENSOR_AUDIO_NAME: self.data.allowed_audio_sensor,
+        }
 
-        is_supports_audio_sensor = audio_support and supports_sensors
+        sensor_state = sensor_states[sensor_type]
 
-        return is_supports_audio_sensor
+        return sensor_state
 
-    def is_allowed_audio_sensor(self, camera):
+    def is_allowed_sensor(self, camera, sensor_type):
         camera_id = camera.get("optionValue")
 
-        allowed_audio_sensor = self.data.allowed_audio_sensor
-
-        is_supported = self.is_supports_audio_sensor(camera)
-        is_allowed = allowed_audio_sensor is None or camera_id in allowed_audio_sensor
-
-        result = is_supported and is_allowed
-
-        return result
-
-    def is_allowed_motion_sensor(self, camera):
-        camera_id = camera.get("optionValue")
-
-        allowed_motion_sensor = self.data.allowed_motion_sensor
+        is_allowed = self.get_allowed_sensor_state(sensor_type)
 
         is_supported = self.is_supports_sensors(camera)
-        is_allowed = allowed_motion_sensor is None or camera_id in allowed_motion_sensor
 
-        result = is_supported and is_allowed
+        if is_supported and sensor_type == SENSOR_AUDIO_NAME:
+            is_supported = self.is_supports_audio(camera)
 
-        return result
-
-    def is_allowed_connectivity_sensor(self, camera):
-        camera_id = camera.get("optionValue")
-
-        allowed_connectivity_sensor = self.data.allowed_connectivity_sensor
-
-        is_supported = self.is_supports_sensors(camera)
-        is_allowed = (
-            allowed_connectivity_sensor is None
-            or camera_id in allowed_connectivity_sensor
-        )
+        is_allowed = is_allowed is None or camera_id in is_allowed
 
         result = is_supported and is_allowed
 
@@ -114,6 +102,12 @@ class ConfigManager:
         is_supports_sensors = not is_system
 
         return is_supports_sensors
+
+    @staticmethod
+    def is_supports_audio(camera):
+        audio_support = camera.get("audio", False)
+
+        return audio_support
 
     @staticmethod
     def _get_allowed_option(key, options):
