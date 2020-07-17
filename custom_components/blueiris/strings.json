@@ -38,7 +38,8 @@
                   "allowed_motion_sensor": "Motion sensors",
                   "allowed_audio_sensor": "Audio sensors",
                   "allowed_connectivity_sensor": "Connectivity sensors",
-                  "reset-components-settings": "Reset components settings to default"
+                  "reset-components-settings": "Reset components settings to default",
+                  "stream-type": "Stream type"
               }
           }
       },

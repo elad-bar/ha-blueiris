@@ -21,7 +21,7 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 - Read the [BlueIris manual](https://github.com/elad-bar/ha-blueiris/blob/master/docs/blueiris-server.md) for this component
 
 #### Installations via HACS
-Look for "Integration with Blue Iris NVR" and install
+Look for "Blue Iris NVR" and install
 
 #### Integration settings
 ###### Basic configuration (Configuration -> Integrations -> Add BlueIris)
@@ -50,6 +50,12 @@ Motion sensors | Drop-down | - | All non-system camera | Will create binary sens
 Connectivity sensors | Drop-down | - | All non-system camera | Will create connectivity binary sensor for each of the chosen camera
 Audio sensors | Drop-down | - | All audio supported non-system camera | Will create audio binary sensor for each of the chosen camera
 Profile switches | Drop-down | - | All profiles | Will create switch for each of the chosen profiles
+Stream type | Drop-down | - | H264 | Defines the stream type H264 / MJPG
+
+**Integration's title**
+Title will be extracted from BlueIris server's configuration, it will be set upon adding the server, and after every Option's change
+
+Note that in case there are 2 integrations with the same integration's title, components will be overwritten by both integrations.
 
 **Log Level's drop-down**
 New feature to set the log level for the component without need to set log_level in `customization:` and restart or call manually `logger.set_level` and loose it after restart.

@@ -2,6 +2,13 @@
 
 ## 2020-06-30
 
+**Implemented enhancements:**
+
+- Added ability to set stream type in integration's options (Originally was hard-coded), Default=H264, initiated due to [\#75](https://github.com/elad-bar/ha-bleuiris/issues/75)
+
+
+## 2020-06-30
+
 **Fixed bugs:**
 
 - Profile Switch [\#70](https://github.com/elad-bar/ha-bleuiris/issues/70) - Set lock=1 (Schedule=HOLD) when changing profile to lock the profile as set in switch

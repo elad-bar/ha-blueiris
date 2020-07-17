@@ -467,8 +467,11 @@ class EntityManager:
             )
             still_image_url_template = cv.template(still_image_url)
 
+            stream_type = self.config_data.stream_type.lower()
+            video = STREAM_VIDEO[self.config_data.stream_type]
+
             stream_source = (
-                f"{base_url}/h264/{camera_id}/temp.m3u8&session={session_id}"
+                f"{base_url}/{stream_type}/{camera_id}/{video}?session={session_id}"
             )
 
             camera_details = {

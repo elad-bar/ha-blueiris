@@ -98,8 +98,6 @@ NOTIFICATION_TITLE = f"{DEFAULT_NAME} Setup"
 
 DEFAULT_ICON = "mdi:alarm-light"
 
-CAMERA_ID_PLACEHOLDER = "[camera_id]"
-
 ATTR_FRIENDLY_NAME = "friendly_name"
 
 PROTOCOLS = {True: "https", False: "http"}
@@ -227,3 +225,10 @@ LOG_LEVELS = [
     LOG_LEVEL_WARNING,
     LOG_LEVEL_ERROR,
 ]
+
+CONF_STREAM_TYPE = "stream-type"
+STREAM_TYPE_H264 = "H264"
+STREAM_TYPE_MJPG = "MJPG"
+DEFAULT_STREAM_TYPE = STREAM_TYPE_H264
+
+STREAM_VIDEO = {STREAM_TYPE_H264: "temp.m3u8", STREAM_TYPE_MJPG: "video.mjpg"}

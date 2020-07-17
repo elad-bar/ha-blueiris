@@ -33,6 +33,8 @@ class ConfigManager:
         )
         result.allowed_profile = self._get_allowed_option(CONF_ALLOWED_PROFILE, options)
 
+        result.stream_type = options.get(CONF_STREAM_TYPE, DEFAULT_STREAM_TYPE)
+
         self.config_entry = config_entry
         self.data = result
 

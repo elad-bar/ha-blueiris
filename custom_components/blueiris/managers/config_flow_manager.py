@@ -101,15 +101,13 @@ class ConfigFlowManager:
         if config_data is None:
             config_data = self.config_data
 
-        fields = {}
-
-        fields[vol.Optional(CONF_HOST, default=config_data.host)] = str
-        fields[vol.Optional(CONF_PORT, default=config_data.port)] = str
-        fields[vol.Optional(CONF_SSL, default=config_data.ssl)] = bool
-        fields[vol.Optional(CONF_USERNAME, default=config_data.username)] = str
-        fields[
-            vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text)
-        ] = str
+        fields = {
+            vol.Optional(CONF_HOST, default=config_data.host): str,
+            vol.Optional(CONF_PORT, default=config_data.port): str,
+            vol.Optional(CONF_SSL, default=config_data.ssl): bool,
+            vol.Optional(CONF_USERNAME, default=config_data.username): str,
+            vol.Optional(CONF_PASSWORD, default=config_data.password_clear_text): str,
+        }
 
         return fields
 
@@ -190,6 +188,10 @@ class ConfigFlowManager:
         fields[vol.Optional(CONF_LOG_LEVEL, default=config_data.log_level)] = vol.In(
             LOG_LEVELS
         )
+
+        fields[
+            vol.Optional(CONF_STREAM_TYPE, default=config_data.stream_type)
+        ] = vol.In(STREAM_VIDEO.keys())
 
         fields[vol.Optional(CONF_RESET_COMPONENTS_SETTINGS, default=False)] = bool
         fields[
@@ -340,6 +342,9 @@ class ConfigFlowManager:
 
                 if CONF_ALLOWED_PROFILE in options:
                     del options[CONF_ALLOWED_PROFILE]
+
+                if CONF_STREAM_TYPE in options:
+                    del options[CONF_STREAM_TYPE]
 
             del options[CONF_RESET_COMPONENTS_SETTINGS]
 

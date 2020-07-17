@@ -50,6 +50,7 @@ Motion sensors | Drop-down | - | All non-system camera | Will create binary sens
 Connectivity sensors | Drop-down | - | All non-system camera | Will create connectivity binary sensor for each of the chosen camera
 Audio sensors | Drop-down | - | All audio supported non-system camera | Will create audio binary sensor for each of the chosen camera
 Profile switches | Drop-down | - | All profiles | Will create switch for each of the chosen profiles
+Stream type | Drop-down | - | H264 | Defines the stream type H264 / MJPG
 
 **Integration's title**
 Title will be extracted from BlueIris server's configuration, it will be set upon adding the server, and after every Option's change

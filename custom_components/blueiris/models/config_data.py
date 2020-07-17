@@ -15,6 +15,7 @@ class ConfigData:
     allowed_motion_sensor: list
     allowed_audio_sensor: list
     allowed_connectivity_sensor: list
+    stream_type: str
 
     def __init__(self):
         self.name = DEFAULT_NAME
@@ -25,6 +26,7 @@ class ConfigData:
         self.password = ""
         self.password_clear_text = ""
         self.log_level = LOG_LEVEL_DEFAULT
+        self.stream_type = DEFAULT_STREAM_TYPE
 
         self.allowed_camera = []
         self.allowed_profile = []
@@ -61,6 +63,7 @@ class ConfigData:
             CONF_ALLOWED_MOTION_SENSOR: self.allowed_motion_sensor,
             CONF_ALLOWED_AUDIO_SENSOR: self.allowed_audio_sensor,
             CONF_ALLOWED_CONNECTIVITY_SENSOR: self.allowed_connectivity_sensor,
+            CONF_STREAM_TYPE: self.stream_type,
         }
 
         to_string = f"{obj}"
