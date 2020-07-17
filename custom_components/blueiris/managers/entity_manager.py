@@ -348,7 +348,7 @@ class EntityManager:
             entity.device_name = device_name
             entity.type = SENSOR_MAIN_NAME
         except Exception as ex:
-            self.log_exception(ex, f"Failed to get main binary sensor")
+            self.log_exception(ex, "Failed to get main binary sensor")
 
         return entity
 
@@ -359,7 +359,7 @@ class EntityManager:
 
             self.set_entity(DOMAIN_BINARY_SENSOR, entity_name, entity)
         except Exception as ex:
-            self.log_exception(ex, f"Failed to generate main binary sensor")
+            self.log_exception(ex, "Failed to generate main binary sensor")
 
     def get_camera_base_binary_sensor(
         self, camera, sensor_type_name, default_state=False

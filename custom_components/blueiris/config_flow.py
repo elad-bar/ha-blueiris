@@ -46,7 +46,7 @@ class DomainFlowHandler(config_entries.ConfigFlow):
 
                 return self.async_create_entry(title=self._config_flow.title, data=data)
             except LoginError as lex:
-                _LOGGER.warning(f"Cannot complete login")
+                _LOGGER.warning("Cannot complete login")
 
                 errors = lex.errors
 
@@ -107,7 +107,7 @@ class DomainOptionsFlowHandler(config_entries.OptionsFlow):
                         title=self._config_flow.title, data=options
                     )
                 except LoginError as lex:
-                    _LOGGER.warning(f"Cannot complete login")
+                    _LOGGER.warning("Cannot complete login")
 
                     errors = lex.errors
 

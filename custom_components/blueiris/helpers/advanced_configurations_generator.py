@@ -72,8 +72,8 @@ class AdvancedConfigurationGenerator:
             f"  {slugify(entity_name)}:",
             f"    name: {entity_name}",
             f"    initial: '{initial_camera}'",
-            f"    icon: mdi:camera",
-            f"    options:",
+            "    icon: mdi:camera",
+            "    options:",
         ]
 
         for camera_name in camera_items:
@@ -88,8 +88,8 @@ class AdvancedConfigurationGenerator:
         lines = [
             f"  {slugify(entity_name)}:",
             f"    name: {entity_name}",
-            f"    icon: mdi:cast",
-            f"    options:",
+            "    icon: mdi:cast",
+            "    options:",
         ]
 
         for entity_id in media_players:
@@ -112,10 +112,10 @@ class AdvancedConfigurationGenerator:
 
     def generate_ui_lovelace(self):
         lines = [
-            f"layout: horizontal",
-            f"max_columns: 3",
-            f"type: horizontal-stack",
-            f"cards:",
+            "layout: horizontal",
+            "max_columns: 3",
+            "type: horizontal-stack",
+            "cards:",
         ]
 
         entity_manager = self._ha.entity_manager
@@ -174,11 +174,11 @@ class AdvancedConfigurationGenerator:
         self.generate_camera_section(lines, "System", ui_system_camera)
         self.generate_camera_section(lines, "User", ui_user_camera)
 
-        lines.append(f"# BlueIris Server")
-        lines.append(f"  - title: BlueIris Server")
-        lines.append(f"    type: entities")
-        lines.append(f"    show_header_toggle: false")
-        lines.append(f"    entities:")
+        lines.append("# BlueIris Server")
+        lines.append("  - title: BlueIris Server")
+        lines.append("    type: entities")
+        lines.append("    show_header_toggle: false")
+        lines.append("    entities:")
 
         for system_component_domain_name in ui_system_components:
             system_component_domain = ui_system_components[system_component_domain_name]
@@ -196,20 +196,20 @@ class AdvancedConfigurationGenerator:
     @staticmethod
     def generate_camera_section(lines, camera_type, camera_list):
         lines.append(f"# {camera_type} cameras")
-        lines.append(f"  - title: {camera_type} Camera")
-        lines.append(f"    type: vertical-stack")
-        lines.append(f"    cards:")
+        lines.append("  - title: {camera_type} Camera")
+        lines.append("    type: vertical-stack")
+        lines.append("    cards:")
 
         for camera_item in camera_list:
             camera: EntityData = camera_item[DOMAIN_CAMERA]
             camera_name = camera.name
 
             lines.append(f"      - camera_image: camera.{slugify(camera_name)}")
-            lines.append(f"        type: picture-glance")
+            lines.append("        type: picture-glance")
             lines.append(f"        title: {camera_name}")
 
             if DOMAIN_BINARY_SENSOR in camera_item:
-                lines.append(f"        entities:")
+                lines.append("        entities:")
                 binary_sensors = camera_item[DOMAIN_BINARY_SENSOR]
 
                 for binary_sensor_name in binary_sensors:
@@ -221,18 +221,18 @@ class AdvancedConfigurationGenerator:
                     )
                     lines.append(f"              name: {binary_sensor_type}")
             else:
-                lines.append(f"        entities: []")
+                lines.append("        entities: []")
 
     def generate_script(self, camera_list, media_players):
         entity_name = "BlueIris Cast"
         lines = [
             f"  {slugify(entity_name)}:",
             f"    alias: {entity_name}",
-            f"    sequence:",
-            f"      - service: media_player.play_media",
-            f"        data_template:",
-            f"          media_content_type: 'image/jpg'",
-            f"          entity_id: >",
+            "    sequence:",
+            "      - service: media_player.play_media",
+            "        data_template:",
+            "          media_content_type: 'image/jpg'",
+            "          entity_id: >",
         ]
 
         media_player_entity_ids = []
@@ -255,7 +255,7 @@ class AdvancedConfigurationGenerator:
             f"            {{{{media_players[states.input_select.{media_player_input_select}.state]}}}}"
         )
 
-        lines.append(f"          media_content_id: >")
+        lines.append("          media_content_id: >")
 
         camera_entity_ids = []
         for camera in camera_list:
