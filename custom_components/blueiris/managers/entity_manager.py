@@ -361,9 +361,7 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(ex, "Failed to generate main binary sensor")
 
-    def get_camera_base_binary_sensor(
-        self, camera, sensor_type_name, default_state=False
-    ) -> EntityData:
+    def get_camera_entity(self, camera, sensor_type_name) -> EntityData:
         entity = None
 
         try:
@@ -377,11 +375,11 @@ class EntityManager:
 
             state_topic = MQTT_ALL_TOPIC.replace("+", camera_id)
 
+            default_state = sensor_type_name in NEGATIVE_SENSOR_STATE
+
             state = self.get_mqtt_state(state_topic, sensor_type_name, default_state)
 
-            device_class = SENSOR_DEVICE_CLASS.get(
-                sensor_type_name, sensor_type_name
-            ).lower()
+            device_class = SENSOR_DEVICE_CLASS.get(sensor_type_name, sensor_type_name)
 
             attributes = {ATTR_FRIENDLY_NAME: entity_name}
 
@@ -396,7 +394,7 @@ class EntityManager:
             entity.device_name = device_name
             entity.topic = state_topic
             entity.event = sensor_type_name
-            entity.device_class = device_class
+            entity.device_class = device_class.lower()
             entity.type = sensor_type_name
         except Exception as ex:
             self.log_exception(
@@ -409,15 +407,9 @@ class EntityManager:
         entities = []
 
         try:
-            for sensor_type_name in BINARY_SENSOR_SIMPLE_TYPES:
+            for sensor_type_name in CAMERA_SENSORS:
                 if self.config_manager.is_allowed_sensor(camera, sensor_type_name):
-                    default_state = BINARY_SENSOR_SIMPLE_TYPES.get(
-                        sensor_type_name, False
-                    )
-
-                    entity = self.get_camera_base_binary_sensor(
-                        camera, sensor_type_name, default_state
-                    )
+                    entity = self.get_camera_entity(camera, sensor_type_name)
 
                     entities.append(entity)
 

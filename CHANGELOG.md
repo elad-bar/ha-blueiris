@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-07-18
+
+**Implemented enhancements:**
+
+- Reduced duplicate code - Connectivity, Motion, External and DIO share the same class 
+
 ## 2020-07-17
 
 **Implemented enhancements:**

@@ -45,3 +45,15 @@ class BlueIrisBinarySensor(BinarySensorEntity, BlueIrisEntity):
     def force_update(self):
         """Force update."""
         return DEFAULT_FORCE_UPDATE
+
+    def _immediate_update(self, previous_state: bool):
+        if previous_state != self.entity.state:
+            _LOGGER.debug(
+                f"{self.name} updated from {previous_state} to {self.entity.state}"
+            )
+
+        super()._immediate_update(previous_state)
+
+    async def async_added_to_hass_local(self):
+        """Subscribe MQTT events."""
+        _LOGGER.info(f"Added new {self.name}")
