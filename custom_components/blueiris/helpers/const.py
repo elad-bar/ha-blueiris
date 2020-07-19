@@ -227,9 +227,7 @@ ENTITY_STATUS_CANCELLED = f"{ENTITY_STATUS}-cancelled"
 CONF_CLEAR_CREDENTIALS = "clear-credentials"
 CONF_GENERATE_CONFIG_FILES = "generate-config-files"
 CONF_RESET_COMPONENTS_SETTINGS = "reset-components-settings"
-
-OPTION_EMPTY = " NONE "
-
+CONF_ACTIONS = "actions"
 
 DOMAIN_LOAD = "load"
 DOMAIN_UNLOAD = "unload"

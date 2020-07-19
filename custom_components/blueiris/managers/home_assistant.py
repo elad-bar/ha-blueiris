@@ -25,6 +25,7 @@ from .configuration_manager import ConfigManager
 from .device_manager import DeviceManager
 from .entity_manager import EntityManager
 from .password_manager import PasswordManager
+from .storage_manager import StorageManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class BlueIrisHomeAssistant:
         self._api = None
         self._entity_manager = None
         self._device_manager = None
+        self._storage_manager = None
         self._config_generator: Optional[AdvancedConfigurationGenerator] = None
 
         self._config_manager = ConfigManager(password_manager)
@@ -68,6 +70,10 @@ class BlueIrisHomeAssistant:
         return self._config_manager
 
     @property
+    def storage_manager(self) -> StorageManager:
+        return self._storage_manager
+
+    @property
     def config_data(self) -> Optional[ConfigData]:
         if self._config_manager is not None:
             return self._config_manager.data
@@ -81,6 +87,7 @@ class BlueIrisHomeAssistant:
             self._api = BlueIrisApi(self._hass, self._config_manager)
             self._entity_manager = EntityManager(self._hass, self)
             self._device_manager = DeviceManager(self._hass, self)
+            self._storage_manager = StorageManager(self._hass, self.config_manager)
             self._config_generator = AdvancedConfigurationGenerator(self._hass, self)
 
             def internal_async_init(now):
@@ -144,6 +151,15 @@ class BlueIrisHomeAssistant:
         await self._api.initialize()
 
         await self.async_update(datetime.now())
+
+        data = await self.storage_manager.async_load_from_store()
+
+        if CONF_GENERATE_CONFIG_FILES in data.actions:
+            self.generate_config_files()
+
+        data.actions = []
+
+        await self.storage_manager.async_save_to_store(data)
 
     async def async_remove(self):
         _LOGGER.info(f"Removing current integration - {self.config_data.host}")

@@ -13,6 +13,7 @@ from ..managers.password_manager import PasswordManager
 from ..models import LoginError
 from ..models.camera_data import CameraData
 from ..models.config_data import ConfigData
+from .storage_manager import StorageManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,9 +38,7 @@ class ConfigFlowManager:
         self.api = None
         self.title = DEFAULT_NAME
 
-        self._available_actions = {
-            CONF_GENERATE_CONFIG_FILES: self._execute_generate_config_files
-        }
+        self._available_actions = [CONF_GENERATE_CONFIG_FILES]
 
     async def initialize(self, hass, config_entry: Optional[ConfigEntry] = None):
         self._config_entry = config_entry
@@ -66,7 +65,6 @@ class ConfigFlowManager:
 
     async def update_options(self, options: dict, flow: str):
         validate_login = False
-        actions = []
 
         new_options = self._clone_items(options, flow)
 
@@ -75,7 +73,7 @@ class ConfigFlowManager:
 
             self._move_option_to_data(new_options)
 
-            actions = self._get_actions(new_options)
+            await self._set_actions(new_options)
 
         self._options = new_options
 
@@ -83,9 +81,6 @@ class ConfigFlowManager:
 
         if validate_login:
             await self._handle_data(flow)
-
-        for action in actions:
-            action()
 
         return new_options
 
@@ -221,15 +216,6 @@ class ConfigFlowManager:
 
         self._config_manager.update(entry)
 
-    @staticmethod
-    def _get_user_input_option(options, key):
-        result = options.get(key, [OPTION_EMPTY])
-
-        if OPTION_EMPTY in result:
-            result.clear()
-
-        return result
-
     def _handle_password(self, user_input):
         if CONF_CLEAR_CREDENTIALS in user_input:
             clear_credentials = user_input.get(CONF_CLEAR_CREDENTIALS)
@@ -253,9 +239,6 @@ class ConfigFlowManager:
             for key in user_input:
                 user_input_data = user_input[key]
 
-                if key in DROP_DOWNS_CONF and OPTION_EMPTY in user_input_data:
-                    user_input_data = []
-
                 new_user_input[key] = user_input_data
 
             if flow != CONFIG_FLOW_INIT:
@@ -270,9 +253,6 @@ class ConfigFlowManager:
         if user_input is not None:
             for key in user_input:
                 user_input_data = user_input[key]
-
-                if key in DROP_DOWNS_CONF and OPTION_EMPTY in user_input_data:
-                    user_input_data = []
 
                 new_user_input[key] = user_input_data
 
@@ -290,25 +270,27 @@ class ConfigFlowManager:
 
         return validate_login
 
-    def _get_actions(self, options):
+    async def _set_actions(self, options):
         actions = []
 
         for action in self._available_actions:
-            if action in options:
-                if options.get(action, False):
-                    execute_action = self._available_actions[action]
+            _LOGGER.debug(f"Looking for {action}")
 
-                    actions.append(execute_action)
+            if action in options:
+                action_enabled = options.get(action, False)
+
+                _LOGGER.debug(f"Action: {action}, set to {action_enabled}")
+
+                if action_enabled:
+                    actions.append(action)
 
                 del options[action]
 
-        return actions
+        storage_manager = StorageManager(self._hass, self._config_manager)
+        data = await storage_manager.async_load_from_store()
+        data.actions = actions
 
-    def _execute_generate_config_files(self):
-        ha = self._get_ha()
-
-        if ha is not None:
-            ha.generate_config_files()
+        await storage_manager.async_save_to_store(data)
 
     def _get_ha(self, key: str = None):
         if key is None:
