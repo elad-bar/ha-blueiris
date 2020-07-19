@@ -70,16 +70,9 @@ New feature to control which of the components will be created:
 - Sensors drop-down will be available only when MQTT component is defined
 - Audio sensors drop-down will include only audio support non-system camera
 - Connectivity and Motion sensors will be created only for non-system camera
-- In case none of the Audio, Connectivity and Motion binary sensors are being created, main binary sensor of Alerts will not be created as well  
 - Profile's drop-down will be available only when admin user's credentials set to the integration
 - Once configuration manually changed, new camera that will be added will require manually setting configuration
 - To restore defaults which allows automatically adding new camera, check the check-box of Reset components settings to default
-
-**Component's drop-downs NONE option - work-around**
-As workaround for UI not allowing submitting the form without all fields with values,
-First option in each drop-down is NONE, 
-as long as this option is checked, 
-it will not allow checking other items
 
 ###### Auto-generating configurations files:
 Will create YAML with all the configurations in the config directory under blueiris.advanced_configurations.yaml:

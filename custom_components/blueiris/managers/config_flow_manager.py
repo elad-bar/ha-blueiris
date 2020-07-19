@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from homeassistant.components.mqtt import DATA_MQTT
 from homeassistant.config_entries import ConfigEntry
@@ -11,6 +11,7 @@ from ..helpers.const import *
 from ..managers.configuration_manager import ConfigManager
 from ..managers.password_manager import PasswordManager
 from ..models import LoginError
+from ..models.camera_data import CameraData
 from ..models.config_data import ConfigData
 
 _LOGGER = logging.getLogger(__name__)
@@ -124,72 +125,63 @@ class ConfigFlowManager:
         config_data = self.config_data
         ha = self._get_ha(self._config_entry.entry_id)
 
-        camera_list = ha.api.camera_list
+        camera_list: List[CameraData] = ha.api.camera_list
         is_admin = ha.api.data.get("admin", False)
 
         profiles_list = ha.api.data.get("profiles", [])
 
-        available_profiles = []
-        available_camera = []
-        available_camera_audio = []
-        available_camera_motion_connectivity = []
-
-        for camera in camera_list:
-            camera_id = camera.get("optionValue")
-            camera_name = camera.get("optionDisplay")
-
-            item = {CONF_NAME: camera_name, CONF_ID: str(camera_id)}
-
-            available_camera.append(item)
-
-            if self._config_manager.is_supports_sensors(camera):
-                available_camera_motion_connectivity.append(item)
-
-                if self._config_manager.is_supports_audio(camera):
-                    available_camera_audio.append(item)
-
-        for profile_name in profiles_list:
-            profile_id = profiles_list.index(profile_name)
-
-            item = {CONF_NAME: profile_name, CONF_ID: str(profile_id)}
-
-            available_profiles.append(item)
-
-        supported_audio_sensor = self._get_available_options(available_camera_audio)
-        supported_camera = self._get_available_options(available_camera)
-        supported_connectivity_sensor = self._get_available_options(
-            available_camera_motion_connectivity
+        supported_camera = self._get_camera_options(camera_list)
+        supported_audio_sensor = self._get_camera_options(camera_list, CAMERA_HAS_AUDIO)
+        supported_camera_sensor = self._get_camera_options(
+            camera_list, CAMERA_IS_SYSTEM
         )
-        supported_motion_sensor = self._get_available_options(
-            available_camera_motion_connectivity
-        )
-        supported_dio_sensor = self._get_available_options(
-            available_camera_motion_connectivity
-        )
-        supported_external_sensor = self._get_available_options(
-            available_camera_motion_connectivity
-        )
-        supported_profile = self._get_available_options(available_profiles)
 
-        allowed_audio_sensor = self._get_options(
-            config_data.allowed_audio_sensor, supported_audio_sensor
-        )
-        allowed_camera = self._get_options(config_data.allowed_camera, supported_camera)
-        allowed_connectivity_sensor = self._get_options(
-            config_data.allowed_connectivity_sensor, supported_connectivity_sensor
-        )
-        allowed_motion_sensor = self._get_options(
-            config_data.allowed_motion_sensor, supported_motion_sensor
-        )
-        allowed_dio_sensor = self._get_options(
-            config_data.allowed_dio_sensor, supported_dio_sensor
-        )
-        allowed_external_sensor = self._get_options(
-            config_data.allowed_external_sensor, supported_external_sensor
-        )
-        allowed_profile = self._get_options(
-            config_data.allowed_profile, supported_profile
-        )
+        supported_profile = self._get_profile_options(profiles_list)
+
+        drop_down_fields = [
+            {
+                "checked": config_data.allowed_camera,
+                "items": supported_camera,
+                "name": CONF_ALLOWED_CAMERA,
+                "enabled": True,
+            },
+            {
+                "checked": config_data.allowed_connectivity_sensor,
+                "items": supported_camera_sensor,
+                "name": CONF_ALLOWED_CONNECTIVITY_SENSOR,
+                "enabled": DATA_MQTT in self._hass.data,
+            },
+            {
+                "checked": config_data.allowed_audio_sensor,
+                "items": supported_audio_sensor,
+                "name": CONF_ALLOWED_AUDIO_SENSOR,
+                "enabled": DATA_MQTT in self._hass.data,
+            },
+            {
+                "checked": config_data.allowed_motion_sensor,
+                "items": supported_camera_sensor,
+                "name": CONF_ALLOWED_MOTION_SENSOR,
+                "enabled": DATA_MQTT in self._hass.data,
+            },
+            {
+                "checked": config_data.allowed_dio_sensor,
+                "items": supported_camera_sensor,
+                "name": CONF_ALLOWED_DIO_SENSOR,
+                "enabled": DATA_MQTT in self._hass.data,
+            },
+            {
+                "checked": config_data.allowed_external_sensor,
+                "items": supported_camera_sensor,
+                "name": CONF_ALLOWED_EXTERNAL_SENSOR,
+                "enabled": DATA_MQTT in self._hass.data,
+            },
+            {
+                "checked": config_data.allowed_profile,
+                "items": supported_profile,
+                "name": CONF_ALLOWED_PROFILE,
+                "enabled": is_admin,
+            },
+        ]
 
         fields = self._get_default_fields(CONFIG_FLOW_OPTIONS)
 
@@ -206,40 +198,19 @@ class ConfigFlowManager:
         )
 
         fields[vol.Optional(CONF_RESET_COMPONENTS_SETTINGS, default=False)] = bool
-        fields[
-            vol.Optional(CONF_ALLOWED_CAMERA, default=allowed_camera)
-        ] = cv.multi_select(supported_camera)
 
-        if DATA_MQTT in self._hass.data:
-            fields[
-                vol.Optional(
-                    CONF_ALLOWED_CONNECTIVITY_SENSOR,
-                    default=allowed_connectivity_sensor,
-                )
-            ] = cv.multi_select(supported_connectivity_sensor)
+        for drop_down in drop_down_fields:
+            enabled = drop_down.get("enabled", False)
 
-            fields[
-                vol.Optional(CONF_ALLOWED_AUDIO_SENSOR, default=allowed_audio_sensor)
-            ] = cv.multi_select(supported_audio_sensor)
+            if enabled:
+                name = drop_down.get("name", False)
+                items = drop_down.get("items", [])
+                checked = drop_down.get("checked")
 
-            fields[
-                vol.Optional(CONF_ALLOWED_MOTION_SENSOR, default=allowed_motion_sensor)
-            ] = cv.multi_select(supported_motion_sensor)
+                if checked is None:
+                    checked = list(items.keys())
 
-            fields[
-                vol.Optional(CONF_ALLOWED_DIO_SENSOR, default=allowed_dio_sensor)
-            ] = cv.multi_select(supported_dio_sensor)
-
-            fields[
-                vol.Optional(
-                    CONF_ALLOWED_EXTERNAL_SENSOR, default=allowed_external_sensor
-                )
-            ] = cv.multi_select(supported_external_sensor)
-
-        if is_admin:
-            fields[
-                vol.Optional(CONF_ALLOWED_PROFILE, default=allowed_profile)
-            ] = cv.multi_select(supported_profile)
+                fields[vol.Optional(name, default=checked)] = cv.multi_select(items)
 
         data_schema = vol.Schema(fields)
 
@@ -329,7 +300,7 @@ class ConfigFlowManager:
 
                     actions.append(execute_action)
 
-            del options[action]
+                del options[action]
 
         return actions
 
@@ -391,34 +362,32 @@ class ConfigFlowManager:
             config_entries.async_update_entry(self._config_entry, data=self._data)
 
     @staticmethod
-    def _get_options(data, all_available_options):
-        result = []
+    def _get_camera_options(
+        camera_list: List[CameraData], include: Optional[str] = None
+    ):
+        available_items = {}
 
-        if data is None:
-            for item_id in all_available_options:
-                if item_id != OPTION_EMPTY:
-                    result.append(item_id)
-        else:
-            if isinstance(data, list):
-                result = data
+        for camera in camera_list:
+            if include == CAMERA_IS_SYSTEM:
+                skip = camera.is_system
+            elif include == CAMERA_HAS_AUDIO:
+                skip = not camera.has_audio or camera.is_system
             else:
-                clean_data = data.replace(" ", "")
-                result = clean_data.split(",")
+                skip = False
 
-        if len(result) == 0 or OPTION_EMPTY in result:
-            result = [OPTION_EMPTY]
+            if not skip:
+                available_items[camera.id] = camera.name
 
-        return result
+        return available_items
 
     @staticmethod
-    def _get_available_options(all_items):
-        available_items = {OPTION_EMPTY: OPTION_EMPTY}
+    def _get_profile_options(profiles_list):
+        available_items = {}
 
-        for item in all_items:
-            item_name = item.get(CONF_NAME)
-            item_id = item.get(CONF_ID)
+        for profile_name in profiles_list:
+            profile_id = profiles_list.index(profile_name)
 
-            available_items[item_id] = item_name
+            available_items[str(profile_id)] = profile_name
 
         return available_items
 

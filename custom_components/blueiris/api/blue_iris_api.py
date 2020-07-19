@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 import sys
-from typing import Optional
+from typing import List, Optional
 
 import aiohttp
 from aiohttp import ClientSession
@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from ..managers.configuration_manager import ConfigManager
+from ..models.camera_data import CameraData
 
 REQUIREMENTS = ["aiohttp"]
 
@@ -26,7 +27,7 @@ class BlueIrisApi:
     session: ClientSession
     data: dict
     status: dict
-    camera_list: list
+    camera_list: List[CameraData]
     hass: HomeAssistant
     config_manager: ConfigManager
     base_url: str
@@ -212,7 +213,13 @@ class BlueIrisApi:
         response = await self.async_verified_post(request_data)
 
         if response is not None:
-            self.camera_list = response.get("data", [])
+            data = response.get("data", [])
+            self.camera_list.clear()
+
+            for camera in data:
+                camera_data = CameraData(camera)
+
+                self.camera_list.append(camera_data)
 
     async def load_status(self):
         _LOGGER.debug("Retrieving status")

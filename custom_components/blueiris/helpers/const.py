@@ -37,6 +37,18 @@ CONF_ALLOWED_CONNECTIVITY_SENSOR = "allowed_connectivity_sensor"
 CONF_ALLOWED_DIO_SENSOR = "allowed_dio_sensor"
 CONF_ALLOWED_EXTERNAL_SENSOR = "allowed_external_sensor"
 
+BI_ATTR_NAME = "optionDisplay"
+BI_ATTR_ID = "optionValue"
+BI_ATTR_AUDIO = "audio"
+BI_ATTR_IS_ONLINE = "isOnline"
+
+BI_NON_GENERIC_ATTRIBUTES = [BI_ATTR_NAME, BI_ATTR_ID, BI_ATTR_AUDIO, BI_ATTR_IS_ONLINE]
+
+CAMERA_HAS_AUDIO = "has_audio"
+CAMERA_IS_ONLINE = "is_online"
+CAMERA_IS_SYSTEM = "is_system"
+CAMERA_DATA = "data"
+
 CONF_ARR = [CONF_USERNAME, CONF_PASSWORD, CONF_HOST, CONF_PORT, CONF_SSL]
 
 DROP_DOWNS_CONF = [
@@ -67,6 +79,7 @@ DEFAULT_NAME = "BlueIris"
 DEFAULT_PORT = 80
 
 DOMAIN_KEY_FILE = f"{DOMAIN}.key"
+JSON_DATA_FILE = f"custom_components/{DOMAIN}/data/[NAME].json"
 
 DOMAIN_LOGGER = "logger"
 SERVICE_SET_LEVEL = "set_level"

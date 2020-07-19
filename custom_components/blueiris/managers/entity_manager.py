@@ -10,6 +10,7 @@ from homeassistant.helpers.entity_registry import EntityRegistry
 
 from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.const import *
+from ..models.camera_data import CameraData
 from ..models.config_data import ConfigData
 from ..models.entity_data import EntityData
 from .configuration_manager import ConfigManager
@@ -361,19 +362,16 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(ex, "Failed to generate main binary sensor")
 
-    def get_camera_entity(self, camera, sensor_type_name) -> EntityData:
+    def get_camera_entity(self, camera: CameraData, sensor_type_name) -> EntityData:
         entity = None
 
         try:
-            camera_id = camera.get("optionValue")
-            camera_name = camera.get("optionDisplay")
-
             device_name = self.device_manager.get_camera_device_name(camera)
 
-            entity_name = f"{self.integration_title} {camera_name} {sensor_type_name}"
+            entity_name = f"{self.integration_title} {camera.name} {sensor_type_name}"
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{entity_name}"
 
-            state_topic = MQTT_ALL_TOPIC.replace("+", camera_id)
+            state_topic = MQTT_ALL_TOPIC.replace("+", camera.id)
 
             default_state = sensor_type_name in NEGATIVE_SENSOR_STATE
 
@@ -385,7 +383,7 @@ class EntityManager:
 
             entity = EntityData()
 
-            entity.id = camera_id
+            entity.id = camera.id
             entity.unique_id = unique_id
             entity.name = entity_name
             entity.state = state
@@ -403,7 +401,7 @@ class EntityManager:
 
         return entity
 
-    def generate_camera_binary_sensors(self, camera):
+    def generate_camera_binary_sensors(self, camera: CameraData):
         entities = []
 
         try:
@@ -428,16 +426,12 @@ class EntityManager:
 
         return entities
 
-    def get_camera_component(self, camera) -> EntityData:
+    def get_camera_component(self, camera: CameraData) -> EntityData:
         entity = None
         try:
-            camera_id = camera.get("optionValue")
-            camera_name = camera.get("optionDisplay")
-            is_online = camera.get("isOnline")
-
             device_name = self.device_manager.get_camera_device_name(camera)
 
-            entity_name = f"{self.integration_title} {camera_name}"
+            entity_name = f"{self.integration_title} {camera.name}"
             username = self.config_data.username
             password = self.config_data.password_clear_text
             base_url = self.api.base_url
@@ -446,7 +440,7 @@ class EntityManager:
             unique_id = f"{DOMAIN}-{DOMAIN_CAMERA}-{entity_name}"
 
             still_image_url = (
-                f"{base_url}/image/{camera_id}?q=100&s=100&session={session_id}"
+                f"{base_url}/image/{camera.id}?q=100&s=100&session={session_id}"
             )
             still_image_url_template = cv.template(still_image_url)
 
@@ -454,7 +448,7 @@ class EntityManager:
             video = STREAM_VIDEO[self.config_data.stream_type]
 
             stream_source = (
-                f"{base_url}/{stream_type}/{camera_id}/{video}?session={session_id}"
+                f"{base_url}/{stream_type}/{camera.id}/{video}?session={session_id}"
             )
 
             camera_details = {
@@ -477,28 +471,26 @@ class EntityManager:
             }
 
             for key in ATTR_BLUE_IRIS_CAMERA:
-                if key in camera and key not in [CONF_NAME, CONF_ID]:
-                    key_name = ATTR_BLUE_IRIS_CAMERA[key]
-
-                    attributes[key_name] = camera[key]
+                key_name = ATTR_BLUE_IRIS_CAMERA[key]
+                attributes[key_name] = camera.data.get(key, "N/A")
 
             entity = EntityData()
 
-            entity.id = camera_id
+            entity.id = camera.id
             entity.unique_id = unique_id
             entity.name = entity_name
             entity.attributes = attributes
             entity.icon = DEFAULT_ICON
             entity.device_name = device_name
             entity.details = camera_details
-            entity.state = is_online
+            entity.state = camera.is_online
 
         except Exception as ex:
             self.log_exception(ex, f"Failed to get camera for {camera}")
 
         return entity
 
-    def generate_camera_component(self, camera):
+    def generate_camera_component(self, camera: CameraData):
         try:
             entity = self.get_camera_component(camera)
 

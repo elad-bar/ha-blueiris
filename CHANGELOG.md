@@ -1,10 +1,12 @@
 # Changelog
 
-## 2020-07-18
+## 2020-07-19
 
 **Implemented enhancements:**
 
-- Reduced duplicate code - Connectivity, Motion, External and DIO share the same class 
+- Reduced duplicate code - Connectivity, Motion, External and DIO share the same class
+- Removed NONE option from drop-down, NONE was workaround for a validation issue in Integration's Options and fixed as part of HA v0.112.0
+- Reduced code of camera's configuration in Integration's Options 
 
 ## 2020-07-17
 

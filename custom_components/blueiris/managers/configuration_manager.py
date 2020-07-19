@@ -1,6 +1,7 @@
 from homeassistant.config_entries import ConfigEntry
 
 from ..helpers.const import *
+from ..models.camera_data import CameraData
 from ..models.config_data import ConfigData
 from .password_manager import PasswordManager
 
@@ -77,37 +78,19 @@ class ConfigManager:
 
         return sensor_state
 
-    def is_allowed_sensor(self, camera, sensor_type):
-        camera_id = camera.get("optionValue")
+    def is_allowed_sensor(self, camera: CameraData, sensor_type):
+        allowed_camera = self.get_allowed_sensor_state(sensor_type)
 
-        is_allowed = self.get_allowed_sensor_state(sensor_type)
-
-        is_supported = self.is_supports_sensors(camera)
+        is_supported = not camera.is_system
 
         if is_supported and sensor_type == SENSOR_AUDIO_NAME:
-            is_supported = self.is_supports_audio(camera)
+            is_supported = camera.has_audio
 
-        is_allowed = is_allowed is None or camera_id in is_allowed
+        is_allowed = allowed_camera is None or camera.id in allowed_camera
 
         result = is_supported and is_allowed
 
         return result
-
-    @staticmethod
-    def is_supports_sensors(camera):
-        camera_id = camera.get("optionValue")
-
-        is_system = camera_id in SYSTEM_CAMERA_ID
-
-        is_supports_sensors = not is_system
-
-        return is_supports_sensors
-
-    @staticmethod
-    def is_supports_audio(camera):
-        audio_support = camera.get("audio", False)
-
-        return audio_support
 
     @staticmethod
     def _get_allowed_option(key, options):
