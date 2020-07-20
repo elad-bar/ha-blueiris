@@ -17,9 +17,7 @@ class StorageData:
         return data
 
     def to_dict(self):
-        obj = {
-            CONF_ACTIONS: self.actions
-        }
+        obj = {CONF_ACTIONS: self.actions}
 
         return obj
 

@@ -7,8 +7,8 @@ from homeassistant.util import slugify
 
 from ..helpers.const import *
 from ..models.config_data import ConfigData
-from .configuration_manager import ConfigManager
 from ..models.storage_data import StorageData
+from .configuration_manager import ConfigManager
 
 STORAGE_VERSION = 1
 
