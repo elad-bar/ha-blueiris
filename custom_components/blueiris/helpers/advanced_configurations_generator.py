@@ -1,24 +1,19 @@
+import copy
 import logging
 from typing import List
+
+import yaml
 
 from homeassistant.components.media_player import SUPPORT_PLAY_MEDIA
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
 
 from ..models.camera_data import CameraData
+from ..models.config_data import ConfigData
 from ..models.entity_data import EntityData
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def _add_to_file(fs, content, title=None):
-    if title is not None:
-        header = f" {title} ".rjust(40, "#").ljust(80, "#")
-        fs.write(f"{header}\n")
-
-    fs.write(f"{content}\n")
-    fs.write("\n")
 
 
 class AdvancedConfigurationGenerator:
@@ -27,72 +22,166 @@ class AdvancedConfigurationGenerator:
 
         self._ha = ha
 
-    def generate(self, event_time):
-        _LOGGER.info(f"Started to generate advanced configuration @ {event_time}")
-        components_path = self._hass.config.path("blueiris.components.yaml")
-        lovelace_path = self._hass.config.path("blueiris.lovelace.yaml")
-
-        camera_list = self._ha.api.camera_list
+    def generate(self):
         media_players = self._hass.states.async_entity_ids("media_player")
 
-        input_select_camera = self.generate_input_select_camera(camera_list)
-        input_select_media_player = self.generate_input_select_media_player(
-            media_players
+        config_data: ConfigData = self._ha.config_data
+
+        base_url = self._ha.api.base_url
+        camera_list = self._ha.api.camera_list
+        # available_profiles = self._ha.api.data.get("profiles", [])
+
+        self._generate_components(
+            config_data.name,
+            camera_list,
+            media_players,
+            base_url,
+            config_data.username,
+            config_data.password_clear_text,
+            config_data.stream_type,
         )
-        script = self.generate_script(camera_list, media_players)
-        ui_lovelace = self.generate_ui_lovelace()
 
-        with open(components_path, "w+") as out:
-            _add_to_file(out, "input_select:", "INPUT SELECT")
-            _add_to_file(out, input_select_camera)
-            _add_to_file(out, input_select_media_player)
+        self.generate_ui_lovelace()
 
-            _add_to_file(out, "script:", "SCRIPT")
-            _add_to_file(out, script)
+    def _generate_lovelace(
+        self, integration_name, camera_list: List[CameraData], available_profiles
+    ):
+        # lovelace_template = LOVELACE_TEMPLATE
 
-        with open(lovelace_path, "w+") as out:
-            _add_to_file(out, ui_lovelace)
-
-    @staticmethod
-    def generate_input_select_camera(camera_list: List[CameraData]):
-        entity_name = "BlueIris Camera"
-        camera_items = []
-        initial_camera = None
+        system_camera: List[CameraData] = []
+        user_camera: List[CameraData] = []
+        cards = []
 
         for camera in camera_list:
             if camera.is_system:
-                initial_camera = camera.name
+                system_camera.append(camera)
+            else:
+                user_camera.append(camera)
 
-            camera_items.append(camera.name)
+        if len(system_camera) > 0:
+            for camera in system_camera:
+                camera_item = {
+                    "aspect_ratio": "0%",
+                    "camera_image": "camera.",
+                    "entities": [{"entity": "binary_sensor."}],
+                    "title": f"{camera.name}",
+                    "type": "picture-glance",
+                }
 
-        if initial_camera is None:
-            for name in camera_items:
-                initial_camera = name
-                break
+                cards.append(camera_item)
 
-        lines = [
-            f"  {slugify(entity_name)}:",
-            f"    name: {entity_name}",
-            f"    initial: '{initial_camera}'",
-            "    icon: mdi:camera",
-            "    options:",
-        ]
+        if len(user_camera) > 0:
+            for camera in user_camera:
+                camera_item = {
+                    "aspect_ratio": "0%",
+                    "camera_image": "camera.",
+                    "entities": [{"entity": "binary_sensor."}],
+                    "title": f"{camera.name}",
+                    "type": "picture-glance",
+                }
 
-        for camera_name in camera_items:
-            lines.append(f"      - '{camera_name}'")
+                cards.append(camera_item)
 
-        result = "\n".join(lines)
+        # if len(available_profiles) > 0:
+        #    print("available_profiles")
 
-        return result
+    def _generate_components(
+        self,
+        integration_name,
+        camera_list: List[CameraData],
+        media_players,
+        base_url,
+        username,
+        password,
+        stream_type,
+    ):
+        component_template = copy.deepcopy(COMPONENTS_TEMPLATE)
 
-    def generate_input_select_media_player(self, media_players):
-        entity_name = "BlueIris Cast Devices"
-        lines = [
-            f"  {slugify(entity_name)}:",
-            f"    name: {entity_name}",
-            "    icon: mdi:cast",
-            "    options:",
-        ]
+        input_select = component_template["input_select"]
+
+        script = component_template["script"]
+
+        input_select_camera = self._set_input_select_camera(
+            input_select, integration_name, camera_list
+        )
+        input_select_cast_devices = self._set_input_select_cast_devices(
+            input_select, integration_name, media_players
+        )
+
+        script_placeholders = self._set_script_cast(
+            script,
+            integration_name,
+            camera_list,
+            media_players,
+            input_select_cast_devices,
+            input_select_camera,
+            base_url,
+            username,
+            password,
+            stream_type,
+        )
+
+        components_path = self._hass.config.path(
+            f"{slugify(integration_name)}.components.yaml"
+        )
+
+        content = yaml.dump(component_template)
+
+        for script_placeholder in script_placeholders:
+            replace_with = script_placeholders[script_placeholder]
+
+            content = content.replace(script_placeholder, replace_with)
+
+        with open(components_path, "w+") as file:
+            file.write(content)
+
+    @staticmethod
+    def _set_input_select_camera(
+        input_select, integration_name, camera_list: List[CameraData]
+    ):
+        component_type = "camera"
+        component_name = f"{integration_name} Camera"
+
+        component = input_select[component_type]
+        _LOGGER.debug(component)
+
+        camera_per_type = {"user": None, "system": None}
+        options = []
+        for camera in camera_list:
+            options.append(camera.name)
+
+            camera_type = "user"
+            if camera.is_system:
+                camera_type = "system"
+
+            if camera_per_type[camera_type] is None:
+                camera_per_type[camera_type] = camera.name
+
+        first_user_camera = camera_per_type.get("user")
+        first_camera = camera_per_type.get("system", first_user_camera)
+
+        component["name"] = component_name
+        component["initial"] = first_camera
+        component["options"] = options
+
+        component_key = slugify(component_name)
+
+        input_select[component_key] = component
+
+        del input_select[component_type]
+
+        return component_key
+
+    def _set_input_select_cast_devices(
+        self, input_select, integration_name, media_players
+    ):
+        component_type = "cast_devices"
+        component_name = f"{integration_name} Cast Devices"
+
+        component = input_select[component_type]
+
+        initial_option = None
+        options = []
 
         for entity_id in media_players:
             state = self._hass.states.get(entity_id)
@@ -106,9 +195,107 @@ class AdvancedConfigurationGenerator:
             support_play_media = bool(supported_features & SUPPORT_PLAY_MEDIA)
 
             if support_play_media:
-                lines.append(f"      - '{name}'")
+                options.append(name)
 
-        result = "\n".join(lines)
+                if initial_option is None:
+                    initial_option = name
+
+        component["name"] = component_name
+        component["initial"] = initial_option
+        component["options"] = options
+
+        component_key = slugify(component_name)
+
+        input_select[component_key] = component
+
+        del input_select[component_type]
+
+        return component_key
+
+    def _set_script_cast(
+        self,
+        script,
+        integration_name,
+        camera_list: List[CameraData],
+        media_players,
+        input_select_cast_devices,
+        input_select_camera,
+        base_url,
+        username,
+        password,
+        stream_type,
+    ):
+        component_type = "cast"
+        component_name = f"{integration_name} Cast"
+
+        component = script[component_type]
+
+        component["alias"] = component_name
+        sequence = component["sequence"]
+
+        script_object = None
+
+        for script_item in sequence:
+            script_object = copy.deepcopy(script_item)
+
+        sequence.clear()
+
+        data_template = script_object["data_template"]
+
+        video = STREAM_VIDEO[stream_type]
+        stream_content_type = STREAM_CONTENT_TYPE[stream_type]
+
+        credentials = ""
+        if username is not None and password is not None:
+            credentials = f"?user={username}&pw={password}"
+
+        url = f"{base_url}/{stream_type.lower()}"
+        qs = f"/{video}{credentials}"
+
+        stream_source = f"'{url}/' ~ camera_list[states.input_select.{input_select_camera}.state] ~ '{qs}'"
+
+        media_player_items = []
+        for entity_id in media_players:
+            state = self._hass.states.get(entity_id)
+
+            if ATTR_FRIENDLY_NAME in state.attributes:
+                name = state.attributes[ATTR_FRIENDLY_NAME]
+            else:
+                name = state.name
+
+            supported_features = state.attributes.get("supported_features", 0)
+            support_play_media = bool(supported_features & SUPPORT_PLAY_MEDIA)
+
+            if support_play_media:
+                media_player_item = f"""{name}"": ""{entity_id}"""
+                media_player_items.append(media_player_item)
+
+        media_player_sources = ", ".join(media_player_items)
+
+        camera_items = []
+        for camera in camera_list:
+            camera_item = f"'{camera.name}': '{camera.id}'"
+            camera_items.append(camera_item)
+
+        camera_sources = ", ".join(camera_items)
+
+        data_template["media_content_type"] = stream_content_type
+        data_template["entity_id"] = "REP_ENTITY_ID"
+        data_template["media_content_id"] = "REP_MEDIA_CONTENT_ID"
+
+        sequence.append(script_object)
+
+        component_key = slugify(component_name)
+
+        script[component_key] = component
+
+        del script[component_type]
+
+        result = {
+            "REP_MEDIA_CONTENT_ID": f"{{% set camera_list = {{{camera_sources}}} %}}\n{{{{{stream_source}}}}}",
+            "REP_ENTITY_ID": f"{{% set media_players = {{{media_player_sources}}} %}}"
+            f"{{{{media_players[states.input_select.{input_select_cast_devices}.state]}}}}",
+        }
 
         return result
 
@@ -193,12 +380,17 @@ class AdvancedConfigurationGenerator:
 
         result = "\n".join(lines)
 
-        return result
+        lovelace_path = self._hass.config.path(
+            f"{slugify(self._ha.config_data.name)}.lovelace.yaml"
+        )
+
+        with open(lovelace_path, "w+") as file:
+            file.write(result)
 
     @staticmethod
     def generate_camera_section(lines, camera_type, camera_list):
-        lines.append(f"# {camera_type} cameras")
-        lines.append("  - title: {camera_type} Camera")
+        lines.append(f"# {camera_type} camera")
+        lines.append(f"  - title: {camera_type} Camera")
         lines.append("    type: vertical-stack")
         lines.append("    cards:")
 
@@ -224,66 +416,3 @@ class AdvancedConfigurationGenerator:
                     lines.append(f"              name: {binary_sensor_type}")
             else:
                 lines.append("        entities: []")
-
-    def generate_script(self, camera_list: List[CameraData], media_players):
-        entity_name = "BlueIris Cast"
-        lines = [
-            f"  {slugify(entity_name)}:",
-            f"    alias: {entity_name}",
-            "    sequence:",
-            "      - service: media_player.play_media",
-            "        data_template:",
-            "          media_content_type: 'image/jpg'",
-            "          entity_id: >",
-        ]
-
-        media_player_entity_ids = []
-        for entity_id in media_players:
-            state = self._hass.states.get(entity_id)
-
-            if ATTR_FRIENDLY_NAME in state.attributes:
-                name = state.attributes[ATTR_FRIENDLY_NAME]
-            else:
-                name = state.name
-
-            media_player_entity_ids.append(f"'{name}': '{entity_id}'")
-
-        media_player_input_select = slugify("BlueIris Cast Devices")
-        media_players_entities = ", ".join(media_player_entity_ids)
-        lines.append(
-            f"            {{% set media_players = {{{media_players_entities}}} %}}"
-        )
-        lines.append(
-            f"            {{{{media_players[states.input_select.{media_player_input_select}.state]}}}}"
-        )
-
-        lines.append("          media_content_id: >")
-
-        camera_entity_ids = []
-        for camera in camera_list:
-            camera_entity_ids.append(f"'{camera.name}': '{camera.id}'")
-
-        camera_entities = ", ".join(camera_entity_ids)
-        lines.append(f"            {{% set camera_list = {{{camera_entities}}} %}}")
-        lines.append(f"            {{{{{self.get_cast_template()}}}}}")
-
-        result = "\n".join(lines)
-
-        return result
-
-    def get_cast_template(self):
-        username = self._ha.config_data.username
-        password = self._ha.config_data.password_clear_text
-
-        credentials = ""
-        if username is not None and password is not None:
-            credentials = f"?user={username}&pw={password}"
-
-        camera_input_select = slugify("BlueIris Camera")
-        url = f"{self._ha.api.base_url}/mjpg/"
-        path = f"camera_list[states.input_select.{camera_input_select}.state]"
-        video = f"/video.mjpg{credentials}"
-
-        cast_template = f"'{url}' ~ {path} ~ '{video}'"
-
-        return cast_template

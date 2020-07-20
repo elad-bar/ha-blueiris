@@ -258,3 +258,29 @@ STREAM_TYPE_MJPG = "MJPG"
 DEFAULT_STREAM_TYPE = STREAM_TYPE_H264
 
 STREAM_VIDEO = {STREAM_TYPE_H264: "temp.m3u8", STREAM_TYPE_MJPG: "video.mjpg"}
+
+STREAM_CONTENT_TYPE = {STREAM_TYPE_H264: "video/H264", STREAM_TYPE_MJPG: "image/jpg"}
+
+COMPONENTS_TEMPLATE = {
+    "input_select": {
+        "camera": {"name": "", "initial": "", "icon": "mdi:camera", "options": []},
+        "cast_devices": {"name": "", "icon": "mdi:cast", "options": []},
+    },
+    "script": {
+        "cast": {
+            "alias": "",
+            "sequence": [
+                {
+                    "service": "media_player.play_media",
+                    "data_template": {
+                        "media_content_type": "",
+                        "entity_id": "",
+                        "media_content_id": "",
+                    },
+                }
+            ],
+        }
+    },
+}
+
+LOVELACE_TEMPLATE = {"cards": []}

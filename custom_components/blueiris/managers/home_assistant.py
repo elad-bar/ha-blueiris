@@ -154,8 +154,11 @@ class BlueIrisHomeAssistant:
 
         data = await self.storage_manager.async_load_from_store()
 
-        if CONF_GENERATE_CONFIG_FILES in data.actions:
+        def internal_generate_config_files(now):
             self.generate_config_files()
+
+        if CONF_GENERATE_CONFIG_FILES in data.actions:
+            async_call_later(self._hass, 5, internal_generate_config_files)
 
         data.actions = []
 
@@ -241,4 +244,4 @@ class BlueIrisHomeAssistant:
             async_dispatcher_send(self._hass, signal)
 
     def generate_config_files(self):
-        self._config_generator.generate(datetime.now())
+        self._config_generator.generate()

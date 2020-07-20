@@ -214,12 +214,14 @@ class BlueIrisApi:
 
         if response is not None:
             data = response.get("data", [])
-            self.camera_list.clear()
+            camera_items = []
 
             for camera in data:
                 camera_data = CameraData(camera)
 
-                self.camera_list.append(camera_data)
+                camera_items.append(camera_data)
+
+            self.camera_list = camera_items
 
     async def load_status(self):
         _LOGGER.debug("Retrieving status")
