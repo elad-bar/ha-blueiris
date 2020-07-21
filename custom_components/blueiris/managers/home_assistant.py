@@ -90,52 +90,37 @@ class BlueIrisHomeAssistant:
             self._storage_manager = StorageManager(self._hass, self.config_manager)
             self._config_generator = AdvancedConfigurationGenerator(self._hass, self)
 
-            def internal_async_init(now):
-                self._hass.async_create_task(self._async_init(now))
-
             self._entity_registry = await er_async_get_registry(self._hass)
 
-            async_call_later(self._hass, 2, internal_async_init)
-
-            self._is_initialized = True
+            self._hass.loop.create_task(self._async_init())
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
             _LOGGER.error(f"Failed to async_init, error: {ex}, line: {line_number}")
 
-    async def _async_init(self, event_time):
-        if not self._is_initialized:
-            _LOGGER.info(
-                f"NOT INITIALIZED - Failed finalizing initialization of integration ({self.config_data.host})"
-            )
-            return
-
-        _LOGGER.info(
-            f"Finalizing initialization of integration ({self.config_data.host}) at {event_time}"
-        )
-
+    async def _async_init(self):
         load = self._hass.config_entries.async_forward_entry_setup
 
         for domain in SIGNALS:
-            self._hass.async_create_task(
-                load(self._config_manager.config_entry, domain)
-            )
+            await load(self._config_manager.config_entry, domain)
 
-        def update_entities(now):
-            self._hass.async_create_task(self.async_update(now))
-
-        self._remove_async_track_time = async_track_time_interval(
-            self._hass, update_entities, SCAN_INTERVAL
-        )
+        self._is_initialized = True
 
         await self.async_update_entry()
+
+    def _update_entities(self, now):
+        self._hass.async_create_task(self.async_update(now))
 
     async def async_update_entry(self, entry: ConfigEntry = None):
         update_config_manager = entry is not None
 
         if not update_config_manager:
             entry = self._config_manager.config_entry
+
+            self._remove_async_track_time = async_track_time_interval(
+                self._hass, self._update_entities, SCAN_INTERVAL
+            )
 
         if not self._is_initialized:
             _LOGGER.info(
@@ -154,18 +139,17 @@ class BlueIrisHomeAssistant:
 
         data = await self.storage_manager.async_load_from_store()
 
-        def internal_generate_config_files(now):
-            self.generate_config_files()
+        if update_config_manager and CONF_GENERATE_CONFIG_FILES in data.actions:
+            async_call_later(self._hass, 5, self.generate_config_files)
 
-        if CONF_GENERATE_CONFIG_FILES in data.actions:
-            async_call_later(self._hass, 5, internal_generate_config_files)
+            data.actions = []
 
-        data.actions = []
-
-        await self.storage_manager.async_save_to_store(data)
+            await self.storage_manager.async_save_to_store(data)
 
     async def async_remove(self):
-        _LOGGER.info(f"Removing current integration - {self.config_data.host}")
+        config_entry = self._config_manager.config_entry
+
+        _LOGGER.info(f"Removing current integration - {config_entry.title}")
 
         if self._remove_async_track_time is not None:
             self._remove_async_track_time()
@@ -174,13 +158,11 @@ class BlueIrisHomeAssistant:
         unload = self._hass.config_entries.async_forward_entry_unload
 
         for domain in SUPPORTED_DOMAINS:
-            self._hass.async_create_task(
-                unload(self._config_manager.config_entry, domain)
-            )
+            await unload(config_entry, domain)
 
         await self._device_manager.async_remove()
 
-        _LOGGER.info(f"Current integration ({self.config_data.host}) removed")
+        _LOGGER.info(f"Current integration ({config_entry.title}) removed")
 
     async def async_update(self, event_time):
         if not self._is_initialized:
@@ -243,5 +225,5 @@ class BlueIrisHomeAssistant:
 
             async_dispatcher_send(self._hass, signal)
 
-    def generate_config_files(self):
+    def generate_config_files(self, now):
         self._config_generator.generate()
