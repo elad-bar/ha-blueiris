@@ -145,9 +145,10 @@ class EntityManager:
         config_data = self.config_data
         available_camera = self.api.camera_list
         available_profiles = self.api.data.get("profiles", [])
+        is_admin = self.api.data.get("admin", False)
         allowed_profile = config_data.allowed_profile
 
-        if allowed_profile is None or len(allowed_profile) > 0:
+        if is_admin and (allowed_profile is None or len(allowed_profile) > 0):
             for profile_name in available_profiles:
                 profile_id = available_profiles.index(profile_name)
 

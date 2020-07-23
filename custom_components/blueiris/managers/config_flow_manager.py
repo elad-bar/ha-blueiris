@@ -1,6 +1,8 @@
 import logging
 from typing import List, Optional
 
+from cryptography.fernet import InvalidToken
+
 from homeassistant.components.mqtt import DATA_MQTT
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers import config_validation as cv
@@ -64,9 +66,10 @@ class ConfigFlowManager:
         return self._config_manager.data
 
     async def update_options(self, options: dict, flow: str):
+        _LOGGER.debug("Update options")
         validate_login = False
 
-        new_options = self._clone_items(options, flow)
+        new_options = await self._clone_items(options, flow)
 
         if flow == CONFIG_FLOW_OPTIONS:
             validate_login = self._should_validate_login(new_options)
@@ -77,7 +80,7 @@ class ConfigFlowManager:
 
         self._options = new_options
 
-        self._update_entry()
+        await self._update_entry()
 
         if validate_login:
             await self._handle_data(flow)
@@ -85,9 +88,11 @@ class ConfigFlowManager:
         return new_options
 
     async def update_data(self, data: dict, flow: str):
-        self._data = self._clone_items(data, flow)
+        _LOGGER.debug("Update data")
 
-        self._update_entry()
+        self._data = await self._clone_items(data, flow)
+
+        await self._update_entry()
 
         await self._handle_data(flow)
 
@@ -107,8 +112,8 @@ class ConfigFlowManager:
 
         return fields
 
-    def get_default_data(self, user_input):
-        config_data = self._config_manager.get_basic_data(user_input)
+    async def get_default_data(self, user_input):
+        config_data = await self._config_manager.get_basic_data(user_input)
 
         fields = self._get_default_fields(CONFIG_FLOW_DATA, config_data)
 
@@ -121,6 +126,7 @@ class ConfigFlowManager:
         ha = self._get_ha(self._config_entry.entry_id)
 
         camera_list: List[CameraData] = ha.api.camera_list
+
         is_admin = ha.api.data.get("admin", False)
 
         profiles_list = ha.api.data.get("profiles", [])
@@ -211,12 +217,25 @@ class ConfigFlowManager:
 
         return data_schema
 
-    def _update_entry(self):
-        entry = ConfigEntry(0, "", "", self._data, "", "", {}, options=self._options)
+    async def _update_entry(self):
+        try:
+            entry = ConfigEntry(
+                0, "", "", self._data, "", "", {}, options=self._options
+            )
 
-        self._config_manager.update(entry)
+            await self._config_manager.update(entry)
+        except InvalidToken:
+            _LOGGER.info("Reset password")
 
-    def _handle_password(self, user_input):
+            del self._data[CONF_PASSWORD]
+
+            entry = ConfigEntry(
+                0, "", "", self._data, "", "", {}, options=self._options
+            )
+
+            await self._config_manager.update(entry)
+
+    async def _handle_password(self, user_input):
         if CONF_CLEAR_CREDENTIALS in user_input:
             clear_credentials = user_input.get(CONF_CLEAR_CREDENTIALS)
 
@@ -228,11 +247,11 @@ class ConfigFlowManager:
 
         if CONF_PASSWORD in user_input:
             password_clear_text = user_input[CONF_PASSWORD]
-            password = self._password_manager.encrypt(password_clear_text)
+            password = await self._password_manager.encrypt(password_clear_text)
 
             user_input[CONF_PASSWORD] = password
 
-    def _clone_items(self, user_input, flow: str):
+    async def _clone_items(self, user_input, flow: str):
         new_user_input = {}
 
         if user_input is not None:
@@ -242,7 +261,7 @@ class ConfigFlowManager:
                 new_user_input[key] = user_input_data
 
             if flow != CONFIG_FLOW_INIT:
-                self._handle_password(new_user_input)
+                await self._handle_password(new_user_input)
 
         return new_user_input
 
@@ -286,9 +305,12 @@ class ConfigFlowManager:
 
                 del options[action]
 
-        storage_manager = StorageManager(self._hass, self._config_manager)
+        generate_configuration_files = CONF_GENERATE_CONFIG_FILES in actions
+
+        storage_manager = StorageManager(self._hass)
         data = await storage_manager.async_load_from_store()
-        data.actions = actions
+        integration_data = data.integrations.get(self.title, {})
+        integration_data[generate_configuration_files] = generate_configuration_files
 
         await storage_manager.async_save_to_store(data)
 

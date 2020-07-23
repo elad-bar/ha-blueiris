@@ -1,23 +1,54 @@
+from typing import Dict, Optional
+
 from ..helpers.const import *
 
 
-class StorageData:
-    actions: list
+class StorageIntegrationData:
+    generate_configuration_files: bool
 
     def __init__(self):
-        self.actions = []
+        self.generate_configuration_files = False
+
+
+class StorageData:
+    key: Optional[str]
+    integrations: Dict[str, StorageIntegrationData]
+
+    def __init__(self):
+        self.key = None
+        self.integrations = {}
 
     @staticmethod
-    def from_dict(obj):
+    def from_dict(obj: dict):
         data = StorageData()
 
         if obj is not None:
-            data.actions = obj.get(CONF_ACTIONS, [])
+            data.key = obj.get("key")
+            integrations = obj.get("integrations", {})
+
+            for integration_key in integrations:
+                integration_item = StorageIntegrationData()
+
+                integration = integrations[integration_key]
+                integration_item.generate_configuration_files = integration.get(
+                    CONF_GENERATE_CONFIG_FILES, False
+                )
+
+                data.integrations[integration_key] = integration_item
 
         return data
 
     def to_dict(self):
-        obj = {CONF_ACTIONS: self.actions}
+        integrations = {}
+        for integration_key in self.integrations:
+            current_integration = self.integrations[integration_key]
+            integration = {
+                "CONF_GENERATE_CONFIG_FILES": current_integration.generate_configuration_files
+            }
+
+            integrations[integration_key] = integration
+
+        obj = {"key": self.key, "integrations": integrations}
 
         return obj
 

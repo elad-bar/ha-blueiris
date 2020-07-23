@@ -1,5 +1,16 @@
 # Changelog
 
+## 2020-07-23
+
+**Implemented enhancements:**
+
+- Moved encryption key of component to .storage directory
+- Removed support for non encrypted password (**Breaking Change**) 
+
+**Fixed bugs:**
+
+- Better handling of password parsing
+
 ## 2020-07-21
 
 **Fixed bugs:**

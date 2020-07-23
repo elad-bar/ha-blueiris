@@ -57,7 +57,7 @@ class DomainFlowHandler(config_entries.ConfigFlow):
 
                 errors = {"base": "already_configured"}
 
-        schema = self._config_flow.get_default_data(new_user_input)
+        schema = await self._config_flow.get_default_data(new_user_input)
 
         return self.async_show_form(
             step_id="user",

@@ -91,15 +91,14 @@ Component will try to login to the BlueIris server to verify new settings, follo
 - Invalid administrator credentials - credentials are invalid or user is not an admin
 - Invalid server details - Cannot reach the server
 
-###### Password protection
-Password is being saved in integration settings to `.storage` encrypted,
-
-In the past password saved in clear text, to use the encryption, please remove the integration, restart HA and re-add integration,
-
-As long as the password will remain in clear text saved in integration setting, the following warning log message will appear during restart:
+###### Encryption key got corrupted
+If a persistent notification popped up with the following message:
 ```
-BlueIris password is not encrypted, please remove integration and reintegrate
+Encryption key got corrupted, please remove the integration and re-add it
 ```
+
+It means that encryption key was modified from outside the code,
+Please remove the integration and re-add it to make it work again.
 
 ## Components
 

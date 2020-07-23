@@ -8,6 +8,8 @@ import logging
 import sys
 from typing import Optional
 
+from cryptography.fernet import InvalidToken
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -82,17 +84,33 @@ class BlueIrisHomeAssistant:
 
     async def async_init(self, entry: ConfigEntry):
         try:
-            self._config_manager.update(entry)
+            self._storage_manager = StorageManager(self._hass)
+
+            await self._config_manager.update(entry)
 
             self._api = BlueIrisApi(self._hass, self._config_manager)
             self._entity_manager = EntityManager(self._hass, self)
             self._device_manager = DeviceManager(self._hass, self)
-            self._storage_manager = StorageManager(self._hass, self.config_manager)
             self._config_generator = AdvancedConfigurationGenerator(self._hass, self)
 
             self._entity_registry = await er_async_get_registry(self._hass)
 
             self._hass.loop.create_task(self._async_init())
+        except InvalidToken:
+            error_message = "Encryption key got corrupted, please remove the integration and re-add it"
+
+            _LOGGER.error(error_message)
+
+            data = await self._storage_manager.async_load_from_store()
+            data.key = None
+            await self._storage_manager.async_save_to_store(data)
+
+            await self._hass.services.async_call(
+                "persistent_notification",
+                "create",
+                {"title": DEFAULT_NAME, "message": error_message},
+            )
+
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
@@ -131,25 +149,25 @@ class BlueIrisHomeAssistant:
         _LOGGER.info(f"Handling ConfigEntry change: {entry.as_dict()}")
 
         if update_config_manager:
-            self._config_manager.update(entry)
+            await self._config_manager.update(entry)
 
         await self._api.initialize()
 
         await self.async_update(datetime.now())
 
         data = await self.storage_manager.async_load_from_store()
+        integration_data = data.integrations.get(entry.title)
 
-        if update_config_manager and CONF_GENERATE_CONFIG_FILES in data.actions:
-            async_call_later(self._hass, 5, self.generate_config_files)
+        if update_config_manager and integration_data is not None:
+            if integration_data.generate_configuration_files:
+                async_call_later(self._hass, 5, self.generate_config_files)
 
-            data.actions = []
+                integration_data.generate_configuration_files = False
 
             await self.storage_manager.async_save_to_store(data)
 
-    async def async_remove(self):
-        config_entry = self._config_manager.config_entry
-
-        _LOGGER.info(f"Removing current integration - {config_entry.title}")
+    async def async_remove(self, entry: ConfigEntry):
+        _LOGGER.info(f"Removing current integration - {entry.title}")
 
         if self._remove_async_track_time is not None:
             self._remove_async_track_time()
@@ -158,11 +176,11 @@ class BlueIrisHomeAssistant:
         unload = self._hass.config_entries.async_forward_entry_unload
 
         for domain in SUPPORTED_DOMAINS:
-            await unload(config_entry, domain)
+            await unload(entry, domain)
 
         await self._device_manager.async_remove()
 
-        _LOGGER.info(f"Current integration ({config_entry.title}) removed")
+        _LOGGER.info(f"Current integration ({entry.title}) removed")
 
     async def async_update(self, event_time):
         if not self._is_initialized:

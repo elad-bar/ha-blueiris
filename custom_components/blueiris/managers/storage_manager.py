@@ -3,12 +3,9 @@ import logging
 
 from homeassistant.helpers.json import JSONEncoder
 from homeassistant.helpers.storage import Store
-from homeassistant.util import slugify
 
 from ..helpers.const import *
-from ..models.config_data import ConfigData
 from ..models.storage_data import StorageData
-from .configuration_manager import ConfigManager
 
 STORAGE_VERSION = 1
 
@@ -16,22 +13,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class StorageManager:
-    def __init__(self, hass, config_manager: ConfigManager):
+    def __init__(self, hass):
         self._hass = hass
-        self._config_manager = config_manager
-
-    @property
-    def config_data(self) -> ConfigData:
-        config_data = None
-
-        if self._config_manager is not None:
-            config_data = self._config_manager.data
-
-        return config_data
 
     @property
     def file_name(self):
-        file_name = f".{DOMAIN}.{slugify(self.config_data.name)}"
+        file_name = f".{DOMAIN}"
 
         return file_name
 

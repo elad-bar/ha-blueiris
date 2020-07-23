@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..helpers.const import *
 
 
@@ -6,9 +8,9 @@ class ConfigData:
     host: str
     port: int
     ssl: bool
-    username: str
-    password: str
-    password_clear_text: str
+    username: Optional[str]
+    password: Optional[str]
+    password_clear_text: Optional[str]
     log_level: str
     allowed_camera: list
     allowed_profile: list
@@ -24,9 +26,9 @@ class ConfigData:
         self.host = ""
         self.port = DEFAULT_PORT
         self.ssl = False
-        self.username = ""
-        self.password = ""
-        self.password_clear_text = ""
+        self.username = None
+        self.password = None
+        self.password_clear_text = None
         self.log_level = LOG_LEVEL_DEFAULT
         self.stream_type = DEFAULT_STREAM_TYPE
 
