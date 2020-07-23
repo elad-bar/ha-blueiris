@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-07-23 #2
+
+**Fixed bugs:**
+
+- Fixed Is Online: N/A [\#77](https://github.com/elad-bar/ha-bleuiris/issues/77)
+
 ## 2020-07-23
 
 **Implemented enhancements:**

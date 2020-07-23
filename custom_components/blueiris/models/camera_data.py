@@ -14,11 +14,7 @@ class CameraData:
         self.name = camera.get(BI_ATTR_NAME)
         self.is_online = camera.get(BI_ATTR_IS_ONLINE, False)
         self.has_audio = camera.get(BI_ATTR_AUDIO, False)
-        self.data = {}
-
-        for key in camera:
-            if key not in BI_NON_GENERIC_ATTRIBUTES:
-                self.data[key] = camera[key]
+        self.data = camera
 
         self.is_system = self.id in SYSTEM_CAMERA_ID
 
