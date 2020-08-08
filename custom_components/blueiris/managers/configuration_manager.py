@@ -46,6 +46,8 @@ class ConfigManager:
 
         result.stream_type = options.get(CONF_STREAM_TYPE, DEFAULT_STREAM_TYPE)
 
+        result.support_stream = options.get(CONF_SUPPORT_STREAM, False)
+
         self.config_entry = config_entry
         self.data = result
 

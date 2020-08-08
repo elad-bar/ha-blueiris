@@ -20,6 +20,7 @@ class ConfigData:
     allowed_dio_sensor: list
     allowed_external_sensor: list
     stream_type: str
+    support_stream: bool
 
     def __init__(self):
         self.name = DEFAULT_NAME
@@ -31,6 +32,7 @@ class ConfigData:
         self.password_clear_text = None
         self.log_level = LOG_LEVEL_DEFAULT
         self.stream_type = DEFAULT_STREAM_TYPE
+        self.support_stream = False
 
         self.allowed_camera = []
         self.allowed_profile = []
@@ -72,6 +74,7 @@ class ConfigData:
             CONF_ALLOWED_DIO_SENSOR: self.allowed_dio_sensor,
             CONF_ALLOWED_EXTERNAL_SENSOR: self.allowed_external_sensor,
             CONF_STREAM_TYPE: self.stream_type,
+            CONF_SUPPORT_STREAM: self.support_stream,
         }
 
         to_string = f"{obj}"

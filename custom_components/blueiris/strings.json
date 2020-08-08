@@ -41,7 +41,8 @@
                   "allowed_dio_sensor": "DIO sensors",
                   "allowed_external_sensor": "External sensors",
                   "reset-components-settings": "Reset components settings to default",
-                  "stream-type": "Stream type"
+                  "stream-type": "Stream type",
+                  "support_stream": "Support stream component (Requires restart)"
               }
           }
       },

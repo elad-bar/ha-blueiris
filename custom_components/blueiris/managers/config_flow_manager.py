@@ -1,9 +1,11 @@
 import logging
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from cryptography.fernet import InvalidToken
+from voluptuous import Marker
 
 from homeassistant.components.mqtt import DATA_MQTT
+from homeassistant.components.stream import DOMAIN as DOMAIN_STREAM
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers import config_validation as cv
 
@@ -98,7 +100,9 @@ class ConfigFlowManager:
 
         return self._data
 
-    def _get_default_fields(self, flow, config_data: Optional[ConfigData] = None):
+    def _get_default_fields(
+        self, flow, config_data: Optional[ConfigData] = None
+    ) -> Dict[Marker, Any]:
         if config_data is None:
             config_data = self.config_data
 
@@ -112,7 +116,7 @@ class ConfigFlowManager:
 
         return fields
 
-    async def get_default_data(self, user_input):
+    async def get_default_data(self, user_input) -> vol.Schema:
         config_data = await self._config_manager.get_basic_data(user_input)
 
         fields = self._get_default_fields(CONFIG_FLOW_DATA, config_data)
@@ -121,7 +125,7 @@ class ConfigFlowManager:
 
         return data_schema
 
-    def get_default_options(self):
+    def get_default_options(self) -> vol.Schema:
         config_data = self.config_data
         ha = self._get_ha(self._config_entry.entry_id)
 
@@ -193,6 +197,11 @@ class ConfigFlowManager:
         fields[
             vol.Optional(CONF_STREAM_TYPE, default=config_data.stream_type)
         ] = vol.In(STREAM_VIDEO.keys())
+
+        if DOMAIN_STREAM in self._hass.data:
+            fields[
+                vol.Optional(CONF_SUPPORT_STREAM, default=config_data.support_stream)
+            ] = bool
 
         fields[vol.Optional(CONF_LOG_LEVEL, default=config_data.log_level)] = vol.In(
             LOG_LEVELS

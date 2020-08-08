@@ -26,6 +26,7 @@ from homeassistant.const import (
     CONF_PORT,
     CONF_SSL,
     CONF_USERNAME,
+    CONF_VERIFY_SSL,
 )
 
 CONF_LOG_LEVEL = "log_level"
@@ -36,6 +37,8 @@ CONF_ALLOWED_AUDIO_SENSOR = "allowed_audio_sensor"
 CONF_ALLOWED_CONNECTIVITY_SENSOR = "allowed_connectivity_sensor"
 CONF_ALLOWED_DIO_SENSOR = "allowed_dio_sensor"
 CONF_ALLOWED_EXTERNAL_SENSOR = "allowed_external_sensor"
+
+CONF_SUPPORT_STREAM = "support_stream"
 
 BI_ATTR_NAME = "optionDisplay"
 BI_ATTR_ID = "optionValue"
@@ -254,10 +257,14 @@ LOG_LEVELS = [
 
 CONF_STREAM_TYPE = "stream-type"
 STREAM_TYPE_H264 = "H264"
-STREAM_TYPE_MJPG = "MJPG"
+STREAM_TYPE_MJPG = "MJPEG"
+
 DEFAULT_STREAM_TYPE = STREAM_TYPE_H264
 
-STREAM_VIDEO = {STREAM_TYPE_H264: "temp.m3u8", STREAM_TYPE_MJPG: "video.mjpg"}
+STREAM_VIDEO = {
+    STREAM_TYPE_H264: {"file_name": "temp.m3u8", "stream_name": "h264"},
+    STREAM_TYPE_MJPG: {"stream_name": "mjpg"},
+}
 
 STREAM_CONTENT_TYPE = {STREAM_TYPE_H264: "video/H264", STREAM_TYPE_MJPG: "image/jpg"}
 
@@ -284,3 +291,13 @@ COMPONENTS_TEMPLATE = {
 }
 
 LOVELACE_TEMPLATE = {"cards": []}
+
+DEVICE_INFO_KEYS = [
+    CONF_STREAM_SOURCE,
+    CONF_SUPPORT_STREAM,
+    CONF_STILL_IMAGE_URL,
+    CONF_CONTENT_TYPE,
+    CONF_VERIFY_SSL,
+    CONF_USERNAME,
+    CONF_PASSWORD,
+]

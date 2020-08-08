@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-08-08
+
+**Implemented enhancements:**
+
+- New integration's option to control whether the camera component is using the `Stream` component or not, requires restart, default is without `Stream` support [\#75](https://github.com/elad-bar/ha-bleuiris/issues/75)
+
 ## 2020-07-23 #2
 
 **Fixed bugs:**

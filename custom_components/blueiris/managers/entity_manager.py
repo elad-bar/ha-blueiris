@@ -3,7 +3,8 @@ import sys
 from typing import Dict, List, Optional
 
 from homeassistant.components.camera import DEFAULT_CONTENT_TYPE
-from homeassistant.const import CONF_AUTHENTICATION, CONF_VERIFY_SSL
+from homeassistant.components.stream import DOMAIN as DOMAIN_STREAM
+from homeassistant.const import CONF_AUTHENTICATION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.entity_registry import EntityRegistry
@@ -440,16 +441,21 @@ class EntityManager:
 
             unique_id = f"{DOMAIN}-{DOMAIN_CAMERA}-{entity_name}"
 
-            still_image_url = (
-                f"{base_url}/image/{camera.id}?q=100&s=100&session={session_id}"
-            )
+            still_image_url = f"{base_url}/image/{camera.id}?session={session_id}"
             still_image_url_template = cv.template(still_image_url)
 
-            stream_type = self.config_data.stream_type.lower()
-            video = STREAM_VIDEO[self.config_data.stream_type]
+            stream_config = STREAM_VIDEO.get(self.config_data.stream_type, {})
+
+            file_name = stream_config.get("file_name", "")
+            stream_name = stream_config.get("stream_name")
+
+            support_stream = False
+
+            if DOMAIN_STREAM in self.hass.data:
+                support_stream = self.config_data.support_stream
 
             stream_source = (
-                f"{base_url}/{stream_type}/{camera.id}/{video}?session={session_id}"
+                f"{base_url}/{stream_name}/{camera.id}/{file_name}?session={session_id}"
             )
 
             camera_details = {
@@ -463,6 +469,7 @@ class EntityManager:
                 CONF_USERNAME: username,
                 CONF_PASSWORD: password,
                 CONF_AUTHENTICATION: AUTHENTICATION_BASIC,
+                CONF_SUPPORT_STREAM: support_stream,
             }
 
             attributes = {
