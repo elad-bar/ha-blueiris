@@ -1,5 +1,11 @@
 # Changelog
 
+## 2020-09-17
+
+**Fixed bugs:**
+
+- Integration setup errors caused by invalid credentials (User input malformed / Unknown error occurred) [\#79](https://github.com/elad-bar/ha-bleuiris/issues/79) [\#81](https://github.com/elad-bar/ha-bleuiris/issues/81)
+
 ## 2020-08-08
 
 **Implemented enhancements:**

@@ -244,6 +244,11 @@ class ConfigFlowManager:
 
             await self._config_manager.update(entry)
 
+    async def clear_credentials(self, user_input):
+        user_input[CONF_CLEAR_CREDENTIALS] = True
+
+        await self._handle_password(user_input)
+
     async def _handle_password(self, user_input):
         if CONF_CLEAR_CREDENTIALS in user_input:
             clear_credentials = user_input.get(CONF_CLEAR_CREDENTIALS)
