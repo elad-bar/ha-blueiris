@@ -1,4 +1,4 @@
 {
-  "name": "Integration with Blue Iris NVR",
+  "name": "BlueIris NVR",
   "iot_class": "Local Polling"
 }
