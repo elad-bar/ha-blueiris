@@ -1,0 +1,56 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sett opp Blue Iris",
+        "description": "Sette opp BlueIris Server-detaljer (for å kontrollere profiler, fyll ut gyldig brukernavn og passord)",
+        "data": {
+          "host": "Vert",
+          "port": "Port",
+          "username": "Brukernavn",
+          "password": "Passord",
+          "ssl": "Er SSL"
+        }
+      }
+    },
+    "error": {
+      "invalid_admin_credentials": "Ugyldig administratorlegitimasjon",
+      "invalid_server_details": "Ugyldige serveropplysninger",
+      "already_configured": "BlueIris-integrasjon allerede konfigurert med navnet"
+    }
+  },
+  "options": {
+      "step": {
+          "blue_iris_additional_settings": {
+              "title": "Alternativer for BlueIris",
+              "description": "Sett opp brukernavn og passord for å kontrollere profiler / ekskludere systemkamera.",
+              "data": {
+                  "host": "Vert",
+                  "port": "Port",
+                  "ssl": Er SSL",
+                  "username": "Brukernavn",
+                  "password": "Passord",
+                  "clear-credentials": "Fjern legitimasjon",
+                  "log_level": "Loggnivå",
+                  "generate-config-files": "Generer konfigurasjonsfiler",
+                  "allowed_camera": "Kamerakomponenter",
+                  "allowed_profile": "Profilbrytere",
+                  "allowed_motion_sensor": "Bevegelsessensorer",
+                  "allowed_audio_sensor": "Lydsensorer",
+                  "allowed_connectivity_sensor": "Tilkoblingssensorer",
+                  "allowed_dio_sensor": "DIO-sensorer",
+                  "allowed_external_sensor": "Eksterne sensorer",
+                  "reset-components-settings": "Tilbakestill komponentinnstillingene til standard",
+                  "stream-type": "Strømmetype",
+                  "support_stream": "Støtte strømkomponent (krever omstart)"
+              }
+          }
+      },
+      "error": {
+        "invalid_admin_credentials": "Ugyldig administratorlegitimasjon",
+        "invalid_server_details": "Ugyldige serveropplysninger",
+        "already_configured": "BlueIris-integrasjon allerede konfigurert med navnet"
+      }
+  }
+}
+© 2020 GitHub, In
