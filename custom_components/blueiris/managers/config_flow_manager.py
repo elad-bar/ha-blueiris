@@ -423,10 +423,10 @@ class ConfigFlowManager:
     def _get_schedule_options(schedules_list):
         available_items = {}
 
-        for schedule in schedules_list:
-            schedule_name = schedules_list.append(schedule)
+        for schedule_name in schedules_list:
+            schedule_id = schedules_list.index(schedule_name)
 
-            available_items[schedule_name] = schedule_name
+            available_items[str(schedule_id)] = schedule_name
 
         return available_items
 
