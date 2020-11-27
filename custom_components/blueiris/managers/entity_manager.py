@@ -146,15 +146,22 @@ class EntityManager:
         config_data = self.config_data
         available_camera = self.api.camera_list
         available_profiles = self.api.data.get("profiles", [])
+        available_schedules = self.api.data.get("schedules", [])
         is_admin = self.api.data.get("admin", False)
         allowed_profile = config_data.allowed_profile
+        allowed_schedule = config_data.allowed_schedule        
 
-        if is_admin and (allowed_profile is None or len(allowed_profile) > 0):
+        if is_admin and (allowed_profile is None or len(allowed_profile) > 0) and (allowed_schedule is None or len(allowed_schedule) > 0) :
             for profile_name in available_profiles:
                 profile_id = available_profiles.index(profile_name)
 
                 if allowed_profile is None or str(profile_id) in allowed_profile:
                     self.generate_profile_switch(profile_id, profile_name)
+            for schedule_name in available_schedules:
+                schedule_id = available_schedules.index(schedule_name)
+
+                if allowed_schedule is None or str(schedule_id) in allowed_schedule:
+                    self.generate_schedule_switch(schedule_id, schedule_name)                    
 
         mqtt_binary_sensors = []
         for camera in available_camera:
@@ -301,6 +308,50 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(
                 ex, f"Failed to generate profile switch {profile_name} (#{profile_id})"
+            )
+
+    def get_schedule_switch(self, schedule_id, schedule_name) -> EntityData:
+        entity = None
+
+        try:
+            current_schedule = self.api.status.get("schedule", 0)
+
+            device_name = self.device_manager.get_system_device_name()
+
+            entity_name = (
+                f"{self.integration_title} {ATTR_ADMIN_SCHEDULE} {schedule_name}"
+            )
+            unique_id = f"{DOMAIN}-{DOMAIN_SWITCH}-{ATTR_ADMIN_SCHEDULE}-{entity_name}"
+
+            state = current_schedule == schedule_id
+
+            attributes = {ATTR_FRIENDLY_NAME: entity_name}
+
+            entity = EntityData()
+
+            entity.id = schedule_id
+            entity.unique_id = unique_id
+            entity.name = entity_name
+            entity.state = state
+            entity.attributes = attributes
+            entity.icon = DEFAULT_ICON
+            entity.device_name = device_name
+        except Exception as ex:
+            self.log_exception(
+                ex, f"Failed to get schedule switch {schedule_name} (#{schedule_id})"
+            )
+
+        return entity
+
+    def generate_schedule_switch(self, schedule_id, schedule_name):
+        try:
+            entity = self.get_schedule_switch(schedule_id, schedule_name)
+            entity_name = entity.name
+
+            self.set_entity(DOMAIN_SWITCH, entity_name, entity)
+        except Exception as ex:
+            self.log_exception(
+                ex, f"Failed to generate schedule switch {schedule_name} (#{schedule_id})"
             )
 
     def get_main_binary_sensor(self) -> EntityData:

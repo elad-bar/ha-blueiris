@@ -367,6 +367,9 @@ class ConfigFlowManager:
                 if CONF_ALLOWED_PROFILE in options:
                     del options[CONF_ALLOWED_PROFILE]
 
+                if CONF_ALLOWED_SCHEDULE in options:
+                    del options[CONF_ALLOWED_SCHEDULE]
+
                 if CONF_STREAM_TYPE in options:
                     del options[CONF_STREAM_TYPE]
 
@@ -415,6 +418,8 @@ class ConfigFlowManager:
             available_items[str(profile_id)] = profile_name
 
         return available_items
+
+    @staticmethod
     def _get_schedule_options(schedules_list):
         available_items = {}
 
