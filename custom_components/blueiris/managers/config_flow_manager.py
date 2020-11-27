@@ -134,7 +134,7 @@ class ConfigFlowManager:
         is_admin = ha.api.data.get("admin", False)
 
         profiles_list = ha.api.data.get("profiles", [])
-
+        schedules_list = ha.api.data.get("schedules", [])
         supported_camera = self._get_camera_options(camera_list)
         supported_audio_sensor = self._get_camera_options(camera_list, CAMERA_HAS_AUDIO)
         supported_camera_sensor = self._get_camera_options(
@@ -142,6 +142,7 @@ class ConfigFlowManager:
         )
 
         supported_profile = self._get_profile_options(profiles_list)
+        supported_schedule = self._get_schedule_options(schedules_list)
 
         drop_down_fields = [
             {
@@ -184,6 +185,12 @@ class ConfigFlowManager:
                 "checked": config_data.allowed_profile,
                 "items": supported_profile,
                 "name": CONF_ALLOWED_PROFILE,
+                "enabled": is_admin,
+            },
+            {
+                "checked": config_data.allowed_schedule,
+                "items": supported_schedule,
+                "name": CONF_ALLOWED_SCHEDULE,
                 "enabled": is_admin,
             },
         ]
@@ -406,6 +413,15 @@ class ConfigFlowManager:
             profile_id = profiles_list.index(profile_name)
 
             available_items[str(profile_id)] = profile_name
+
+        return available_items
+    def _get_schedule_options(schedules_list):
+        available_items = {}
+
+        for schedule_name in schedules_list:
+            schedule_id = schedules_list.index(schedule_name)
+
+            available_items[str(schedule_id)] = schedule_name
 
         return available_items
 

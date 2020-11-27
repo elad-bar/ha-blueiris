@@ -236,7 +236,7 @@ class BlueIrisApi:
             for key in data:
                 self.status[key] = data[key]
 
-    async def set_profile(self, profile_id):
+        async def set_profile(self, profile_id):
         _LOGGER.info("Setting profile (#{profile_id})")
 
         await self._set_profile(profile_id)
