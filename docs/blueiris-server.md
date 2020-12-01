@@ -85,7 +85,9 @@ for `On reset` do the same with payload:
 `{ "type": "&TYPE", "trigger": "OFF" }`
 
 
-The alert should be sent for the profile you would like it to trigger
+The alert should be sent for the profile you would like it to trigger.
+
+Note: Triggering the camera manually in BlueIris sends a different &TYPE and will not trigger the motion sensor. Motion must be detected on the camera for the sensor change to be detected.
 
 ![Blue Iris Motion](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-motion-alerts.png)
 
