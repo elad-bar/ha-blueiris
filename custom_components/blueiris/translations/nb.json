@@ -27,7 +27,7 @@
               "data": {
                   "host": "Vert",
                   "port": "Port",
-                  "ssl": Er SSL",
+                  "ssl": "Er SSL",
                   "username": "Brukernavn",
                   "password": "Passord",
                   "clear-credentials": "Fjern legitimasjon",
