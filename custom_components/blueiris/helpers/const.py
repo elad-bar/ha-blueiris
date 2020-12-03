@@ -120,7 +120,7 @@ NOTIFICATION_ID = f"{DOMAIN}_notification"
 NOTIFICATION_TITLE = f"{DEFAULT_NAME} Setup"
 
 DEFAULT_ICON = "mdi:alarm-light"
-
+SCHEDULE_ICON = "mdi:calendar-clock"
 ATTR_FRIENDLY_NAME = "friendly_name"
 
 PROTOCOLS = {True: "https", False: "http"}
