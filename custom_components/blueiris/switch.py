@@ -33,18 +33,24 @@ async def async_unload_entry(hass, config_entry):
 
 
 def get_switch(hass: HomeAssistant, host: str, entity: EntityData):
-    switch = BlueIrisProfileSwitch()
+    switch = BlueIrisProfileAndScheduleSwitch()
     switch.initialize(hass, host, entity, CURRENT_DOMAIN)
 
     return switch
 
 
-class BlueIrisProfileSwitch(SwitchEntity, BlueIrisEntity):
+class BlueIrisProfileAndScheduleSwitch(SwitchEntity, BlueIrisEntity):
     """Class for an BlueIris switch."""
 
     @property
     def profile_id(self):
-        return self.entity.id
+        if isinstance(self.entity.id, int):
+            return self.entity.id
+
+    @property
+    def schedule_name(self):
+        if isinstance(self.entity.id, str):
+            return self.entity.id
 
     @property
     def is_on(self):
@@ -53,18 +59,30 @@ class BlueIrisProfileSwitch(SwitchEntity, BlueIrisEntity):
 
     async def async_turn_on(self, **kwargs):
         """Turn device on."""
-        await self.set_profile(self.profile_id)
+        if isinstance(self.entity.id, int):
+            await self.set_profile(self.profile_id)
+        else:
+            await self.set_schedule(self.schedule_name)
 
     async def async_turn_off(self, **kwargs):
         """Turn device off."""
-        to_profile_id = 1
-        if self.profile_id == 1:
-            to_profile_id = 0
-
-        await self.set_profile(to_profile_id)
+        if isinstance(self.entity.id, int):
+            to_profile_id = 1
+            if self.profile_id == 1:
+                to_profile_id = 0
+            await self.set_profile(to_profile_id)
+        else:
+            pass
 
     async def set_profile(self, profile_id):
         await self.api.set_profile(profile_id)
+
+        self.entity_manager.update()
+
+        await self.ha.dispatch_all()
+
+    async def set_schedule(self, schedule_name):
+        await self.api.set_schedule(schedule_name)
 
         self.entity_manager.update()
 

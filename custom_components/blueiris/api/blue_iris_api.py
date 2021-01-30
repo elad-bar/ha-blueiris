@@ -262,3 +262,28 @@ class BlueIrisApi:
 
             for key in data:
                 self.status[key] = data[key]
+    async def set_schedule(self, schedule_name):
+        _LOGGER.info("Setting schedule (#{schedule_name})")
+
+        await self._set_schedule(schedule_name)
+    async def _set_schedule(self, schedule_name, check_lock=True):
+        request_data = {
+            "cmd": "status",
+            "session": self.session_id,
+            "schedule": schedule_name,
+        }
+
+        response = await self.async_verified_post(request_data)
+
+        if response is not None:
+            data = response.get("data", {})
+
+            lock = data.get("lock")
+
+            if check_lock and lock != 1:
+                await self._set_schedule(schedule_name, False)
+
+                return
+
+            for key in data:
+                self.status[key] = data[key]

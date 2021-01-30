@@ -14,6 +14,7 @@ class ConfigData:
     log_level: str
     allowed_camera: list
     allowed_profile: list
+    allowed_schedule: list
     allowed_motion_sensor: list
     allowed_audio_sensor: list
     allowed_connectivity_sensor: list
@@ -36,6 +37,7 @@ class ConfigData:
 
         self.allowed_camera = []
         self.allowed_profile = []
+        self.allowed_schedule = []
         self.allowed_motion_sensor = []
         self.allowed_audio_sensor = []
         self.allowed_connectivity_sensor = []
@@ -68,6 +70,7 @@ class ConfigData:
             CONF_LOG_LEVEL: self.log_level,
             CONF_ALLOWED_CAMERA: self.allowed_camera,
             CONF_ALLOWED_PROFILE: self.allowed_profile,
+            CONF_ALLOWED_SCHEDULE: self.allowed_schedule,
             CONF_ALLOWED_MOTION_SENSOR: self.allowed_motion_sensor,
             CONF_ALLOWED_AUDIO_SENSOR: self.allowed_audio_sensor,
             CONF_ALLOWED_CONNECTIVITY_SENSOR: self.allowed_connectivity_sensor,

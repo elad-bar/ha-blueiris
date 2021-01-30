@@ -24,6 +24,7 @@ from homeassistant.const import (
 CONF_LOG_LEVEL = "log_level"
 CONF_ALLOWED_CAMERA = "allowed_camera"
 CONF_ALLOWED_PROFILE = "allowed_profile"
+CONF_ALLOWED_SCHEDULE = "allowed_schedule"
 CONF_ALLOWED_MOTION_SENSOR = "allowed_motion_sensor"
 CONF_ALLOWED_AUDIO_SENSOR = "allowed_audio_sensor"
 CONF_ALLOWED_CONNECTIVITY_SENSOR = "allowed_connectivity_sensor"
@@ -49,6 +50,7 @@ CONF_ARR = [CONF_USERNAME, CONF_PASSWORD, CONF_HOST, CONF_PORT, CONF_SSL]
 DROP_DOWNS_CONF = [
     CONF_ALLOWED_CAMERA,
     CONF_ALLOWED_PROFILE,
+    CONF_ALLOWED_SCHEDULE,
     CONF_ALLOWED_MOTION_SENSOR,
     CONF_ALLOWED_AUDIO_SENSOR,
     CONF_ALLOWED_CONNECTIVITY_SENSOR,
@@ -80,6 +82,7 @@ DOMAIN_LOGGER = "logger"
 SERVICE_SET_LEVEL = "set_level"
 
 ATTR_ADMIN_PROFILE = "Profile"
+ATTR_ADMIN_SCHEDULE = "Schedule"
 ATTR_SYSTEM_CAMERA_ALL_NAME = "All"
 ATTR_SYSTEM_CAMERA_ALL_ID = "Index"
 ATTR_SYSTEM_CAMERA_CYCLE_NAME = "Cycle"
@@ -103,7 +106,7 @@ NOTIFICATION_ID = f"{DOMAIN}_notification"
 NOTIFICATION_TITLE = f"{DEFAULT_NAME} Setup"
 
 DEFAULT_ICON = "mdi:alarm-light"
-
+SCHEDULE_ICON = "mdi:calendar-clock"
 ATTR_FRIENDLY_NAME = "friendly_name"
 
 PROTOCOLS = {True: "https", False: "http"}
