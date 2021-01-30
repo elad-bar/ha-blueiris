@@ -324,7 +324,7 @@ class ConfigFlowManager:
         storage_manager = StorageManager(self._hass)
         data = await storage_manager.async_load_from_store()
         integration_data = data.integrations.get(self.title, {})
-        integration_data[generate_configuration_files] = generate_configuration_files
+        integration_data[CONF_GENERATE_CONFIG_FILES] = generate_configuration_files
 
         await storage_manager.async_save_to_store(data)
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2021-01-30
+
+**Fixed bugs:**
+
+- Fix issue on initial install (HA v2012.2b) [\#98](https://github.com/elad-bar/ha-bleuiris/issues/98) 
+
 ## 2020-09-17
 
 **Fixed bugs:**

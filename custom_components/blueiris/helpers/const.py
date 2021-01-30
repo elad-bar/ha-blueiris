@@ -9,14 +9,6 @@ import voluptuous as vol
 
 from homeassistant.components.binary_sensor import DOMAIN as DOMAIN_BINARY_SENSOR
 from homeassistant.components.camera import DOMAIN as DOMAIN_CAMERA
-from homeassistant.components.mqtt import (
-    CONF_PAYLOAD_AVAILABLE,
-    CONF_PAYLOAD_NOT_AVAILABLE,
-    CONF_QOS,
-    DEFAULT_PAYLOAD_AVAILABLE,
-    DEFAULT_PAYLOAD_NOT_AVAILABLE,
-    DEFAULT_QOS,
-)
 from homeassistant.components.switch import DOMAIN as DOMAIN_SWITCH
 from homeassistant.const import (
     CONF_HOST,
@@ -104,12 +96,6 @@ SYSTEM_CAMERA_CONFIG = {
 }
 
 SYSTEM_CAMERA_ID = [ATTR_SYSTEM_CAMERA_ALL_ID, ATTR_SYSTEM_CAMERA_CYCLE_ID]
-
-MQTT_AVAILABILITY_CONFIG = {
-    CONF_PAYLOAD_AVAILABLE: DEFAULT_PAYLOAD_AVAILABLE,
-    CONF_PAYLOAD_NOT_AVAILABLE: DEFAULT_PAYLOAD_NOT_AVAILABLE,
-    CONF_QOS: DEFAULT_QOS,
-}
 
 AUTHENTICATION_BASIC = "basic"
 
