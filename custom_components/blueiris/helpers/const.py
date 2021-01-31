@@ -138,6 +138,7 @@ MQTT_MESSAGE_TYPE = "type"
 MQTT_MESSAGE_VALUE_UNKNOWN = "unknown"
 
 MQTT_ALL_TOPIC = "BlueIris/+/Status"
+DEFAULT_QOS = 0
 
 CONFIG_OPTIONS = "options"
 CONFIG_CONDITIONS = "conditions"

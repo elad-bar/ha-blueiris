@@ -1,5 +1,11 @@
 # Changelog
 
+## 2021-01-31
+
+**Fixed bugs:**
+
+- Fix error adding entities for domain binary_sensor with platform blueiris [\#100](https://github.com/elad-bar/ha-bleuiris/issues/100)
+
 ## 2021-01-30
 
 **Fixed bugs:**
