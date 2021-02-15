@@ -1,5 +1,11 @@
 # Changelog
 
+## 2021-02-16
+
+**Fixed bugs:**
+
+- Fix FPS for H264's stream to be aligned with camera settings [\#83](https://github.com/elad-bar/ha-bleuiris/issues/83)
+
 ## 2021-01-31
 
 **Fixed bugs:**

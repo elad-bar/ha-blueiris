@@ -509,12 +509,17 @@ class EntityManager:
                 f"{base_url}/{stream_name}/{camera.id}/{file_name}?session={session_id}"
             )
 
+            fps = 1
+
+            if self.config_data.stream_type == STREAM_TYPE_H264:
+                fps = camera.data.get("FPS", fps)
+
             camera_details = {
                 CONF_NAME: f"{entity_name}",
                 CONF_STILL_IMAGE_URL: still_image_url_template,
                 CONF_STREAM_SOURCE: stream_source,
                 CONF_LIMIT_REFETCH_TO_URL_CHANGE: False,
-                CONF_FRAMERATE: 2,
+                CONF_FRAMERATE: fps,
                 CONF_CONTENT_TYPE: DEFAULT_CONTENT_TYPE,
                 CONF_VERIFY_SSL: False,
                 CONF_USERNAME: username,
