@@ -509,10 +509,10 @@ class EntityManager:
                 f"{base_url}/{stream_name}/{camera.id}/{file_name}?session={session_id}"
             )
 
-            fps = 1
+            fps = camera.data.get("FPS", 1)
 
-            if self.config_data.stream_type == STREAM_TYPE_H264:
-                fps = camera.data.get("FPS", fps)
+            if fps < 1:
+                fps = 1
 
             camera_details = {
                 CONF_NAME: f"{entity_name}",
