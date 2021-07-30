@@ -3,7 +3,7 @@ import logging
 
 from custom_components.blueiris.models.base_entity import BlueIrisEntity
 from homeassistant.components.binary_sensor import STATE_ON, BinarySensorEntity
-from homeassistant.components.mqtt import Message, async_subscribe
+from homeassistant.components.mqtt import ReceiveMessage, async_subscribe
 from homeassistant.core import callback
 
 from ..helpers.const import *
@@ -41,7 +41,7 @@ class BlueIrisMainBinarySensor(BinarySensorEntity, BlueIrisEntity):
         )
 
         @callback
-        def state_message_received(message: Message):
+        def state_message_received(message: ReceiveMessage):
             """Handle a new received MQTT state message."""
             _LOGGER.debug(
                 f"Received BlueIris Message - {message.topic}: {message.payload}"

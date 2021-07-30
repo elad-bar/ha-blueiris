@@ -1,5 +1,10 @@
 # Changelog
 
+## 2021-07-30
+
+**Fixed bugs:**
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-bleuiris/issues/120)
+
 ## 2021-02-16
 
 **Fixed bugs:**

@@ -12,6 +12,9 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 
 [Changelog](https://github.com/elad-bar/ha-blueiris/blob/master/CHANGELOG.md)
 
+## Component is no longer being maintained
+I switched to Shinobi Video, if there is an issue, feel free to report, suggest PR and I will approve it
+
 ## How to
 
 #### Requirements
