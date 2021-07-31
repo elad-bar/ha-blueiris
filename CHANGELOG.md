@@ -1,5 +1,10 @@
 # Changelog
 
+## 2021-07-31 (1.0.6)
+
+**Fixed bugs:**
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-bleuiris/issues/120)
+
 ## 2021-07-31 (1.0.6b2)
 
 **Fixed bugs:**
@@ -26,7 +31,7 @@
 
 **Fixed bugs:**
 
-- Fix issue on initial install (HA v2012.2b) [\#98](https://github.com/elad-bar/ha-bleuiris/issues/98) 
+- Fix issue on initial install (HA v2012.2b) [\#98](https://github.com/elad-bar/ha-bleuiris/issues/98)
 
 ## 2020-09-17
 
@@ -51,7 +56,7 @@
 **Implemented enhancements:**
 
 - Moved encryption key of component to .storage directory
-- Removed support for non encrypted password (**Breaking Change**) 
+- Removed support for non encrypted password (**Breaking Change**)
 
 **Fixed bugs:**
 
@@ -69,7 +74,7 @@
 
 - Reduced duplicate code - Connectivity, Motion, External and DIO share the same class
 - Removed NONE option from drop-down, NONE was workaround for a validation issue in Integration's Options and fixed as part of HA v0.112.0
-- Reduced code of camera's configuration in Integration's Options 
+- Reduced code of camera's configuration in Integration's Options
 - Improved generate configuration file process
 
 **Fixed bugs:**
@@ -121,7 +126,7 @@
 
 **Implemented enhancements:**
 
-- New feature under options - Control which camera, binary sensor or profile switch are being created 
+- New feature under options - Control which camera, binary sensor or profile switch are being created
 
 ## 2020-04-28
 
@@ -176,15 +181,15 @@
 
 **Fixed bugs:**
 
-- Added validation if state is not available to restore it [\#54](https://github.com/elad-bar/ha-bleuiris/issues/54) 
+- Added validation if state is not available to restore it [\#54](https://github.com/elad-bar/ha-bleuiris/issues/54)
 
 ## 2020-04-19
 
 **Fixed bugs:**
 
 - Fix issue [\#51](https://github.com/elad-bar/ha-bleuiris/issues/51) in config_flow
-- Validation of server existence made 2 calls to server instead of 1 
- 
+- Validation of server existence made 2 calls to server instead of 1
+
 ## 2020-04-18
 
 **Implemented enhancements:**
@@ -195,7 +200,7 @@
 
 **Fixed bugs:**
 
-- Fix issue caused by integration removal - duplicate call for removing event listener 
+- Fix issue caused by integration removal - duplicate call for removing event listener
 
 ## 2020-04-15
 
@@ -206,7 +211,7 @@
 - Fix component update upon change
 - Avoid API get details requests upon change of switch or when an MQTT message is being received
 - Better management of entities and devices
-- Added more log messages for faster debugging 
+- Added more log messages for faster debugging
 
 ## 2020-04-12
 
@@ -235,14 +240,14 @@
 - Validate administrator username and password, in case entered wrong credentials, will throw an error
 
 
-## 2020-02-07 - v2.0.0 - Breaking change!!! 
+## 2020-02-07 - v2.0.0 - Breaking change!!!
 
 **Implemented enhancements:**
 
 - BlueIris 5 JSON API integration
 - UI configuration support instead of YAML
 - Less configurations, takes configurations from BI server (all cameras are loaded, audio binary sensor will not created unless needed)
-- More details per camera in the attributes 
+- More details per camera in the attributes
 - Switch functionality changed, each profile is being represented with a switch, `is armed` switch removed
 - Added support for HACS
 
@@ -250,10 +255,10 @@
 
 **Implemented enhancements:**
 
-- No need to declare binary_sensor, switch and camera as those are being auto-discovered 
+- No need to declare binary_sensor, switch and camera as those are being auto-discovered
 
 ## 2020-01-17
 
 **Implemented enhancements:**
 
-- Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)  
+- Fixed binary sensor for motion / audio to work without zones (no need to define MOTION_A to get its off event)

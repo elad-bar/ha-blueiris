@@ -1,17 +1,17 @@
 # BlueIris Server Settings
 
 #### User
-If you intent to use any of the Blue Iris REST API commands (such as profile switching), 
+If you intent to use any of the Blue Iris REST API commands (such as profile switching),
 
-it's recommended you create a separate Administrator user for Home Assitant to connect to, and limit access to LAN only.  
+it's recommended you create a separate Administrator user for Home Assistant to connect to, and limit access to LAN only.
 
-Use this username and password in your Home Assistant configuration (shown in the next section). 
+Use this username and password in your Home Assistant configuration (shown in the next section).
 
 This keeps any accesses or limitations you may wish to set on Home Assistant separate from the primary Administrator.
 
 ![Blue Iris Edit User](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-edit_user.png)
 
-#### Web Server 
+#### Web Server
 Enable the Blue Iris Web Server. Select the  `Advanced...` button to proceed to the next step.
 
 ![Blue Iris Web Server](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/bi-web_server.png)
@@ -32,13 +32,13 @@ Finally, enable re-encoding. Set `Hardware accelerated decode (restart)` to a se
 
 In order to support the MQTT binary sensors for the camera, some additional configuration needs to be performed on both Home Assistant and Blue Iris:
 
-Assuming you are using the built-in MQTT server or the add-on Mosquitto broker, 
+Assuming you are using the built-in MQTT server or the add-on Mosquitto broker,
 
-in the Home Assistant `Configuration | Users panel`, 
+in the Home Assistant `Configuration | Users panel`,
 
-create a new user for Blue Iris to connect to the MQTT broker with. 
+create a new user for Blue Iris to connect to the MQTT broker with.
 
-This user may be placed in the Users Group, to limit the scope of its access, since it is only required to connect to the MQTT broker. 
+This user may be placed in the Users Group, to limit the scope of its access, since it is only required to connect to the MQTT broker.
 
 Otherwise, create a user appropriate for Blue Iris in your chosen MQTT broker.
 
@@ -50,9 +50,9 @@ In the Blue Iris Options panel, on the `Digital IO and IoT` tab under `MQTT`, se
 
 * Do you have a MQTT broker set up and configured? It is recommend to use the [Mosquitto MQTT broker](https://www.home-assistant.io/addons/mosquitto/) add-on, instead of the HA embedded broker - Mosquitto appears to be much more robust. Check that the broker is starting up clean and the topics are coming in without pitching errors.
 * Do you have the [MQTT Integration configured](https://www.home-assistant.io/addons/mosquitto/#home-assistant-configuration)? It's not sufficient to just install/start the broker. Make sure to check the `Enable discovery` box when you configure the integration.
-  
+
   ![Integrations MQTT](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/ha-integrations_mqtt.png)
-  
+
   ![Integrations MQTT Configure](https://github.com/elad-bar/ha-blueiris/blob/master/docs/images/ha-integrations_mqtt_configure.png)
 
 
@@ -73,7 +73,7 @@ OR
 All selected in the camera's drop-down
 
 Action section:
-Click on `On alert`, 
+Click on `On alert`,
 
 in the popup window, create new (or modify) alert for MQTT with the following settings:
 ```
@@ -113,7 +113,7 @@ Payload - { "type": "Connectivity", "trigger": "OFF" }
 ```
 
 for `On signal restoration` do the same with payload:
-`{ "type": "&TYPE", "trigger": "ON" }` 
+`{ "type": "&TYPE", "trigger": "ON" }`
 
 The alert should be sent for the profile you would like it to trigger
 

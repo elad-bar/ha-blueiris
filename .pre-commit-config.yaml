@@ -1,3 +1,5 @@
+---
+
 repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.7.2
@@ -50,44 +52,12 @@ repos:
         stages: [manual]
       - id: check-json
         exclude: (.vscode|.devcontainer)
-      - id: no-commit-to-branch
-        args:
-          - --branch=dev
-          - --branch=master
-          - --branch=rc
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.24.2
-    hooks:
-      - id: yamllint
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
   - repo: https://github.com/prettier/prettier
     rev: 2.0.4
     hooks:
       - id: prettier
         stages: [manual]
-  - repo: local
-    hooks:
-      # Run mypy through our wrapper script in order to get the possible
-      # pyenv and/or virtualenv activated; it may not have been e.g. if
-      # committing from a GUI tool that was not launched from an activated
-      # shell.
-      - id: mypy
-        name: mypy
-        entry: script/run-in-env.sh mypy
-        language: script
-        types: [python]
-        require_serial: true
-        files: ^homeassistant/.+\.py$
-      - id: gen_requirements_all
-        name: gen_requirements_all
-        entry: script/run-in-env.sh python3 -m script.gen_requirements_all
-        pass_filenames: false
-        language: script
-        types: [text]
-        files: ^(homeassistant/.+/manifest\.json|\.pre-commit-config\.yaml)$
-      - id: hassfest
-        name: hassfest
-        entry: script/run-in-env.sh python3 -m script.hassfest
-        pass_filenames: false
-        language: script
-        types: [text]
-        files: ^(homeassistant/.+/(manifest|strings)\.json|\.coveragerc)$

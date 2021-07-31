@@ -149,7 +149,7 @@ class EntityManager:
         available_schedules = self.api.data.get("schedules", [])
         is_admin = self.api.data.get("admin", False)
         allowed_profile = config_data.allowed_profile
-        allowed_schedule = config_data.allowed_schedule        
+        allowed_schedule = config_data.allowed_schedule
 
         if is_admin and (allowed_profile is None or len(allowed_profile) > 0) and (allowed_schedule is None or len(allowed_schedule) > 0) :
             for profile_name in available_profiles:
@@ -161,7 +161,7 @@ class EntityManager:
                 schedule_id = available_schedules.index(schedule_name)
 
                 if allowed_schedule is None or str(schedule_id) in allowed_schedule:
-                    self.generate_schedule_switch(schedule_name)                    
+                    self.generate_schedule_switch(schedule_name)
 
         mqtt_binary_sensors = []
         for camera in available_camera:

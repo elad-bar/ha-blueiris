@@ -36,7 +36,7 @@ SSL | Check-box | + | Unchecked | Is SSL supported?
 Username | Textbox | - | | Username of admin user for BlueIris server
 Password | Textbox | - | | Password of admin user for BlueIris server
 
-###### Integration options (Configuration -> Integrations -> BlueIris Integration -> Options)  
+###### Integration options (Configuration -> Integrations -> BlueIris Integration -> Options)
 Fields name | Type | Required | Default | Description
 --- | --- | --- | --- | --- |
 Host | Texbox | + | ast stored hostname | Hostname or IP address of the BlueIris server
@@ -47,7 +47,7 @@ Password | Textbox | - | Last stored password | Password of admin user for BlueI
 Clear credentials | Check-box | + | Unchecked | Workaround to clear the username & password since there is not support for optional fields (Not being stored under options)
 Generate configurations | Check-box | + | Unchecked |  Will take generate store and configuration for HA, more details below (Not being stored under options)
 Log level | Drop-down | + | Default | Changes component's log level (more details below)
-Reset components settings to default | Check-box | + | Unchecked |  Will reset drown-downs of componet's creation to their default (Not being stored under options) 
+Reset components settings to default | Check-box | + | Unchecked |  Will reset drown-downs of componet's creation to their default (Not being stored under options)
 Camera components | Drop-down | - | All camera | Will create camera for each of the chosen camera
 Motion sensors | Drop-down | - | All non-system camera | Will create binary sensor for each of the chosen camera
 Connectivity sensors | Drop-down | - | All non-system camera | Will create connectivity binary sensor for each of the chosen camera
@@ -109,8 +109,8 @@ Please remove the integration and re-add it to make it work again.
 ###### Binary Sensor - Alerts
 Represents whether there is an active alert or not
 
-Attributes | 
---- | 
+Attributes |
+--- |
 Active alerts # |
 System name |
 Version |
@@ -138,8 +138,8 @@ Represents whether the camera is triggered for external / ONVIF event or not (ba
 ###### Camera
 State: Idle
 
-Attributes | 
---- | 
+Attributes |
+--- |
 FPS |
 Audio support |
 Width |

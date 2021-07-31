@@ -35,7 +35,7 @@
                   "generate-config-files": "Generate configuration files",
                   "allowed_camera": "Camera components",
                   "allowed_profile": "Profile switches",
-                  "allowed_schedule": "Schedule switches",                  
+                  "allowed_schedule": "Schedule switches",
                   "allowed_motion_sensor": "Motion sensors",
                   "allowed_audio_sensor": "Audio sensors",
                   "allowed_connectivity_sensor": "Connectivity sensors",
