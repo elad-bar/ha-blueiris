@@ -58,7 +58,7 @@ class BlueIrisMainBinarySensor(BinarySensorEntity, BlueIrisEntity):
             self.remove_subscription()
             self.remove_subscription = None
 
-    def _state_message_received(self, message: Message):
+    def _state_message_received(self, message: ReceiveMessage):
         topic = message.topic
         payload = json.loads(message.payload)
 
