@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..helpers.const import *
 
 
@@ -12,7 +14,7 @@ class EntityData:
     status: str
     topic: str
     event: str
-    device_class: str
+    binary_sensor_device_class: Optional[BinarySensorDeviceClass]
     type: str
     details: dict
     disabled: bool
@@ -28,7 +30,7 @@ class EntityData:
         self.status = ENTITY_STATUS_CREATED
         self.topic = ""
         self.event = ""
-        self.device_class = ""
+        self.binary_sensor_device_class = None
         self.type = ""
         self.details = {}
         self.disabled = False
@@ -45,7 +47,7 @@ class EntityData:
             ENTITY_STATUS: self.status,
             ENTITY_TOPIC: self.topic,
             ENTITY_EVENT: self.event,
-            ENTITY_DEVICE_CLASS: self.device_class,
+            ENTITY_BINARY_SENSOR_DEVICE_CLASS: self.binary_sensor_device_class,
             ENTITY_BINARY_SENSOR_TYPE: self.type,
             ENTITY_CAMERA_DETAILS: self.details,
             ENTITY_DISABLED: self.disabled,

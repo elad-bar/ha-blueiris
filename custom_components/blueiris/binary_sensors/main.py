@@ -29,6 +29,11 @@ class BlueIrisMainBinarySensor(BinarySensorEntity, BlueIrisEntity):
         return self.entity.state
 
     @property
+    def device_class(self) -> BinarySensorDeviceClass:
+        """Return the class of this sensor."""
+        return self.entity.binary_sensor_device_class
+
+    @property
     def force_update(self):
         """Force update."""
         return DEFAULT_FORCE_UPDATE

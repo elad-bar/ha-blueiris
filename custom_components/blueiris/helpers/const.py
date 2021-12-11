@@ -7,7 +7,10 @@ from datetime import timedelta
 
 import voluptuous as vol
 
-from homeassistant.components.binary_sensor import DOMAIN as DOMAIN_BINARY_SENSOR
+from homeassistant.components.binary_sensor import (
+    DOMAIN as DOMAIN_BINARY_SENSOR,
+    BinarySensorDeviceClass,
+)
 from homeassistant.components.camera import DOMAIN as DOMAIN_CAMERA
 from homeassistant.components.switch import DOMAIN as DOMAIN_SWITCH
 from homeassistant.const import (
@@ -123,15 +126,13 @@ SENSOR_AUDIO_NAME = "Audio"
 SENSOR_MAIN_NAME = "Main"
 
 NEGATIVE_SENSOR_STATE = [SENSOR_CONNECTIVITY_NAME]
-CAMERA_SENSORS = [
-    SENSOR_MOTION_NAME,
-    SENSOR_CONNECTIVITY_NAME,
-    SENSOR_EXTERNAL_NAME,
-    SENSOR_DIO_NAME,
-    SENSOR_AUDIO_NAME,
-]
-
-SENSOR_DEVICE_CLASS = {SENSOR_AUDIO_NAME: "sound"}
+CAMERA_SENSORS = {
+    SENSOR_MOTION_NAME: BinarySensorDeviceClass.MOTION,
+    SENSOR_CONNECTIVITY_NAME: BinarySensorDeviceClass.CONNECTIVITY,
+    SENSOR_EXTERNAL_NAME: BinarySensorDeviceClass.PRESENCE,
+    SENSOR_DIO_NAME: BinarySensorDeviceClass.PLUG,
+    SENSOR_AUDIO_NAME: BinarySensorDeviceClass.SOUND,
+}
 
 MQTT_MESSAGE_TRIGGER = "trigger"
 MQTT_MESSAGE_TYPE = "type"
@@ -202,7 +203,7 @@ ENTITY_ICON = "icon"
 ENTITY_UNIQUE_ID = "unique-id"
 ENTITY_EVENT = "event-type"
 ENTITY_TOPIC = "topic"
-ENTITY_DEVICE_CLASS = "device-class"
+ENTITY_BINARY_SENSOR_DEVICE_CLASS = "binary-sensor-device-class"
 ENTITY_DEVICE_NAME = "device-name"
 ENTITY_CAMERA_DETAILS = "camera-details"
 ENTITY_BINARY_SENSOR_TYPE = "binary-sensor-type"

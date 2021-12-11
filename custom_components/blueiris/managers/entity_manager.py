@@ -401,6 +401,7 @@ class EntityManager:
             entity.icon = DEFAULT_ICON
             entity.device_name = device_name
             entity.type = SENSOR_MAIN_NAME
+            entity.binary_sensor_device_class = BinarySensorDeviceClass.PROBLEM
         except Exception as ex:
             self.log_exception(ex, "Failed to get main binary sensor")
 
@@ -430,7 +431,7 @@ class EntityManager:
 
             state = self.get_mqtt_state(state_topic, sensor_type_name, default_state)
 
-            device_class = SENSOR_DEVICE_CLASS.get(sensor_type_name, sensor_type_name)
+            device_class = CAMERA_SENSORS.get(sensor_type_name)
 
             attributes = {ATTR_FRIENDLY_NAME: entity_name}
 
@@ -445,7 +446,7 @@ class EntityManager:
             entity.device_name = device_name
             entity.topic = state_topic
             entity.event = sensor_type_name
-            entity.device_class = device_class.lower()
+            entity.binary_sensor_device_class = device_class
             entity.type = sensor_type_name
         except Exception as ex:
             self.log_exception(
@@ -458,7 +459,7 @@ class EntityManager:
         entities = []
 
         try:
-            for sensor_type_name in CAMERA_SENSORS:
+            for sensor_type_name in CAMERA_SENSORS.keys():
                 if self.config_manager.is_allowed_sensor(camera, sensor_type_name):
                     entity = self.get_camera_entity(camera, sensor_type_name)
 

@@ -1,0 +1,6 @@
+pre-commit
+homeassistant>=2021.12.0b6
+aiohttp
+voluptuous
+PyYAML
+cryptography

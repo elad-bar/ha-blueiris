@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+- Upgraded code to support breaking changes of HA v2012.12.0
+
 ## 2021-07-31 (1.0.6)
 
 **Fixed bugs:**
