@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 
@@ -29,7 +31,7 @@ class BlueIrisMainBinarySensor(BinarySensorEntity, BlueIrisEntity):
         return self.entity.state
 
     @property
-    def device_class(self) -> BinarySensorDeviceClass:
+    def device_class(self) -> BinarySensorDeviceClass | str | None:
         """Return the class of this sensor."""
         return self.entity.binary_sensor_device_class
 

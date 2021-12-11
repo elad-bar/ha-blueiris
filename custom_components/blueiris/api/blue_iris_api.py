@@ -82,7 +82,7 @@ class BlueIrisApi:
 
         try:
             async with self.session.post(
-                self.url, data=json.dumps(data), ssl=False
+                    self.url, data=json.dumps(data), ssl=False
             ) as response:
                 _LOGGER.debug(f"Status of {self.url}: {response.status}")
 
@@ -262,10 +262,12 @@ class BlueIrisApi:
 
             for key in data:
                 self.status[key] = data[key]
+
     async def set_schedule(self, schedule_name):
         _LOGGER.info("Setting schedule (#{schedule_name})")
 
         await self._set_schedule(schedule_name)
+
     async def _set_schedule(self, schedule_name, check_lock=True):
         request_data = {
             "cmd": "status",

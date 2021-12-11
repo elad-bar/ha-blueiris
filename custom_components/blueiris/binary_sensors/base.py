@@ -3,6 +3,8 @@ Support for Blue Iris binary sensors.
 For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/binary_sensor.blueiris/
 """
+from __future__ import annotations
+
 import logging
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
@@ -37,7 +39,7 @@ class BlueIrisBinarySensor(BinarySensorEntity, BlueIrisEntity):
         return self.entity.state
 
     @property
-    def device_class(self) -> BinarySensorDeviceClass:
+    def device_class(self) -> BinarySensorDeviceClass | str | None:
         """Return the class of this sensor."""
         return self.entity.binary_sensor_device_class
 
