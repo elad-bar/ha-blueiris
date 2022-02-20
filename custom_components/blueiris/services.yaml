@@ -1,0 +1,6 @@
+trigger_camera:
+  name: Trigger Camera
+  description: Triggers a camera
+  target:
+     device:
+        integration: blueiris

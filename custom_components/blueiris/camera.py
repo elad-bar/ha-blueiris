@@ -14,6 +14,7 @@ from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.const import CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import TemplateError
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .helpers.const import *
@@ -31,7 +32,14 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Camera."""
     await async_setup_base_entry(
         hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_camera
+        )    
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+       SERVICE_TRIGGER_CAMERA,
+       {},
+       SERVICE_TRIGGER_CAMERA,
     )
+
 
 
 async def async_unload_entry(hass, config_entry):
@@ -142,3 +150,6 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
     async def stream_source(self):
         """Return the source of the stream."""
         return self._stream_source
+
+    async def trigger_camera(self):
+        await self.api.trigger_camera(self.entity.id)

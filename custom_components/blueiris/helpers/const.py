@@ -33,6 +33,7 @@ CONF_ALLOWED_AUDIO_SENSOR = "allowed_audio_sensor"
 CONF_ALLOWED_CONNECTIVITY_SENSOR = "allowed_connectivity_sensor"
 CONF_ALLOWED_DIO_SENSOR = "allowed_dio_sensor"
 CONF_ALLOWED_EXTERNAL_SENSOR = "allowed_external_sensor"
+CONF_CAMERA_NAME = "camera_name"
 
 CONF_SUPPORT_STREAM = "support_stream"
 
@@ -83,6 +84,8 @@ JSON_DATA_FILE = f"custom_components/{DOMAIN}/data/[NAME].json"
 
 DOMAIN_LOGGER = "logger"
 SERVICE_SET_LEVEL = "set_level"
+SERVICE_TRIGGER_CAMERA = "trigger_camera"
+
 
 ATTR_ADMIN_PROFILE = "Profile"
 ATTR_ADMIN_SCHEDULE = "Schedule"
