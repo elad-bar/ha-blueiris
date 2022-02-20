@@ -2,5 +2,6 @@ trigger_camera:
   name: Trigger Camera
   description: Triggers a camera
   target:
-     device:
+     entity:
         integration: blueiris
+        domain: camera
