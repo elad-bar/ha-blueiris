@@ -33,7 +33,6 @@ CONF_ALLOWED_AUDIO_SENSOR = "allowed_audio_sensor"
 CONF_ALLOWED_CONNECTIVITY_SENSOR = "allowed_connectivity_sensor"
 CONF_ALLOWED_DIO_SENSOR = "allowed_dio_sensor"
 CONF_ALLOWED_EXTERNAL_SENSOR = "allowed_external_sensor"
-CONF_CAMERA_NAME = "camera_name"
 
 CONF_SUPPORT_STREAM = "support_stream"
 
