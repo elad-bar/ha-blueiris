@@ -291,7 +291,7 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
 	async def trigger_camera(self, camera_short_name):
-		_LOGGER.info("Triggering camera (#{camera_short_name})")
+		_LOGGER.info(f"Triggering camera {camera_short_name}")
 
 		request_data = {
 			"cmd": "trigger",
