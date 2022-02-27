@@ -537,7 +537,7 @@ class EntityManager:
 
             for key in ATTR_BLUE_IRIS_CAMERA:
                 key_name = ATTR_BLUE_IRIS_CAMERA[key]
-                attributes[key_name] = camera.data.get(key, "N/A")
+                attributes[key_name] = camera.data.get(key, NOT_AVAILABLE)
 
             entity = EntityData()
 
