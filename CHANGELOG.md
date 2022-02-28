@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9
+
+- New Feature: Added a service (Trigger Camera) for triggering cameras and camera groups
+
 ## 1.0.8
 
 - Fix for 2021.9.0 Breaking Change: Custom integrations: Cameras* [\#127](https://github.com/elad-bar/ha-blueiris/issues/127)
