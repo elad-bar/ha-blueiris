@@ -152,7 +152,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         """Return the source of the stream."""
         return self._stream_source
 
-    async def trigger_camera(self): 
+    async def trigger_camera(self):
         if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
             await self.api.trigger_camera(self.entity.id)
         else:
