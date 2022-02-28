@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.8
+
+- Fix for 2021.9.0 Breaking Change: Custom integrations: Cameras* [\#127](https://github.com/elad-bar/ha-blueiris/issues/127)
+- Fixed Info logging message when setting profile and schedule
+
 ## 1.0.7
 
 - Upgraded code to support breaking changes of HA v2012.12.0
@@ -7,53 +12,53 @@
 ## 2021-07-31 (1.0.6)
 
 **Fixed bugs:**
-- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-bleuiris/issues/120)
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
 
 ## 2021-07-31 (1.0.6b2)
 
 **Fixed bugs:**
-- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-bleuiris/issues/120)
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
 
 ## 2021-07-30 (1.0.6b1)
 
 **Fixed bugs:**
-- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-bleuiris/issues/120)
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
 
 ## 2021-02-16
 
 **Fixed bugs:**
 
-- Fix FPS for H264's stream to be aligned with camera settings [\#83](https://github.com/elad-bar/ha-bleuiris/issues/83)
+- Fix FPS for H264's stream to be aligned with camera settings [\#83](https://github.com/elad-bar/ha-blueiris/issues/83)
 
 ## 2021-01-31
 
 **Fixed bugs:**
 
-- Fix error adding entities for domain binary_sensor with platform blueiris [\#100](https://github.com/elad-bar/ha-bleuiris/issues/100)
+- Fix error adding entities for domain binary_sensor with platform blueiris [\#100](https://github.com/elad-bar/ha-blueiris/issues/100)
 
 ## 2021-01-30
 
 **Fixed bugs:**
 
-- Fix issue on initial install (HA v2012.2b) [\#98](https://github.com/elad-bar/ha-bleuiris/issues/98)
+- Fix issue on initial install (HA v2012.2b) [\#98](https://github.com/elad-bar/ha-blueiris/issues/98)
 
 ## 2020-09-17
 
 **Fixed bugs:**
 
-- Integration setup errors caused by invalid credentials (User input malformed / Unknown error occurred) [\#79](https://github.com/elad-bar/ha-bleuiris/issues/79) [\#81](https://github.com/elad-bar/ha-bleuiris/issues/81)
+- Integration setup errors caused by invalid credentials (User input malformed / Unknown error occurred) [\#79](https://github.com/elad-bar/ha-blueiris/issues/79) [\#81](https://github.com/elad-bar/ha-blueiris/issues/81)
 
 ## 2020-08-08
 
 **Implemented enhancements:**
 
-- New integration's option to control whether the camera component is using the `Stream` component or not, requires restart, default is without `Stream` support [\#75](https://github.com/elad-bar/ha-bleuiris/issues/75)
+- New integration's option to control whether the camera component is using the `Stream` component or not, requires restart, default is without `Stream` support [\#75](https://github.com/elad-bar/ha-blueiris/issues/75)
 
 ## 2020-07-23 #2
 
 **Fixed bugs:**
 
-- Fixed Is Online: N/A [\#77](https://github.com/elad-bar/ha-bleuiris/issues/77)
+- Fixed Is Online: N/A [\#77](https://github.com/elad-bar/ha-blueiris/issues/77)
 
 ## 2020-07-23
 
@@ -88,7 +93,7 @@
 
 **Implemented enhancements:**
 
-- Added ability to set stream type in integration's options (Originally was hard-coded), Default=H264, initiated due to [\#75](https://github.com/elad-bar/ha-bleuiris/issues/75)
+- Added ability to set stream type in integration's options (Originally was hard-coded), Default=H264, initiated due to [\#75](https://github.com/elad-bar/ha-blueiris/issues/75)
 - Upgrade pre-commit to 2.6.0
 - Fix pre-commit errors (F541 f-string is missing placeholders)
 - Added support for External and DIO events (Related to #74)
@@ -99,7 +104,7 @@
 
 **Fixed bugs:**
 
-- Profile Switch [\#70](https://github.com/elad-bar/ha-bleuiris/issues/70) - Set lock=1 (Schedule=HOLD) when changing profile to lock the profile as set in switch
+- Profile Switch [\#70](https://github.com/elad-bar/ha-blueiris/issues/70) - Set lock=1 (Schedule=HOLD) when changing profile to lock the profile as set in switch
 
 **Implemented enhancements:**
 
@@ -110,7 +115,7 @@
 
 **Fixed bugs:**
 
-- BinarySensorDevice is deprecated [\#69](https://github.com/elad-bar/ha-bleuiris/issues/69)
+- BinarySensorDevice is deprecated [\#69](https://github.com/elad-bar/ha-blueiris/issues/69)
 
 ## 2020-05-01
 
@@ -149,7 +154,7 @@
 **Fixed bugs:**
 
 - Removed limitation of one instance only
-- Fix [\#62](https://github.com/elad-bar/ha-bleuiris/issues/62) disabled entities are getting enabled after periodic update (update interval)
+- Fix [\#62](https://github.com/elad-bar/ha-blueiris/issues/62) disabled entities are getting enabled after periodic update (update interval)
 
 ## 2020-04-25 #2
 
@@ -166,13 +171,13 @@
 
 **Fixed bugs:**
 
-- Fix [\#60](https://github.com/elad-bar/ha-bleuiris/issues/60) configuration generating process and README links
+- Fix [\#60](https://github.com/elad-bar/ha-blueiris/issues/60) configuration generating process and README links
 
 ## 2020-04-24 #2
 
 **Fixed bugs:**
 
-- Fix [\#56](https://github.com/elad-bar/ha-bleuiris/issues/51) moved dependency on MQTT to optional
+- Fix [\#56](https://github.com/elad-bar/ha-blueiris/issues/51) moved dependency on MQTT to optional
 - Fix missing resources
 
 ## 2020-04-24 #1
@@ -185,13 +190,13 @@
 
 **Fixed bugs:**
 
-- Added validation if state is not available to restore it [\#54](https://github.com/elad-bar/ha-bleuiris/issues/54)
+- Added validation if state is not available to restore it [\#54](https://github.com/elad-bar/ha-blueiris/issues/54)
 
 ## 2020-04-19
 
 **Fixed bugs:**
 
-- Fix issue [\#51](https://github.com/elad-bar/ha-bleuiris/issues/51) in config_flow
+- Fix issue [\#51](https://github.com/elad-bar/ha-blueiris/issues/51) in config_flow
 - Validation of server existence made 2 calls to server instead of 1
 
 ## 2020-04-18
@@ -221,7 +226,7 @@
 
 **Fixed bugs:**
 
-- Fix issue [\#37](https://github.com/elad-bar/ha-bleuiris/issues/37) - Restart of HASS causes all entities to be renamed to defaults <br/>
+- Fix issue [\#37](https://github.com/elad-bar/ha-blueiris/issues/37) - Restart of HASS causes all entities to be renamed to defaults <br/>
   improving the way the component is loading, unloading and discover new entities (sensors, camera and switch).  <br/>
   the main issue as reported in the past was that once changing the entity_id / name it will return to the original after restart.  <br/>
   another issue that caused by the way it was handled, upon changing the options (settings) - it took few seconds to present the new entities and sometimes it happened only after restart.  <br/>
@@ -231,9 +236,9 @@
 
 **Fixed bugs:**
 
-- Removed hard-dependency on MQTT, if MQTT integration was not set, binary sensors will not be created - Issue [\#32](https://github.com/elad-bar/ha-bleuiris/issues/32)
-- Fix issue [\#28](https://github.com/elad-bar/ha-bleuiris/issues/28) - entities not available after restart
-- Fix issue [\#27](https://github.com/elad-bar/ha-bleuiris/issues/27) - when changing switch it doesn't work smoothly and after restart
+- Removed hard-dependency on MQTT, if MQTT integration was not set, binary sensors will not be created - Issue [\#32](https://github.com/elad-bar/ha-blueiris/issues/32)
+- Fix issue [\#28](https://github.com/elad-bar/ha-blueiris/issues/28) - entities not available after restart
+- Fix issue [\#27](https://github.com/elad-bar/ha-blueiris/issues/27) - when changing switch it doesn't work smoothly and after restart
 - Resources (strings) fixed
 
 
