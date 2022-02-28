@@ -32,7 +32,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Camera."""
     await async_setup_base_entry(
         hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_camera
-        )    
+        )
     platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
        SERVICE_TRIGGER_CAMERA,
