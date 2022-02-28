@@ -32,6 +32,9 @@ class BlueIrisApi:
     config_manager: ConfigManager
     base_url: str
     url: str
+    #temporary until it is added to Status cmd response as it should be since it can change  
+    version: str
+    #temporary
 
     def __init__(self, hass: HomeAssistant, config_manager: ConfigManager):
         try:
@@ -118,7 +121,7 @@ class BlueIrisApi:
             self.is_logged_in = False
             self.data = {}
             self.status = {}
-            self.camera_list = []
+            self.camera_list = []            
 
             if self.hass is None:
                 if self.session is not None:
@@ -195,6 +198,9 @@ class BlueIrisApi:
                         for key in data:
                             self.data[key] = data[key]
 
+                        #temporary workaround. Storing it here to then set a value in the dict in the status cmd. It should be in the status cmd response by default
+                        self.version = self.data["version"]
+
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
@@ -235,6 +241,10 @@ class BlueIrisApi:
 
             for key in data:
                 self.status[key] = data[key]
+        #This is just a temporary workaround hopefully. I have requested Version  to be added to the Status cmd response 
+        self.status["version"] = self.version
+        #end workaround
+
 
     async def set_profile(self, profile_id):
         _LOGGER.info("Setting profile (#{profile_id})")

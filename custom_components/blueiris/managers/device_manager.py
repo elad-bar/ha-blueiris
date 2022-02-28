@@ -72,11 +72,22 @@ class DeviceManager:
 
         return device_name
 
+    def get_camera_device_model(self, camera: CameraData):
+        if(camera.type is not None):
+           if(camera.type == BI_CAMERA_TYPE_NETWORK_IP):
+               camera_type = "Network IP "
+           elif(camera.type == BI_CAMERA_TYPE_BROADCAST):
+               camera_type = "Broadcast "
+           else:
+               camera_type = ""
+        else:
+            camera_type = ""
+        return camera_type + "Camera"
+
     def generate_system_device(self):
         server_status = self._api.status
 
         version = server_status.get("version")
-
         device_name = self.get_system_device_name()
 
         device_info = {
@@ -91,12 +102,13 @@ class DeviceManager:
 
     def generate_camera_device(self, camera: CameraData):
         device_name = self.get_camera_device_name(camera)
+        device_model = self.get_camera_device_model(camera) 
 
         device_info = {
             "identifiers": {(DEFAULT_NAME, device_name)},
             "name": device_name,
             "manufacturer": DEFAULT_NAME,
-            "model": "Camera",
+            "model": device_model,
         }
 
         self.set(device_name, device_info)

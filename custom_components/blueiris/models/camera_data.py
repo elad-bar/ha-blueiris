@@ -9,6 +9,7 @@ class CameraData:
     is_group: bool
     is_system: bool
     group_cameras: dict
+    type: str
     data: dict
 
     def __init__(self, camera):
@@ -21,6 +22,7 @@ class CameraData:
         if self.is_group:
             self.group_cameras = camera.get(BI_ATTR_GROUP)
         self.is_system = self.id in SYSTEM_CAMERA_ID
+        self.type = camera.get(BI_ATTR_TYPE)
 
     def __repr__(self):
         obj = {
@@ -32,6 +34,8 @@ class CameraData:
             CAMERA_IS_GROUP: self.is_group,
             CAMERA_DATA: self.data,
             CAMERA_GROUP_CAMERAS: self.group_cameras,
+            CAMERA_TYPE: self.type,
+
         }
 
         to_string = f"{obj}"
