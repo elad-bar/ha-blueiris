@@ -5,3 +5,4 @@ trigger_camera:
      entity:
         integration: blueiris
         domain: camera
+        
