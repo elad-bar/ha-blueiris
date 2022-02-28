@@ -241,7 +241,7 @@ class BlueIrisApi:
 
 
     async def set_profile(self, profile_id):
-        _LOGGER.info("Setting profile (#{profile_id})")
+        _LOGGER.info(f"Setting profile {profile_id}")
 
         await self._set_profile(profile_id)
 
@@ -268,7 +268,7 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
     async def set_schedule(self, schedule_name):
-        _LOGGER.info("Setting schedule (#{schedule_name})")
+        _LOGGER.info(f"Setting schedule {schedule_name}")
 
         await self._set_schedule(schedule_name)
 

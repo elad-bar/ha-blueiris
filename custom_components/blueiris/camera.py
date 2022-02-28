@@ -6,6 +6,7 @@ https://home-assistant.io/components/camera.blueiris/
 from abc import ABC
 import asyncio
 import logging
+from typing import Optional
 
 import aiohttp
 import async_timeout
@@ -116,13 +117,13 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         """Return the interval between frames of the mjpeg stream."""
         return self._frame_interval
 
-    def camera_image(self):
+    def camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> Optional[bytes]:
         """Return bytes of camera image."""
         return asyncio.run_coroutine_threadsafe(
             self.async_camera_image(), self.hass.loop
         ).result()
 
-    async def async_camera_image(self):
+    async def async_camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> Optional[bytes]:
         """Return a still image response from the camera."""
         try:
             url = self._still_image_url.async_render()
