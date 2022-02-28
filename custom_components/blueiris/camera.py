@@ -92,7 +92,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
         self._last_url = None
         self._last_image = None
-        
+
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
