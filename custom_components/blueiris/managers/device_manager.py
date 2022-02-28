@@ -60,16 +60,19 @@ class DeviceManager:
 
     def get_system_device_name(self):
         title = self.config_manager.config_entry.title
-
         device_name = f"{title} Server"
-
         return device_name
+
+    def get_system_device_version(self):
+        if self._api.data.get("version") is not None:
+            device_version = self._api.data.get("version")
+        else:
+            device_version = "0.0.0.0"   
+        return device_version    
 
     def get_camera_device_name(self, camera: CameraData):
         title = self.config_manager.config_entry.title
-
         device_name = f"{title} {camera.name} ({camera.id})"
-
         return device_name
 
     def get_camera_device_model(self, camera: CameraData):
@@ -85,9 +88,7 @@ class DeviceManager:
         return camera_type + "Camera"
 
     def generate_system_device(self):
-        server_status = self._api.status
-
-        version = server_status.get("version")
+        version = self.get_system_device_version()
         device_name = self.get_system_device_name()
 
         device_info = {

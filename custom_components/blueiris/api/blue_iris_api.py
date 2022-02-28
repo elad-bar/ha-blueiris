@@ -197,10 +197,7 @@ class BlueIrisApi:
 
                         for key in data:
                             self.data[key] = data[key]
-
-                        #temporary workaround. Storing it here to then set a value in the dict in the status cmd. It should be in the status cmd response by default
-                        self.version = self.data["version"]
-
+ 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
@@ -240,10 +237,7 @@ class BlueIrisApi:
             data = response.get("data", {})
 
             for key in data:
-                self.status[key] = data[key]
-        #This is just a temporary workaround hopefully. I have requested Version  to be added to the Status cmd response 
-        self.status["version"] = self.version
-        #end workaround
+                self.status[key] = data[key]        
 
 
     async def set_profile(self, profile_id):
