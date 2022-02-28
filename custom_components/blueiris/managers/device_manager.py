@@ -67,8 +67,8 @@ class DeviceManager:
         if self._api.data.get("version") is not None:
             device_version = self._api.data.get("version")
         else:
-            device_version = "0.0.0.0"   
-        return device_version    
+            device_version = "0.0.0.0"
+        return device_version
 
     def get_camera_device_name(self, camera: CameraData):
         title = self.config_manager.config_entry.title
@@ -103,7 +103,7 @@ class DeviceManager:
 
     def generate_camera_device(self, camera: CameraData):
         device_name = self.get_camera_device_name(camera)
-        device_model = self.get_camera_device_model(camera) 
+        device_model = self.get_camera_device_model(camera)
 
         device_info = {
             "identifiers": {(DEFAULT_NAME, device_name)},

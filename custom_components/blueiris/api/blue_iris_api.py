@@ -32,7 +32,7 @@ class BlueIrisApi:
     config_manager: ConfigManager
     base_url: str
     url: str
-    #temporary until it is added to Status cmd response as it should be since it can change  
+    #temporary until it is added to Status cmd response as it should be since it can change
     version: str
     #temporary
 
@@ -121,7 +121,7 @@ class BlueIrisApi:
             self.is_logged_in = False
             self.data = {}
             self.status = {}
-            self.camera_list = []            
+            self.camera_list = []
 
             if self.hass is None:
                 if self.session is not None:
@@ -197,7 +197,7 @@ class BlueIrisApi:
 
                         for key in data:
                             self.data[key] = data[key]
- 
+
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
@@ -237,7 +237,7 @@ class BlueIrisApi:
             data = response.get("data", {})
 
             for key in data:
-                self.status[key] = data[key]        
+                self.status[key] = data[key]
 
 
     async def set_profile(self, profile_id):

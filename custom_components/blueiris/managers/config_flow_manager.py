@@ -448,7 +448,7 @@ class ConfigFlowManager:
                 _LOGGER.warning(
                     f"Failed to login BlueIris ({config_data.host}) due to invalid credentials"
                 )
-                errors = {"base": "invalid_admin_credentials"}            
+                errors = {"base": "invalid_admin_credentials"}
 
             if api.data.get("system name") is not None:
                 self.title = api.data.get("system name")
