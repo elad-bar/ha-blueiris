@@ -4,6 +4,7 @@ For more details about this platform, please refer to the documentation at
 https://home-assistant.io/components/switch.blueiris/
 """
 from datetime import timedelta
+from http.client import NOT_ACCEPTABLE
 
 import voluptuous as vol
 
@@ -40,13 +41,17 @@ BI_ATTR_NAME = "optionDisplay"
 BI_ATTR_ID = "optionValue"
 BI_ATTR_AUDIO = "audio"
 BI_ATTR_IS_ONLINE = "isOnline"
+BI_ATTR_GROUP = "group"
 
-BI_NON_GENERIC_ATTRIBUTES = [BI_ATTR_NAME, BI_ATTR_ID, BI_ATTR_AUDIO, BI_ATTR_IS_ONLINE]
+BI_NON_GENERIC_ATTRIBUTES = [BI_ATTR_NAME, BI_ATTR_ID, BI_ATTR_AUDIO, BI_ATTR_IS_ONLINE, BI_ATTR_GROUP]
 
 CAMERA_HAS_AUDIO = "has_audio"
 CAMERA_IS_ONLINE = "is_online"
 CAMERA_IS_SYSTEM = "is_system"
+CAMERA_IS_GROUP = "is_group"
+CAMERA_GROUP_CAMERAS = "group_cameras"
 CAMERA_DATA = "data"
+
 
 CONF_ARR = [CONF_USERNAME, CONF_PASSWORD, CONF_HOST, CONF_PORT, CONF_SSL]
 
@@ -78,11 +83,15 @@ DATA_BLUEIRIS_HA_ENTITIES = f"{DATA_BLUEIRIS}_HA_Entities"
 DEFAULT_NAME = "BlueIris"
 DEFAULT_PORT = 80
 
+NOT_AVAILABLE = "N/A"
+
 DOMAIN_KEY_FILE = f"{DOMAIN}.key"
 JSON_DATA_FILE = f"custom_components/{DOMAIN}/data/[NAME].json"
 
 DOMAIN_LOGGER = "logger"
 SERVICE_SET_LEVEL = "set_level"
+SERVICE_TRIGGER_CAMERA = "trigger_camera"
+
 
 ATTR_ADMIN_PROFILE = "Profile"
 ATTR_ADMIN_SCHEDULE = "Schedule"
@@ -145,21 +154,36 @@ CONFIG_OPTIONS = "options"
 CONFIG_CONDITIONS = "conditions"
 CONFIG_ITEMS = "items"
 
+BI_CAMERA_ATTR_FPS = "FPS"
+BI_CAMERA_ATTR_AUDIO_SUPPORT = "Audio Support"
+BI_CAMERA_ATTR_WIDTH = "Width"
+BI_CAMERA_ATTR_HEIGHT = "Height"
+BI_CAMERA_ATTR_IS_ONLINE = "Is Online"
+BI_CAMERA_ATTR_IS_RECORDING = "Is Recording"
+BI_CAMERA_ATTR_ISSUE = "Issue"
+BI_CAMERA_ATTR_ALERTS_HASH = "Alerts #"
+BI_CAMERA_ATTR_TRIGGERS_HASH = "Triggers #"
+BI_CAMERA_ATTR_CLIPS_HASH = "Clips #"
+BI_CAMERA_ATTR_NO_SIGNAL_HASH = "No Signal #"
+BI_CAMERA_ATTR_ERROR = "Error"
+BI_CAMERA_ATTR_GROUP_CAMERAS = "Group Cameras"
+
 ATTR_BLUE_IRIS_CAMERA = {
     "optionDisplay": CONF_NAME,
     "optionValue": CONF_ID,
-    "FPS": "FPS",
-    "audio": "Audio support",
-    "width": "Width",
-    "height": "Height",
-    "isOnline": "Is Online",
-    "isRecording": "Is Recording",
-    "isYellow": "Issue",
-    "nAlerts": "Alerts #",
-    "nTriggers": "Triggers #",
-    "nClips": "Clips #",
-    "nNoSignal": "No Signal #",
-    "error": "Error",
+    "FPS": BI_CAMERA_ATTR_FPS,
+    "audio": BI_CAMERA_ATTR_AUDIO_SUPPORT,
+    "width": BI_CAMERA_ATTR_WIDTH,
+    "height": BI_CAMERA_ATTR_HEIGHT,
+    "isOnline": BI_CAMERA_ATTR_IS_ONLINE,
+    "isRecording": BI_CAMERA_ATTR_IS_RECORDING,
+    "isYellow": BI_CAMERA_ATTR_ISSUE,
+    "nAlerts": BI_CAMERA_ATTR_ALERTS_HASH,
+    "nTriggers": BI_CAMERA_ATTR_TRIGGERS_HASH,
+    "nClips": BI_CAMERA_ATTR_CLIPS_HASH,
+    "nNoSignal": BI_CAMERA_ATTR_NO_SIGNAL_HASH,
+    "error": BI_CAMERA_ATTR_ERROR,
+    "group": BI_CAMERA_ATTR_GROUP_CAMERAS,
 }
 ATTR_BLUE_IRIS_STATUS = [
     "system name",

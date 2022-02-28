@@ -20,7 +20,7 @@ I switched to Shinobi Video, if there is an issue, feel free to report, suggest 
 #### Requirements
 - BlueIris Server available with a user
 - To control profiles, user must have 'admin' level permissions
-- MQTT Integration is optional - it will allow to listen to BlueIris event
+- MQTT Integration is optional - it will allow listening to BlueIris events
 - Read the [BlueIris manual](https://github.com/elad-bar/ha-blueiris/blob/master/docs/blueiris-server.md) for this component
 
 #### Installations via HACS
@@ -39,8 +39,8 @@ Password | Textbox | - | | Password of admin user for BlueIris server
 ###### Integration options (Configuration -> Integrations -> BlueIris Integration -> Options)
 Fields name | Type | Required | Default | Description
 --- | --- | --- | --- | --- |
-Host | Texbox | + | ast stored hostname | Hostname or IP address of the BlueIris server
-Port | Textbox | + | 0ast stored port | HTTP Port to access BlueIris server
+Host | Texbox | + | Last stored hostname | Hostname or IP address of the BlueIris server
+Port | Textbox | + | Last stored port | HTTP Port to access BlueIris server
 SSL | Check-box | + | Last stored SSL flag | Is SSL supported?
 Username | Textbox | - | Last stored username | Username of admin user for BlueIris server
 Password | Textbox | - | Last stored password | Password of admin user for BlueIris server
@@ -66,7 +66,7 @@ New feature to set the log level for the component without need to set log_level
 
 Upon startup or integration's option update, based on the value chosen, the component will make a service call to `logger.set_level` for that component with the desired value,
 
-In case `Default` option is chosen, flow will skip calling the service, after changing from any other option to `Default`, it will not take place automatically, only after restart
+ In case `Default` option is chosen the service call will not happen. Therefore after changing from any other option to `Default` a restart is required.
 
 **Control component's creation**
 New feature to control which of the components will be created:
@@ -88,9 +88,9 @@ Will create YAML with all the configurations in the config directory under bluei
 
 
 ###### Configuration validations
-Upon submitting the form of creating an integration or updating options,
+After submitting the form either for a new integration instance or updating options, the component will try to login to the BlueIris server to verify the new settings.
 
-Component will try to login to the BlueIris server to verify new settings, following errors can appear:
+The following errors can appear:
 - BlueIris integration ({host}) already configured
 - Invalid administrator credentials - credentials are invalid or user is not an admin
 - Invalid server details - Cannot reach the server
@@ -101,8 +101,7 @@ If a persistent notification popped up with the following message:
 Encryption key got corrupted, please remove the integration and re-add it
 ```
 
-It means that encryption key was modified from outside the code,
-Please remove the integration and re-add it to make it work again.
+It means that the encryption key was modified from outside the code and the integration will need to be removed and re-added.
 
 ## Components
 
@@ -152,20 +151,25 @@ Triggers # |
 Clips # |
 No Signal # |
 Error |
+Group Cameras (list of camera names if a group) |
+
 
 ###### Switch - Profile (Per profile)
-Allows to set the active profile, only one of the profile switches can be turned on at a time
+Allows setting the active profile, only one of the profile switches can be turned on at a time.
 
-If you are turning off one of the switch it will work according to the following order:
-Profile #1 turned off, will turn on Profile #0
-All the other profiles upon turning off, will turn on Profile #1
+If you turn off one of the switches it will behave as follows:
+* Profile #1 is turned off, it will turn on Profile #0
+* Any of the other profiles are turned off, it will turn on Profile #1
+
+###### Services
+Trigger Camera: Provides the ability to manually trigger a camera or camera group
 
 ## Lovelace UI Configuration
 [Example of UI layout](https://github.com/elad-bar/ha-blueiris/blob/master/docs/configs/casting/configuration.yaml)
 
 ## Casting
 
-Currently the Stream Component is a bit ragged to use to cast Blue Iris video streams, which don't need proxying.
+Currently the Stream Component is a bit too ragged to use to cast Blue Iris video streams, which don't need proxying.
 
 #### Lovelace UI for casting
 
