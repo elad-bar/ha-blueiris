@@ -17,7 +17,7 @@ class CameraData:
         self.name = camera.get(BI_ATTR_NAME)
         self.is_online = camera.get(BI_ATTR_IS_ONLINE, False)
         self.has_audio = camera.get(BI_ATTR_AUDIO, False)
-        self.data = camera		
+        self.data = camera
         self.is_group = True if(camera.get(BI_ATTR_GROUP) is not None) else False
         if self.is_group:
             self.group_cameras = camera.get(BI_ATTR_GROUP)

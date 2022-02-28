@@ -33,7 +33,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Camera."""
     await async_setup_base_entry(
         hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_camera
-        )    
+        )
     platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
        SERVICE_TRIGGER_CAMERA,
@@ -93,7 +93,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
         self._last_url = None
         self._last_image = None
-        
+
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
@@ -153,9 +153,9 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         """Return the source of the stream."""
         return self._stream_source
 
-    async def trigger_camera(self): 
-        if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:            
+    async def trigger_camera(self):
+        if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
             await self.api.trigger_camera(self.entity.id)
-        else:            
+        else:
             for grouped_camera in self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS]:
                 await self.api.trigger_camera(grouped_camera)
