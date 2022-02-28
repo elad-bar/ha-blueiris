@@ -298,4 +298,4 @@ class BlueIrisApi:
             "session": self.session_id,
             "camera" : camera_short_name
         }
-        await self.async_verified_post(request_data) 
+        await self.async_verified_post(request_data)

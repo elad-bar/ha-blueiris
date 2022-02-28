@@ -153,7 +153,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         return self._stream_source
 
     async def trigger_camera(self): 
-        if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:            
+        if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
             await self.api.trigger_camera(self.entity.id)
         else:            
             for grouped_camera in self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS]:
