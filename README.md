@@ -15,6 +15,7 @@ Integration with Blue Iris Video Security Software. Creates the following compon
 ## Component is no longer being maintained
 I switched to Shinobi Video, if there is an issue, feel free to report, suggest PR and I will approve it
 
+
 ## How to
 
 #### Requirements
@@ -163,6 +164,8 @@ If you turn off one of the switches it will behave as follows:
 
 ###### Services
 Trigger Camera: Provides the ability to manually trigger a camera or camera group
+
+Move to Preset: Provides the ability to move a camera to a specified preset
 
 ## Lovelace UI Configuration
 [Example of UI layout](https://github.com/elad-bar/ha-blueiris/blob/master/docs/configs/casting/configuration.yaml)
