@@ -174,4 +174,3 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         else:
             for grouped_camera in self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS]:
                 await self.api.move_to_preset(grouped_camera, preset)
-
