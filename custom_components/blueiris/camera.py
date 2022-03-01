@@ -8,6 +8,7 @@ import asyncio
 import logging
 from typing import Optional
 
+import voluptuous as vol
 import aiohttp
 import async_timeout
 
@@ -15,7 +16,7 @@ from homeassistant.components.camera import SUPPORT_STREAM, Camera
 from homeassistant.const import CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import TemplateError
-from homeassistant.helpers import entity_platform
+from homeassistant.helpers import entity_platform, config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .helpers.const import *
@@ -39,6 +40,13 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
        SERVICE_TRIGGER_CAMERA,
        {},
        SERVICE_TRIGGER_CAMERA,
+    )
+    platform.async_register_entity_service(
+       SERVICE_MOVE_TO_PRESET,
+       {
+           vol.Required('preset'): cv.positive_int,
+       },
+       SERVICE_MOVE_TO_PRESET,
     )
 
 
@@ -159,3 +167,11 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         else:
             for grouped_camera in self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS]:
                 await self.api.trigger_camera(grouped_camera)
+
+    async def move_to_preset(self, preset):
+        if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
+            await self.api.move_to_preset(self.entity.id, preset)
+        else:
+            for grouped_camera in self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS]:
+                await self.api.move_to_preset(grouped_camera, preset)
+

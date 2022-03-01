@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.10
+
+- New Feature: Added a service (Move to Preset) for moving a specified camera to a specified preset
+
 ## 1.0.9
 
 - New Feature: Added a service (Trigger Camera) for triggering cameras and camera groups
