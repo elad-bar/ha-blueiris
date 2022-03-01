@@ -299,3 +299,14 @@ class BlueIrisApi:
             "camera" : camera_short_name
         }
         await self.async_verified_post(request_data)
+
+    async def move_to_preset(self, camera_short_name, preset):
+        _LOGGER.info(f"Moving {camera_short_name} to preset {preset}")
+        preset_value = 100 + preset
+        request_data = {
+            "cmd": "ptz",
+            "session": self.session_id,
+            "camera" : camera_short_name,
+            "button" : preset_value
+        }
+        await self.async_verified_post(request_data)
