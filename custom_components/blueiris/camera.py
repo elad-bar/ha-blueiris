@@ -8,7 +8,6 @@ import asyncio
 import logging
 from typing import Optional
 
-
 import aiohttp
 import async_timeout
 import voluptuous as vol
