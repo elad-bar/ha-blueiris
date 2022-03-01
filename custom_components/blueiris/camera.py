@@ -1,6 +1,6 @@
 """
 Support for Blue Iris.
-For more details about this platform, please refer to the documentation at
+For more details about this platform, please refer to the documentation here
 https://home-assistant.io/components/camera.blueiris/
 """
 from abc import ABC
