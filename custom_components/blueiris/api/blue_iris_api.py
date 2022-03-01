@@ -32,9 +32,6 @@ class BlueIrisApi:
     config_manager: ConfigManager
     base_url: str
     url: str
-    #temporary until it is added to Status cmd response as it should be since it can change
-    version: str
-    #temporary
 
     def __init__(self, hass: HomeAssistant, config_manager: ConfigManager):
         try:
