@@ -93,6 +93,7 @@ JSON_DATA_FILE = f"custom_components/{DOMAIN}/data/[NAME].json"
 DOMAIN_LOGGER = "logger"
 SERVICE_SET_LEVEL = "set_level"
 SERVICE_TRIGGER_CAMERA = "trigger_camera"
+SERVICE_MOVE_TO_PRESET = "move_to_preset"
 
 
 ATTR_ADMIN_PROFILE = "Profile"
