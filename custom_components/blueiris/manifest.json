@@ -11,6 +11,6 @@
     "codeowners": ["@elad-bar"],
     "requirements": [],
     "config_flow": true,
-    "version": "1.0.7",
+    "version": "1.0.10",
     "iot_class": "local_polling"
   }
