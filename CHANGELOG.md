@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.11
+
+- !NOTE! This update impacts the name of the integration instance. It was always supposed to default to the Server name as specified in the Blue Iris server options. It does now. This should only take effect if you remove and re-add the integration.
+- Added additional device info for Camera type and Server version
+
 ## 1.0.10
 
 - New Feature: Added a service (Move to Preset) for moving a specified camera to a specified preset
