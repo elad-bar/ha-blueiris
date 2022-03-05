@@ -139,7 +139,7 @@ class BlueIrisApi:
             )
 
     async def async_update(self):
-        _LOGGER.info(f"Updating data from BI Server ({self.config_data.name})")
+        _LOGGER.info(f"Updating data from BI Server ({self.config_manager.config_entry.title})")
 
         await self.load_camera()
         await self.load_status()

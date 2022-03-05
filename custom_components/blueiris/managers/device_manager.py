@@ -78,14 +78,19 @@ class DeviceManager:
     def get_camera_device_model(self, camera: CameraData):
         if(camera.type is not None):
            if(camera.type == BI_CAMERA_TYPE_NETWORK_IP):
-               camera_type = "Network IP "
+               camera_type = "Network IP Camera"
            elif(camera.type == BI_CAMERA_TYPE_BROADCAST):
-               camera_type = "Broadcast "
+               camera_type = "Broadcast Camera"
            else:
-               camera_type = ""
+               camera_type = "Camera " + camera.type
         else:
-            camera_type = ""
-        return camera_type + "Camera"
+            if(camera.is_group):
+                camera_type = "Camera Group"
+            elif(camera.is_system):
+                camera_type = "System Camera"
+            else:
+                camera_type = "Camera"
+        return camera_type
 
     def generate_system_device(self):
         version = self.get_system_device_version()
