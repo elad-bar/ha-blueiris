@@ -60,23 +60,40 @@ class DeviceManager:
 
     def get_system_device_name(self):
         title = self.config_manager.config_entry.title
-
         device_name = f"{title} Server"
-
         return device_name
+
+    def get_system_device_version(self):
+        if self._api.data.get("version") is not None:
+            device_version = self._api.data.get("version")
+        else:
+            device_version = "0.0.0.0"
+        return device_version
 
     def get_camera_device_name(self, camera: CameraData):
         title = self.config_manager.config_entry.title
-
         device_name = f"{title} {camera.name} ({camera.id})"
-
         return device_name
 
+    def get_camera_device_model(self, camera: CameraData):
+        if(camera.type is not None):
+           if(camera.type == BI_CAMERA_TYPE_NETWORK_IP):
+               camera_type = "Network IP Camera"
+           elif(camera.type == BI_CAMERA_TYPE_BROADCAST):
+               camera_type = "Broadcast Camera"
+           else:
+               camera_type = "Camera " + camera.type
+        else:
+            if(camera.is_group):
+                camera_type = "Camera Group"
+            elif(camera.is_system):
+                camera_type = "System Camera"
+            else:
+                camera_type = "Camera"
+        return camera_type
+
     def generate_system_device(self):
-        server_status = self._api.status
-
-        version = server_status.get("version")
-
+        version = self.get_system_device_version()
         device_name = self.get_system_device_name()
 
         device_info = {
@@ -91,12 +108,13 @@ class DeviceManager:
 
     def generate_camera_device(self, camera: CameraData):
         device_name = self.get_camera_device_name(camera)
+        device_model = self.get_camera_device_model(camera)
 
         device_info = {
             "identifiers": {(DEFAULT_NAME, device_name)},
             "name": device_name,
             "manufacturer": DEFAULT_NAME,
-            "model": "Camera",
+            "model": device_model,
         }
 
         self.set(device_name, device_info)
