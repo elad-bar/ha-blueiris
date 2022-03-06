@@ -450,8 +450,8 @@ class ConfigFlowManager:
                 )
                 errors = {"base": "invalid_admin_credentials"}
 
-            if api.data.get("system name") is not None:
-                system_name = api.data.get("system name")
+            system_name = api.data.get("system name")
+            if system_name is not None:
                 if system_name.strip():
                     self.title = system_name
 
