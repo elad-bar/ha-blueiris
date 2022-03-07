@@ -78,11 +78,15 @@ class DeviceManager:
     def get_camera_device_model(self, camera: CameraData):
         if(camera.type is not None):
            if(camera.type == BI_CAMERA_TYPE_NETWORK_IP):
-               camera_type = "Network IP Camera"
+               camera_type = BI_CAMERA_TYPE_NETWORK_IP_LABEL
            elif(camera.type == BI_CAMERA_TYPE_BROADCAST):
-               camera_type = "Broadcast Camera"
+               camera_type = BI_CAMERA_TYPE_BROADCAST_LABEL
+           elif(camera.type == BI_CAMERA_TYPE_SCREEN_CAPTURE):
+               camera_type = BI_CAMERA_TYPE_SCREEN_CAPTURE_LABEL
+           elif(camera.type == BI_CAMERA_TYPE_USB_FIREWIRE_ANALOG):
+               camera_type = BI_CAMERA_TYPE_USB_FIREWIRE_ANALOG_LABEL
            else:
-               camera_type = "Camera " + camera.type
+               camera_type = "Camera-" + str(camera.type)
         else:
             if(camera.is_group):
                 camera_type = "Camera Group"

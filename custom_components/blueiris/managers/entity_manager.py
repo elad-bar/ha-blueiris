@@ -64,6 +64,10 @@ class EntityManager:
     def integration_title(self) -> str:
         return self.config_manager.config_entry.title
 
+    @property
+    def system_device_name(self) -> str:
+        return self.device_manager.get_system_device_name()
+
     def set_domain_component(self, domain, async_add_entities, component):
         self.domain_component_manager[domain] = {
             "async_add_entities": async_add_entities,
@@ -150,18 +154,19 @@ class EntityManager:
         is_admin = self.api.data.get("admin", False)
         allowed_profile = config_data.allowed_profile
         allowed_schedule = config_data.allowed_schedule
+        system_device_name = self.system_device_name
 
         if is_admin and (allowed_profile is None or len(allowed_profile) > 0) and (allowed_schedule is None or len(allowed_schedule) > 0) :
             for profile_name in available_profiles:
                 profile_id = available_profiles.index(profile_name)
 
                 if allowed_profile is None or str(profile_id) in allowed_profile:
-                    self.generate_profile_switch(profile_id, profile_name)
+                    self.generate_profile_switch(profile_id, profile_name, system_device_name)
             for schedule_name in available_schedules:
                 schedule_id = available_schedules.index(schedule_name)
 
                 if allowed_schedule is None or str(schedule_id) in allowed_schedule:
-                    self.generate_schedule_switch(schedule_name)
+                    self.generate_schedule_switch(schedule_name, system_device_name)
 
         mqtt_binary_sensors = []
         for camera in available_camera:
@@ -266,13 +271,11 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(ex, f"Failed to update, step: {step}")
 
-    def get_profile_switch(self, profile_id, profile_name) -> EntityData:
+    def get_profile_switch(self, profile_id, profile_name, system_device_name) -> EntityData:
         entity = None
 
         try:
             current_profile = self.api.status.get("profile", 0)
-
-            device_name = self.device_manager.get_system_device_name()
 
             entity_name = (
                 f"{self.integration_title} {ATTR_ADMIN_PROFILE} {profile_name}"
@@ -291,7 +294,7 @@ class EntityManager:
             entity.state = state
             entity.attributes = attributes
             entity.icon = DEFAULT_ICON
-            entity.device_name = device_name
+            entity.device_name = system_device_name
         except Exception as ex:
             self.log_exception(
                 ex, f"Failed to get profile switch {profile_name} (#{profile_id})"
@@ -299,9 +302,9 @@ class EntityManager:
 
         return entity
 
-    def generate_profile_switch(self, profile_id, profile_name):
+    def generate_profile_switch(self, profile_id, profile_name, system_device_name):
         try:
-            entity = self.get_profile_switch(profile_id, profile_name)
+            entity = self.get_profile_switch(profile_id, profile_name, system_device_name)
             entity_name = entity.name
 
             self.set_entity(DOMAIN_SWITCH, entity_name, entity)
@@ -310,13 +313,11 @@ class EntityManager:
                 ex, f"Failed to generate profile switch {profile_name} (#{profile_id})"
             )
 
-    def get_schedule_switch(self, schedule_name) -> EntityData:
+    def get_schedule_switch(self, schedule_name, system_device_name) -> EntityData:
         entity = None
 
         try:
             current_schedule = self.api.status.get("schedule", 0)
-
-            device_name = self.device_manager.get_system_device_name()
 
             entity_name = (
                 f"{self.integration_title} {ATTR_ADMIN_SCHEDULE} {schedule_name}"
@@ -335,7 +336,7 @@ class EntityManager:
             entity.state = state
             entity.attributes = attributes
             entity.icon = SCHEDULE_ICON
-            entity.device_name = device_name
+            entity.device_name = system_device_name
         except Exception as ex:
             self.log_exception(
                 ex, f"Failed to get schedule switch {schedule_name}"
@@ -343,9 +344,9 @@ class EntityManager:
 
         return entity
 
-    def generate_schedule_switch(self, schedule_name):
+    def generate_schedule_switch(self, schedule_name, system_device_name):
         try:
-            entity = self.get_schedule_switch(schedule_name)
+            entity = self.get_schedule_switch(schedule_name, system_device_name)
             entity_name = entity.name
 
             self.set_entity(DOMAIN_SWITCH, entity_name, entity)
@@ -359,8 +360,6 @@ class EntityManager:
 
         try:
             entity_name = f"{self.integration_title} Alerts"
-
-            device_name = self.device_manager.get_system_device_name()
 
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-MAIN-{entity_name}"
 
@@ -399,7 +398,7 @@ class EntityManager:
             entity.state = state
             entity.attributes = attributes
             entity.icon = DEFAULT_ICON
-            entity.device_name = device_name
+            entity.device_name = self.system_device_name
             entity.type = SENSOR_MAIN_NAME
             entity.binary_sensor_device_class = BinarySensorDeviceClass.PROBLEM
         except Exception as ex:
@@ -416,12 +415,10 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(ex, "Failed to generate main binary sensor")
 
-    def get_camera_entity(self, camera: CameraData, sensor_type_name) -> EntityData:
+    def get_camera_entity(self, camera: CameraData, sensor_type_name, camera_device_name) -> EntityData:
         entity = None
 
         try:
-            device_name = self.device_manager.get_camera_device_name(camera)
-
             entity_name = f"{self.integration_title} {camera.name} {sensor_type_name}"
             unique_id = f"{DOMAIN}-{DOMAIN_BINARY_SENSOR}-{entity_name}"
 
@@ -443,7 +440,7 @@ class EntityManager:
             entity.state = state
             entity.attributes = attributes
             entity.icon = DEFAULT_ICON
-            entity.device_name = device_name
+            entity.device_name = camera_device_name
             entity.topic = state_topic
             entity.event = sensor_type_name
             entity.binary_sensor_device_class = device_class
@@ -459,10 +456,10 @@ class EntityManager:
         entities = []
 
         try:
+            camera_device_name = self.device_manager.get_camera_device_name(camera)
             for sensor_type_name in CAMERA_SENSORS.keys():
                 if self.config_manager.is_allowed_sensor(camera, sensor_type_name):
-                    entity = self.get_camera_entity(camera, sensor_type_name)
-
+                    entity = self.get_camera_entity(camera, sensor_type_name, camera_device_name)
                     entities.append(entity)
 
             for entity in entities:
