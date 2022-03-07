@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12
+
+- Fix for missing camera models/types introduced in 1.0.11
+- Cleaned up some redundant calls to get Camera and System Device names
+- Added exception handling when setting the log level
+
 ## 1.0.11
 
 - !NOTE! This update impacts the name of the integration instance. It was always supposed to default to the Server name as specified in the Blue Iris server options. It does now. This should only take effect if you remove and re-add the integration.
