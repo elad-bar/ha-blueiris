@@ -205,7 +205,6 @@ class BlueIrisHomeAssistant:
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
-
             _LOGGER.error(f"Failed to async_update, Error: {ex}, Line: {line_number}")
 
         self._is_updating = False
