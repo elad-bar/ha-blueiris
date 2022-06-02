@@ -1,6 +1,6 @@
 import logging
 
-from homeassistant.helpers.device_registry import async_get_registry
+from homeassistant.helpers.device_registry import async_get
 
 from ..helpers.const import *
 from ..models.camera_data import CameraData
@@ -23,7 +23,7 @@ class DeviceManager:
         return self._ha.config_manager
 
     async def async_remove_entry(self, entry_id):
-        dr = await async_get_registry(self._hass)
+        dr = async_get(self._hass)
         dr.async_clear_config_entry(entry_id)
 
     async def delete_device(self, name):
@@ -34,7 +34,7 @@ class DeviceManager:
         device_identifiers = device.get("identifiers")
         device_connections = device.get("connections", {})
 
-        dr = await async_get_registry(self._hass)
+        dr = async_get(self._hass)
 
         device = dr.async_get_device(device_identifiers, device_connections)
 
@@ -64,10 +64,8 @@ class DeviceManager:
         return device_name
 
     def get_system_device_version(self):
-        if self._api.data.get("version") is not None:
-            device_version = self._api.data.get("version")
-        else:
-            device_version = "0.0.0.0"
+        device_version = self._api.data.get("version", DEFAULT_VERSION)
+
         return device_version
 
     def get_camera_device_name(self, camera: CameraData):
@@ -75,25 +73,26 @@ class DeviceManager:
         device_name = f"{title} {camera.name} ({camera.id})"
         return device_name
 
-    def get_camera_device_model(self, camera: CameraData):
-        if(camera.type is not None):
-           if(camera.type == BI_CAMERA_TYPE_NETWORK_IP):
-               camera_type = BI_CAMERA_TYPE_NETWORK_IP_LABEL
-           elif(camera.type == BI_CAMERA_TYPE_BROADCAST):
-               camera_type = BI_CAMERA_TYPE_BROADCAST_LABEL
-           elif(camera.type == BI_CAMERA_TYPE_SCREEN_CAPTURE):
-               camera_type = BI_CAMERA_TYPE_SCREEN_CAPTURE_LABEL
-           elif(camera.type == BI_CAMERA_TYPE_USB_FIREWIRE_ANALOG):
-               camera_type = BI_CAMERA_TYPE_USB_FIREWIRE_ANALOG_LABEL
-           else:
-               camera_type = "Camera-" + str(camera.type)
-        else:
-            if(camera.is_group):
-                camera_type = "Camera Group"
-            elif(camera.is_system):
-                camera_type = "System Camera"
+    @staticmethod
+    def get_camera_device_model(camera: CameraData):
+        camera_type = camera.type
+
+        if camera_type is None:
+            if camera.is_group:
+                camera_type = BI_CAMERA_TYPE_GROUP
+            elif camera.is_system:
+                camera_type = BI_CAMERA_TYPE_SYSTEM
             else:
-                camera_type = "Camera"
+                camera_type = BI_CAMERA_TYPE_GENERIC
+
+        camera_type = int(camera_type)
+
+        if camera_type in CAMERA_TYPE_MAPPING:
+            camera_type = CAMERA_TYPE_MAPPING.get(camera_type)
+
+        else:
+            camera_type = f"Camera-{camera_type}"
+
         return camera_type
 
     def generate_system_device(self):
