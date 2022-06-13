@@ -124,7 +124,7 @@ class BlueIrisHomeAssistant:
 
         await self.async_update_entry()
 
-    def _update_entities(self, now):
+    async def _update_entities(self, now):
         self._hass.async_create_task(self.async_update(now))
 
     async def async_update_entry(self, entry: ConfigEntry = None):
