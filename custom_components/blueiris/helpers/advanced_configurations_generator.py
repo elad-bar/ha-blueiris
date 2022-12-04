@@ -1,6 +1,5 @@
 import copy
 import logging
-from typing import List
 
 import yaml
 
@@ -44,12 +43,12 @@ class AdvancedConfigurationGenerator:
         self.generate_ui_lovelace()
 
     def _generate_lovelace(
-        self, integration_name, camera_list: List[CameraData], available_profiles
+        self, integration_name, camera_list: list[CameraData], available_profiles
     ):
         # lovelace_template = LOVELACE_TEMPLATE
 
-        system_camera: List[CameraData] = []
-        user_camera: List[CameraData] = []
+        system_camera: list[CameraData] = []
+        user_camera: list[CameraData] = []
         cards = []
 
         for camera in camera_list:
@@ -88,7 +87,7 @@ class AdvancedConfigurationGenerator:
     def _generate_components(
         self,
         integration_name,
-        camera_list: List[CameraData],
+        camera_list: list[CameraData],
         media_players,
         base_url,
         username,
@@ -137,7 +136,7 @@ class AdvancedConfigurationGenerator:
 
     @staticmethod
     def _set_input_select_camera(
-        input_select, integration_name, camera_list: List[CameraData]
+        input_select, integration_name, camera_list: list[CameraData]
     ):
         component_type = "camera"
         component_name = f"{integration_name} Camera"
@@ -216,7 +215,7 @@ class AdvancedConfigurationGenerator:
         self,
         script,
         integration_name,
-        camera_list: List[CameraData],
+        camera_list: list[CameraData],
         media_players,
         input_select_cast_devices,
         input_select_camera,
