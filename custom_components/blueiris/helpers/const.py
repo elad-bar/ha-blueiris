@@ -83,7 +83,7 @@ DATA_BLUEIRIS_API = f"{DATA_BLUEIRIS}_API"
 DATA_BLUEIRIS_HA = f"{DATA_BLUEIRIS}_HA"
 DATA_BLUEIRIS_HA_ENTITIES = f"{DATA_BLUEIRIS}_HA_Entities"
 DEFAULT_NAME = "BlueIris"
-DEFAULT_PORT = 80
+DEFAULT_PORT = "80"
 DEFAULT_VERSION = "0.0.0.0"
 
 NOT_AVAILABLE = "N/A"
@@ -236,7 +236,7 @@ BI_UPDATE_SIGNAL_SWITCH = f"{DOMAIN}_{DOMAIN_SWITCH}_UPDATE_SIGNAL"
 
 CONFIG_FIELDS = {
     vol.Required(CONF_HOST): str,
-    vol.Required(CONF_PORT): int,
+    vol.Required(CONF_PORT): str,
     vol.Optional(CONF_SSL, default=False): bool,
     vol.Optional(CONF_USERNAME): str,
     vol.Optional(CONF_PASSWORD): str,
