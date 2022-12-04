@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 import sys
-from typing import List, Optional
+from typing import Optional
 
 import aiohttp
 from aiohttp import ClientSession
@@ -27,7 +27,7 @@ class BlueIrisApi:
     session: ClientSession
     data: dict
     status: dict
-    camera_list: List[CameraData]
+    camera_list: list[CameraData]
     hass: HomeAssistant
     config_manager: ConfigManager
     base_url: str
@@ -236,7 +236,6 @@ class BlueIrisApi:
             for key in data:
                 self.status[key] = data[key]
 
-
     async def set_profile(self, profile_id):
         _LOGGER.info(f"Setting profile {profile_id}")
 
@@ -297,7 +296,7 @@ class BlueIrisApi:
         request_data = {
             "cmd": "trigger",
             "session": self.session_id,
-            "camera" : camera_short_name
+            "camera": camera_short_name
         }
         await self.async_verified_post(request_data)
 
@@ -307,7 +306,7 @@ class BlueIrisApi:
         request_data = {
             "cmd": "ptz",
             "session": self.session_id,
-            "camera" : camera_short_name,
-            "button" : preset_value
+            "camera": camera_short_name,
+            "button": preset_value
         }
         await self.async_verified_post(request_data)

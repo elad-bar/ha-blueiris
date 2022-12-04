@@ -13,10 +13,7 @@ from cryptography.fernet import InvalidToken
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.entity_registry import (
-    EntityRegistry,
-    async_get_registry as er_async_get_registry,
-)
+from homeassistant.helpers.entity_registry import EntityRegistry, async_get
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 
 from ..api.blue_iris_api import BlueIrisApi
@@ -93,7 +90,7 @@ class BlueIrisHomeAssistant:
             self._device_manager = DeviceManager(self._hass, self)
             self._config_generator = AdvancedConfigurationGenerator(self._hass, self)
 
-            self._entity_registry = await er_async_get_registry(self._hass)
+            self._entity_registry = async_get(self._hass)
 
             self._hass.loop.create_task(self._async_init())
         except InvalidToken:
@@ -127,7 +124,7 @@ class BlueIrisHomeAssistant:
 
         await self.async_update_entry()
 
-    def _update_entities(self, now):
+    async def _update_entities(self, now):
         self._hass.async_create_task(self.async_update(now))
 
     async def async_update_entry(self, entry: ConfigEntry = None):

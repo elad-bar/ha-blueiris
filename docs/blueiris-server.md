@@ -113,7 +113,7 @@ Payload - { "type": "Connectivity", "trigger": "OFF" }
 ```
 
 for `On signal restoration` do the same with payload:
-`{ "type": "&TYPE", "trigger": "ON" }`
+`{ "type": "Connectivity", "trigger": "ON" }`
 
 The alert should be sent for the profile you would like it to trigger
 

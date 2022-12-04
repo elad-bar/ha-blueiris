@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 from ..helpers.const import *
 
@@ -12,7 +12,7 @@ class StorageIntegrationData:
 
 class StorageData:
     key: Optional[str]
-    integrations: Dict[str, StorageIntegrationData]
+    integrations: dict[str, StorageIntegrationData]
 
     def __init__(self):
         self.key = None

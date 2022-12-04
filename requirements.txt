@@ -1,5 +1,5 @@
 pre-commit
-homeassistant>=2021.12.0b6
+homeassistant
 aiohttp
 voluptuous
 PyYAML

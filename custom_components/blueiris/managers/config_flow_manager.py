@@ -1,11 +1,11 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from cryptography.fernet import InvalidToken
 from voluptuous import Marker
 
 from homeassistant.components.mqtt import DATA_MQTT
-from homeassistant.components.stream import DOMAIN as DOMAIN_STREAM
+from homeassistant.components.stream.const import DOMAIN as DOMAIN_STREAM
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers import config_validation as cv
 
@@ -102,7 +102,7 @@ class ConfigFlowManager:
 
     def _get_default_fields(
         self, flow, config_data: Optional[ConfigData] = None
-    ) -> Dict[Marker, Any]:
+    ) -> dict[Marker, Any]:
         if config_data is None:
             config_data = self.config_data
 
@@ -129,7 +129,7 @@ class ConfigFlowManager:
         config_data = self.config_data
         ha = self._get_ha(self._config_entry.entry_id)
 
-        camera_list: List[CameraData] = ha.api.camera_list
+        camera_list: list[CameraData] = ha.api.camera_list
 
         is_admin = ha.api.data.get("admin", False)
 
@@ -236,7 +236,7 @@ class ConfigFlowManager:
     async def _update_entry(self):
         try:
             entry = ConfigEntry(
-                0, "", "", self._data, "", "", {}, options=self._options
+                0, "", "", self._data, "", options=self._options
             )
 
             await self._config_manager.update(entry)
@@ -246,7 +246,7 @@ class ConfigFlowManager:
             del self._data[CONF_PASSWORD]
 
             entry = ConfigEntry(
-                0, "", "", self._data, "", "", {}, options=self._options
+                0, "", "", self._data, "", options=self._options
             )
 
             await self._config_manager.update(entry)
@@ -391,7 +391,7 @@ class ConfigFlowManager:
 
     @staticmethod
     def _get_camera_options(
-        camera_list: List[CameraData], include: Optional[str] = None
+        camera_list: list[CameraData], include: Optional[str] = None
     ):
         available_items = {}
 

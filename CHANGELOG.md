@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.13
+
+- Device and Entity registry - `async_get_registry` is deprecated, change to `async_get` [\#170](https://github.com/elad-bar/ha-blueiris/issues/170)
+- Update pre-commit
+
 ## 1.0.12
 
 - Fix for missing camera models/types introduced in 1.0.11
