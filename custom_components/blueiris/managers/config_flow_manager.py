@@ -146,49 +146,75 @@ class ConfigFlowManager:
 
         drop_down_fields = [
             {
-                "checked": config_data.allowed_camera,
+                "checked": [
+                    i for i in config_data.allowed_camera if i in supported_camera
+                ],
                 "items": supported_camera,
                 "name": CONF_ALLOWED_CAMERA,
                 "enabled": True,
             },
             {
-                "checked": config_data.allowed_connectivity_sensor,
+                "checked": [
+                    i
+                    for i in config_data.allowed_connectivity_sensor
+                    if i in supported_camera_sensor
+                ],
                 "items": supported_camera_sensor,
                 "name": CONF_ALLOWED_CONNECTIVITY_SENSOR,
                 "enabled": DATA_MQTT in self._hass.data,
             },
             {
-                "checked": config_data.allowed_audio_sensor,
+                "checked": [
+                    i
+                    for i in config_data.allowed_audio_sensor
+                    if i in supported_audio_sensor
+                ],
                 "items": supported_audio_sensor,
                 "name": CONF_ALLOWED_AUDIO_SENSOR,
                 "enabled": DATA_MQTT in self._hass.data,
             },
             {
-                "checked": config_data.allowed_motion_sensor,
+                "checked": [
+                    i
+                    for i in config_data.allowed_motion_sensor
+                    if i in supported_camera_sensor
+                ],
                 "items": supported_camera_sensor,
                 "name": CONF_ALLOWED_MOTION_SENSOR,
                 "enabled": DATA_MQTT in self._hass.data,
             },
             {
-                "checked": config_data.allowed_dio_sensor,
+                "checked": [
+                    i
+                    for i in config_data.allowed_dio_sensor
+                    if i in supported_camera_sensor
+                ],
                 "items": supported_camera_sensor,
                 "name": CONF_ALLOWED_DIO_SENSOR,
                 "enabled": DATA_MQTT in self._hass.data,
             },
             {
-                "checked": config_data.allowed_external_sensor,
+                "checked": [
+                    i
+                    for i in config_data.allowed_external_sensor
+                    if i in supported_camera_sensor
+                ],
                 "items": supported_camera_sensor,
                 "name": CONF_ALLOWED_EXTERNAL_SENSOR,
                 "enabled": DATA_MQTT in self._hass.data,
             },
             {
-                "checked": config_data.allowed_profile,
+                "checked": [
+                    i for i in config_data.allowed_profile if i in supported_profile
+                ],
                 "items": supported_profile,
                 "name": CONF_ALLOWED_PROFILE,
                 "enabled": is_admin,
             },
             {
-                "checked": config_data.allowed_schedule,
+                "checked": [
+                    i for i in config_data.allowed_schedule if i in supported_schedule
+                ],
                 "items": supported_schedule,
                 "name": CONF_ALLOWED_SCHEDULE,
                 "enabled": is_admin,
