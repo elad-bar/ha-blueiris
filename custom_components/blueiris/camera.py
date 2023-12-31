@@ -34,21 +34,20 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     """Set up the BlueIris Camera."""
     await async_setup_base_entry(
         hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_camera
-        )
+    )
     platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
-       SERVICE_TRIGGER_CAMERA,
-       {},
-       SERVICE_TRIGGER_CAMERA,
+        SERVICE_TRIGGER_CAMERA,
+        {},
+        SERVICE_TRIGGER_CAMERA,
     )
     platform.async_register_entity_service(
-       SERVICE_MOVE_TO_PRESET,
-       {
-           vol.Required('preset'): cv.positive_int,
-       },
-       SERVICE_MOVE_TO_PRESET,
+        SERVICE_MOVE_TO_PRESET,
+        {
+            vol.Required("preset"): cv.positive_int,
+        },
+        SERVICE_MOVE_TO_PRESET,
     )
-
 
 
 async def async_unload_entry(hass, config_entry):
@@ -67,7 +66,7 @@ def get_camera(hass: HomeAssistant, host: str, entity: EntityData):
 
 
 class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
-    """ BlueIris Camera """
+    """BlueIris Camera"""
 
     def __init__(self, hass, device_info):
         super().__init__()
@@ -102,7 +101,6 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         self._last_url = None
         self._last_image = None
 
-
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
             _LOGGER.debug(
@@ -125,13 +123,17 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         """Return the interval between frames of the mjpeg stream."""
         return self._frame_interval
 
-    def camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> Optional[bytes]:
+    def camera_image(
+        self, width: Optional[int] = None, height: Optional[int] = None
+    ) -> Optional[bytes]:
         """Return bytes of camera image."""
         return asyncio.run_coroutine_threadsafe(
             self.async_camera_image(), self.hass.loop
         ).result()
 
-    async def async_camera_image(self, width: Optional[int] = None, height: Optional[int] = None) -> Optional[bytes]:
+    async def async_camera_image(
+        self, width: Optional[int] = None, height: Optional[int] = None
+    ) -> Optional[bytes]:
         """Return a still image response from the camera."""
         try:
             url = self._still_image_url.async_render()

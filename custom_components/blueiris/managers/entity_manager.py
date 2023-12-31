@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Dict, List, Optional
+from typing import Optional
 
 from homeassistant.components.camera import DEFAULT_CONTENT_TYPE
 from homeassistant.components.stream import DOMAIN as DOMAIN_STREAM
@@ -156,12 +156,18 @@ class EntityManager:
         allowed_schedule = config_data.allowed_schedule
         system_device_name = self.system_device_name
 
-        if is_admin and (allowed_profile is None or len(allowed_profile) > 0) and (allowed_schedule is None or len(allowed_schedule) > 0) :
+        if (
+            is_admin
+            and (allowed_profile is None or len(allowed_profile) > 0)
+            and (allowed_schedule is None or len(allowed_schedule) > 0)
+        ):
             for profile_name in available_profiles:
                 profile_id = available_profiles.index(profile_name)
 
                 if allowed_profile is None or str(profile_id) in allowed_profile:
-                    self.generate_profile_switch(profile_id, profile_name, system_device_name)
+                    self.generate_profile_switch(
+                        profile_id, profile_name, system_device_name
+                    )
             for schedule_name in available_schedules:
                 schedule_id = available_schedules.index(schedule_name)
 
@@ -271,7 +277,9 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(ex, f"Failed to update, step: {step}")
 
-    def get_profile_switch(self, profile_id, profile_name, system_device_name) -> EntityData:
+    def get_profile_switch(
+        self, profile_id, profile_name, system_device_name
+    ) -> EntityData:
         entity = None
 
         try:
@@ -304,7 +312,9 @@ class EntityManager:
 
     def generate_profile_switch(self, profile_id, profile_name, system_device_name):
         try:
-            entity = self.get_profile_switch(profile_id, profile_name, system_device_name)
+            entity = self.get_profile_switch(
+                profile_id, profile_name, system_device_name
+            )
             entity_name = entity.name
 
             self.set_entity(DOMAIN_SWITCH, entity_name, entity)
@@ -338,9 +348,7 @@ class EntityManager:
             entity.icon = SCHEDULE_ICON
             entity.device_name = system_device_name
         except Exception as ex:
-            self.log_exception(
-                ex, f"Failed to get schedule switch {schedule_name}"
-            )
+            self.log_exception(ex, f"Failed to get schedule switch {schedule_name}")
 
         return entity
 
@@ -415,7 +423,9 @@ class EntityManager:
         except Exception as ex:
             self.log_exception(ex, "Failed to generate main binary sensor")
 
-    def get_camera_entity(self, camera: CameraData, sensor_type_name, camera_device_name) -> EntityData:
+    def get_camera_entity(
+        self, camera: CameraData, sensor_type_name, camera_device_name
+    ) -> EntityData:
         entity = None
 
         try:
@@ -459,7 +469,9 @@ class EntityManager:
             camera_device_name = self.device_manager.get_camera_device_name(camera)
             for sensor_type_name in CAMERA_SENSORS.keys():
                 if self.config_manager.is_allowed_sensor(camera, sensor_type_name):
-                    entity = self.get_camera_entity(camera, sensor_type_name, camera_device_name)
+                    entity = self.get_camera_entity(
+                        camera, sensor_type_name, camera_device_name
+                    )
                     entities.append(entity)
 
             for entity in entities:

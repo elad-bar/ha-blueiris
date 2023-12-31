@@ -1,19 +1,13 @@
 {
-    "domain": "blueiris",
-    "name": "Blue Iris NVR",
-    "documentation": "https://github.com/elad-bar/ha-blueiris",
-    "after_dependencies": [
-        "mqtt"
-    ],
-    "dependencies": [
-        "camera"
-    ],
-    "codeowners": [
-        "@elad-bar",
-        "@kramttocs"
-    ],
-    "requirements": [],
-    "config_flow": true,
-    "version": "1.0.15",
-    "iot_class": "local_polling"
-  }
+  "domain": "blueiris",
+  "name": "Blue Iris NVR",
+  "after_dependencies": ["mqtt"],
+  "codeowners": ["@elad-bar", "@kramttocs"],
+  "config_flow": true,
+  "dependencies": ["camera"],
+  "documentation": "https://github.com/elad-bar/ha-blueiris",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/elad-bar/ha-blueiris/issues",
+  "requirements": [],
+  "version": "1.0.16"
+}

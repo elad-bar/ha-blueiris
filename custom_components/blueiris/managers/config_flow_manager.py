@@ -237,7 +237,15 @@ class ConfigFlowManager:
 
     async def _update_entry(self):
         try:
-            entry = ConfigEntry(0, "", "", self._data, "", options=self._options)
+            entry = ConfigEntry(
+                version=0,
+                minor_version=0,
+                domain="",
+                title="",
+                data=self._data,
+                source="",
+                options=self._options,
+            )
 
             await self._config_manager.update(entry)
         except InvalidToken:
@@ -245,7 +253,15 @@ class ConfigFlowManager:
 
             del self._data[CONF_PASSWORD]
 
-            entry = ConfigEntry(0, "", "", self._data, "", options=self._options)
+            entry = ConfigEntry(
+                version=0,
+                minor_version=0,
+                domain="",
+                title="",
+                data=self._data,
+                source="",
+                options=self._options,
+            )
 
             await self._config_manager.update(entry)
 

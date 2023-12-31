@@ -2,19 +2,19 @@ trigger_camera:
   name: Trigger Camera
   description: Triggers a camera
   target:
-     entity:
-        integration: blueiris
-        domain: camera
+    entity:
+      integration: blueiris
+      domain: camera
 
 move_to_preset:
   name: Move to Preset
   description: Moves the selected camera to the specified preset
   target:
-     entity:
-        integration: blueiris
-        domain: camera
+    entity:
+      integration: blueiris
+      domain: camera
   fields:
-     preset:
+    preset:
       name: Preset
       description: Desired preset
       required: true

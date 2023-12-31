@@ -46,4 +46,4 @@ script:
             {% elif is_state('input_select.camera_dropdown', 'All Cameras') %}
               http://192.168.0.10:8081/mjpg/index?/video.mjpg
             {% endif %}
-          media_content_type: 'image/jpg'
+          media_content_type: "image/jpg"
