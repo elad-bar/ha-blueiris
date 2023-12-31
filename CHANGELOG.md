@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.16
+
+- Update ConfigEntry to support HA v2024.1.0b0 and above [Issue #218](https://github.com/elad-bar/ha-blueiris/issues/218)
+- Update pre-commit package and configuration files (updated packages)
+- Set minimum version of HA to be supported by HACS as 2024.1.0b0
+- Re-order manifest property order to support hassfest validation
+
 ## 1.0.13
 
 - Device and Entity registry - `async_get_registry` is deprecated, change to `async_get` [\#170](https://github.com/elad-bar/ha-blueiris/issues/170)
@@ -26,7 +33,7 @@
 
 ## 1.0.8
 
-- Fix for 2021.9.0 Breaking Change: Custom integrations: Cameras* [\#127](https://github.com/elad-bar/ha-blueiris/issues/127)
+- Fix for 2021.9.0 Breaking Change: Custom integrations: Cameras\* [\#127](https://github.com/elad-bar/ha-blueiris/issues/127)
 - Fixed Info logging message when setting profile and schedule
 
 ## 1.0.7
@@ -36,17 +43,20 @@
 ## 2021-07-31 (1.0.6)
 
 **Fixed bugs:**
-- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
+
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.\* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
 
 ## 2021-07-31 (1.0.6b2)
 
 **Fixed bugs:**
-- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
+
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.\* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
 
 ## 2021-07-30 (1.0.6b1)
 
 **Fixed bugs:**
-- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
+
+- Cannot import MQTT Message (HA Core Breaking Change) >=2021.8.\* [\#120](https://github.com/elad-bar/ha-blueiris/issues/120)
 
 ## 2021-02-16
 
@@ -111,6 +121,7 @@
 - Improved generate configuration file process
 
 **Fixed bugs:**
+
 - Fixed - Generate configuration files
 
 ## 2020-07-17
@@ -251,9 +262,9 @@
 **Fixed bugs:**
 
 - Fix issue [\#37](https://github.com/elad-bar/ha-blueiris/issues/37) - Restart of HASS causes all entities to be renamed to defaults <br/>
-  improving the way the component is loading, unloading and discover new entities (sensors, camera and switch).  <br/>
-  the main issue as reported in the past was that once changing the entity_id / name it will return to the original after restart.  <br/>
-  another issue that caused by the way it was handled, upon changing the options (settings) - it took few seconds to present the new entities and sometimes it happened only after restart.  <br/>
+  improving the way the component is loading, unloading and discover new entities (sensors, camera and switch). <br/>
+  the main issue as reported in the past was that once changing the entity_id / name it will return to the original after restart. <br/>
+  another issue that caused by the way it was handled, upon changing the options (settings) - it took few seconds to present the new entities and sometimes it happened only after restart. <br/>
   In that version, the entity_id, name will remain as manually set and changes of options will take place immediately
 
 ## 2020-02-28
@@ -265,13 +276,11 @@
 - Fix issue [\#27](https://github.com/elad-bar/ha-blueiris/issues/27) - when changing switch it doesn't work smoothly and after restart
 - Resources (strings) fixed
 
-
 **Implemented enhancements:**
 
 - Username and password are now optional, if not set, will not create profile's switches
 - Added validation for host, port and SSL state in configuration, if URL is not accessible, will throw an error
 - Validate administrator username and password, in case entered wrong credentials, will throw an error
-
 
 ## 2020-02-07 - v2.0.0 - Breaking change!!!
 

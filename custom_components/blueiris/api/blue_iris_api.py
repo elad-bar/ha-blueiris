@@ -82,7 +82,7 @@ class BlueIrisApi:
 
         try:
             async with self.session.post(
-                    self.url, data=json.dumps(data), ssl=False
+                self.url, data=json.dumps(data), ssl=False
             ) as response:
                 _LOGGER.debug(f"Status of {self.url}: {response.status}")
 
@@ -139,7 +139,9 @@ class BlueIrisApi:
             )
 
     async def async_update(self):
-        _LOGGER.info(f"Updating data from BI Server ({self.config_manager.config_entry.title})")
+        _LOGGER.info(
+            f"Updating data from BI Server ({self.config_manager.config_entry.title})"
+        )
 
         await self.load_camera()
         await self.load_status()
@@ -296,7 +298,7 @@ class BlueIrisApi:
         request_data = {
             "cmd": "trigger",
             "session": self.session_id,
-            "camera": camera_short_name
+            "camera": camera_short_name,
         }
         await self.async_verified_post(request_data)
 
@@ -307,6 +309,6 @@ class BlueIrisApi:
             "cmd": "ptz",
             "session": self.session_id,
             "camera": camera_short_name,
-            "button": preset_value
+            "button": preset_value,
         }
         await self.async_verified_post(request_data)

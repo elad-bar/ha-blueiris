@@ -1,8 +1,8 @@
 # Example ui-lovelace.yaml view entry
-  - type: entities
-    title: Cast Camera to Screen
-    show_header_toggle: false
-    entities:
-      - entity: input_select.camera_dropdown
-      - entity: input_select.cast_to_screen_dropdown
-      - entity: script.execute_cast_dropdown
+- type: entities
+  title: Cast Camera to Screen
+  show_header_toggle: false
+  entities:
+    - entity: input_select.camera_dropdown
+    - entity: input_select.cast_to_screen_dropdown
+    - entity: script.execute_cast_dropdown

@@ -20,37 +20,37 @@
     }
   },
   "options": {
-      "step": {
-          "blue_iris_additional_settings": {
-              "title": "Options for BlueIris.",
-              "description": "Set up username and password to control profiles / exclude system camera.",
-              "data": {
-                  "host": "Host",
-                  "port": "Port",
-                  "ssl": "Is SSL",
-                  "username": "Username",
-                  "password": "Password",
-                  "clear-credentials": "Clear credentials",
-                  "log_level": "Log level",
-                  "generate-config-files": "Generate configuration files",
-                  "allowed_camera": "Camera components",
-                  "allowed_profile": "Profile switches",
-                  "allowed_schedule": "Schedule switches",
-                  "allowed_motion_sensor": "Motion sensors",
-                  "allowed_audio_sensor": "Audio sensors",
-                  "allowed_connectivity_sensor": "Connectivity sensors",
-                  "allowed_dio_sensor": "DIO sensors",
-                  "allowed_external_sensor": "External sensors",
-                  "reset-components-settings": "Reset components settings to default",
-                  "stream-type": "Stream type",
-                  "support_stream": "Support stream component (Requires restart)"
-              }
-          }
-      },
-      "error": {
-        "invalid_admin_credentials": "Invalid administrator credentials",
-        "invalid_server_details": "Invalid server details",
-        "already_configured": "BlueIris integration already configured with the name"
+    "step": {
+      "blue_iris_additional_settings": {
+        "title": "Options for BlueIris.",
+        "description": "Set up username and password to control profiles / exclude system camera.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "ssl": "Is SSL",
+          "username": "Username",
+          "password": "Password",
+          "clear-credentials": "Clear credentials",
+          "log_level": "Log level",
+          "generate-config-files": "Generate configuration files",
+          "allowed_camera": "Camera components",
+          "allowed_profile": "Profile switches",
+          "allowed_schedule": "Schedule switches",
+          "allowed_motion_sensor": "Motion sensors",
+          "allowed_audio_sensor": "Audio sensors",
+          "allowed_connectivity_sensor": "Connectivity sensors",
+          "allowed_dio_sensor": "DIO sensors",
+          "allowed_external_sensor": "External sensors",
+          "reset-components-settings": "Reset components settings to default",
+          "stream-type": "Stream type",
+          "support_stream": "Support stream component (Requires restart)"
+        }
       }
+    },
+    "error": {
+      "invalid_admin_credentials": "Invalid administrator credentials",
+      "invalid_server_details": "Invalid server details",
+      "already_configured": "BlueIris integration already configured with the name"
+    }
   }
 }

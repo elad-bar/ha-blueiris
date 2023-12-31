@@ -18,7 +18,7 @@ class CameraData:
         self.is_online = camera.get(BI_ATTR_IS_ONLINE, False)
         self.has_audio = camera.get(BI_ATTR_AUDIO, False)
         self.data = camera
-        self.is_group = True if(camera.get(BI_ATTR_GROUP) is not None) else False
+        self.is_group = True if (camera.get(BI_ATTR_GROUP) is not None) else False
         if self.is_group:
             self.group_cameras = camera.get(BI_ATTR_GROUP)
         self.is_system = self.id in SYSTEM_CAMERA_ID
@@ -35,7 +35,6 @@ class CameraData:
             CAMERA_DATA: self.data,
             CAMERA_GROUP_CAMERAS: self.group_cameras,
             CAMERA_TYPE: self.type,
-
         }
 
         to_string = f"{obj}"
