@@ -42,8 +42,9 @@ class AdvancedConfigurationGenerator:
 
         self.generate_ui_lovelace()
 
+    @staticmethod
     def _generate_lovelace(
-        self, integration_name, camera_list: list[CameraData], available_profiles
+        _integration_name, camera_list: list[CameraData], _available_profiles
     ):
         # lovelace_template = LOVELACE_TEMPLATE
 

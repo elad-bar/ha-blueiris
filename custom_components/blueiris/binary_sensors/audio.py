@@ -2,7 +2,6 @@ from datetime import datetime
 import logging
 
 from homeassistant.components.binary_sensor import STATE_OFF
-from homeassistant.helpers.event import async_call_later
 
 from ..helpers.const import *
 from .base import BlueIrisBinarySensor
@@ -32,7 +31,7 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
         is_trigger_off = self.state == STATE_OFF
         current_timestamp = datetime.now().timestamp()
 
-        def turn_off_automatically(now):
+        async def turn_off_automatically(now):
             _LOGGER.info(f"Audio alert off | {self.name} @{now}")
 
             self.entity_manager.set_mqtt_state(self.topic, self.event_type, False)
@@ -64,6 +63,6 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
                 self._last_alert = current_timestamp
                 super()._immediate_update(previous_state)
 
-                async_call_later(self.hass, 2, turn_off_automatically)
+                self.hass.loop.call_later(self.hass, 2, turn_off_automatically)
             else:
                 _LOGGER.debug(f"Audio alert on, {message} | {self.name}")

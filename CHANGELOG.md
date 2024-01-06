@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.17
+
+- Fix future incompatibility HA Core 2025.1 [Issue #221](https://github.com/elad-bar/ha-blueiris/issues/221)
+- Remove outdated dependency of async_timeout, replace with aihttp.ClientRequest.timeout
+- Fix warning for binary sensors when using async_call_later, changed to loop.call_later
+- Remove unused parameters
+
 ## 1.0.16
 
 - Update ConfigEntry to support HA v2024.1.0b0 and above [Issue #218](https://github.com/elad-bar/ha-blueiris/issues/218)

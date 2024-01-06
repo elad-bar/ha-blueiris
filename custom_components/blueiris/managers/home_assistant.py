@@ -14,7 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity_registry import EntityRegistry, async_get
-from homeassistant.helpers.event import async_call_later, async_track_time_interval
+from homeassistant.helpers.event import async_track_time_interval
 
 from ..api.blue_iris_api import BlueIrisApi
 from ..helpers.advanced_configurations_generator import AdvancedConfigurationGenerator
@@ -157,7 +157,7 @@ class BlueIrisHomeAssistant:
 
         if update_config_manager and integration_data is not None:
             if integration_data.generate_configuration_files:
-                async_call_later(self._hass, 5, self.generate_config_files)
+                self._hass.loop.call_later(self._hass, 5, self.generate_config_files)
 
                 integration_data.generate_configuration_files = False
 
@@ -239,5 +239,5 @@ class BlueIrisHomeAssistant:
 
             async_dispatcher_send(self._hass, signal)
 
-    def generate_config_files(self, now):
+    async def generate_config_files(self, _now):
         self._config_generator.generate()
