@@ -101,7 +101,7 @@ class ConfigFlowManager:
         return self._data
 
     def _get_default_fields(
-        self, flow, config_data: Optional[ConfigData] = None
+        self, _flow, config_data: Optional[ConfigData] = None
     ) -> dict[Marker, Any]:
         if config_data is None:
             config_data = self.config_data

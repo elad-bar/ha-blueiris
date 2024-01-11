@@ -9,17 +9,32 @@ import logging
 from typing import Optional
 
 import aiohttp
-import async_timeout
 import voluptuous as vol
 
-from homeassistant.components.camera import SUPPORT_STREAM, Camera
-from homeassistant.const import CONF_VERIFY_SSL
+from homeassistant.components.camera import (
+    DOMAIN as DOMAIN_CAMERA,
+    Camera,
+    CameraEntityFeature,
+)
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import TemplateError
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .helpers.const import *
+from .helpers.const import (
+    BI_CAMERA_ATTR_GROUP_CAMERAS,
+    CONF_CONTENT_TYPE,
+    CONF_FRAMERATE,
+    CONF_LIMIT_REFETCH_TO_URL_CHANGE,
+    CONF_STILL_IMAGE_URL,
+    CONF_STREAM_SOURCE,
+    CONF_SUPPORT_STREAM,
+    DOMAIN,
+    NOT_AVAILABLE,
+    SERVICE_MOVE_TO_PRESET,
+    SERVICE_TRIGGER_CAMERA,
+)
 from .models.base_entity import BlueIrisEntity, async_setup_base_entry
 from .models.entity_data import EntityData
 
@@ -50,7 +65,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     )
 
 
-async def async_unload_entry(hass, config_entry):
+async def async_unload_entry(_hass, config_entry):
     _LOGGER.info(f"async_unload_entry {CURRENT_DOMAIN}: {config_entry}")
 
     return True
@@ -78,7 +93,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         stream_support_flag = 0
 
         if stream_source and stream_support:
-            stream_support_flag = SUPPORT_STREAM
+            stream_support_flag = CameraEntityFeature.STREAM
 
         self._still_image_url = device_info[CONF_STILL_IMAGE_URL]
         self._still_image_url.hass = hass
@@ -146,8 +161,9 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
         try:
             websession = async_get_clientsession(self.hass, verify_ssl=self.verify_ssl)
-            with async_timeout.timeout(10):
-                response = await websession.get(url, auth=self._auth)
+
+            response = await websession.get(url, auth=self._auth, timeout=10)
+
             self._last_image = await response.read()
         except asyncio.TimeoutError:
             _LOGGER.error("Timeout getting camera image from %s", self.name)
