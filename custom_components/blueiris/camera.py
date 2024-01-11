@@ -129,7 +129,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         _LOGGER.info(f"Added new {self.name}")
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> CameraEntityFeature:
         """Return supported features for this camera."""
         return self._supported_features
 
