@@ -139,7 +139,7 @@ class BlueIrisApi:
             )
 
     async def async_update(self):
-        _LOGGER.info(
+        _LOGGER.debug(
             f"Updating data from BI Server ({self.config_manager.config_entry.title})"
         )
 
