@@ -90,20 +90,20 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         stream_source = device_info.get(CONF_STREAM_SOURCE)
         stream_support = device_info.get(CONF_SUPPORT_STREAM, False)
 
-        stream_support_flag = 0
-
-        if stream_source and stream_support:
-            stream_support_flag = CameraEntityFeature.STREAM
+        
 
         self._still_image_url = device_info[CONF_STILL_IMAGE_URL]
         self._still_image_url.hass = hass
 
         self._stream_source = device_info[CONF_STREAM_SOURCE]
         self._limit_refetch = device_info[CONF_LIMIT_REFETCH_TO_URL_CHANGE]
-        self._frame_interval = 1 / device_info[CONF_FRAMERATE]
-        self._supported_features = stream_support_flag
+        self._frame_interval = 1 / device_info[CONF_FRAMERATE]        
         self.content_type = device_info[CONF_CONTENT_TYPE]
         self.verify_ssl = device_info[CONF_VERIFY_SSL]
+
+        self._attr_supported_features = CameraEntityFeature(0)
+        if stream_source and stream_support:            
+            self._attr_supported_features = CameraEntityFeature.STREAM
 
         username = device_info.get(CONF_USERNAME)
         password = device_info.get(CONF_PASSWORD)
@@ -129,9 +129,9 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         _LOGGER.info(f"Added new {self.name}")
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> CameraEntityFeature:
         """Return supported features for this camera."""
-        return self._supported_features
+        return self._attr_supported_features
 
     @property
     def frame_interval(self):
