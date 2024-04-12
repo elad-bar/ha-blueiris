@@ -105,7 +105,7 @@ class BlueIrisApi:
         return result
 
     async def initialize(self):
-        _LOGGER.info("Initializing BlueIris")
+        _LOGGER.debug("Initializing BlueIris")
 
         try:
             config_data = self.config_data
@@ -147,7 +147,7 @@ class BlueIrisApi:
         await self.load_status()
 
     async def load_session_id(self):
-        _LOGGER.info("Retrieving session ID")
+        _LOGGER.debug("Retrieving session ID")
 
         request_data = {"cmd": "login"}
 
@@ -161,7 +161,7 @@ class BlueIrisApi:
         self.is_logged_in = False
 
     async def login(self):
-        _LOGGER.info("Performing login")
+        _LOGGER.debug("Performing login")
 
         logged_in = False
 
@@ -239,7 +239,7 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
     async def set_profile(self, profile_id):
-        _LOGGER.info(f"Setting profile {profile_id}")
+        _LOGGER.debug(f"Setting profile {profile_id}")
 
         await self._set_profile(profile_id)
 
@@ -266,7 +266,7 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
     async def set_schedule(self, schedule_name):
-        _LOGGER.info(f"Setting schedule {schedule_name}")
+        _LOGGER.debug(f"Setting schedule {schedule_name}")
 
         await self._set_schedule(schedule_name)
 
@@ -293,7 +293,7 @@ class BlueIrisApi:
                 self.status[key] = data[key]
 
     async def trigger_camera(self, camera_short_name):
-        _LOGGER.info(f"Triggering camera {camera_short_name}")
+        _LOGGER.debug(f"Triggering camera {camera_short_name}")
 
         request_data = {
             "cmd": "trigger",
@@ -303,7 +303,7 @@ class BlueIrisApi:
         await self.async_verified_post(request_data)
 
     async def move_to_preset(self, camera_short_name, preset):
-        _LOGGER.info(f"Moving {camera_short_name} to preset {preset}")
+        _LOGGER.debug(f"Moving {camera_short_name} to preset {preset}")
         preset_value = 100 + preset
         request_data = {
             "cmd": "ptz",

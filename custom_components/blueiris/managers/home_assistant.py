@@ -138,12 +138,12 @@ class BlueIrisHomeAssistant:
             )
 
         if not self._is_initialized:
-            _LOGGER.info(
+            _LOGGER.debug(
                 f"NOT INITIALIZED - Failed handling ConfigEntry change: {entry.as_dict()}"
             )
             return
 
-        _LOGGER.info(f"Handling ConfigEntry change: {entry.as_dict()}")
+        _LOGGER.debug(f"Handling ConfigEntry change: {entry.as_dict()}")
 
         if update_config_manager:
             await self._config_manager.update(entry)
@@ -164,7 +164,7 @@ class BlueIrisHomeAssistant:
             await self.storage_manager.async_save_to_store(data)
 
     async def async_remove(self, entry: ConfigEntry):
-        _LOGGER.info(f"Removing current integration - {entry.title}")
+        _LOGGER.debug(f"Removing current integration - {entry.title}")
 
         if self._remove_async_track_time is not None:
             self._remove_async_track_time()
@@ -177,11 +177,11 @@ class BlueIrisHomeAssistant:
 
         await self._device_manager.async_remove()
 
-        _LOGGER.info(f"Current integration ({entry.title}) removed")
+        _LOGGER.debug(f"Current integration ({entry.title}) removed")
 
     async def async_update(self, event_time):
         if not self._is_initialized:
-            _LOGGER.info(f"NOT INITIALIZED - Failed updating @{event_time}")
+            _LOGGER.debug(f"NOT INITIALIZED - Failed updating @{event_time}")
             return
 
         try:
@@ -231,7 +231,7 @@ class BlueIrisHomeAssistant:
 
     async def dispatch_all(self):
         if not self._is_initialized:
-            _LOGGER.info("NOT INITIALIZED - Failed discovering components")
+            _LOGGER.debug("NOT INITIALIZED - Failed discovering components")
             return
 
         for domain in SUPPORTED_DOMAINS:

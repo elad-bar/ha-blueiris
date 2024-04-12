@@ -243,7 +243,7 @@ class EntityManager:
                                 restored = state.attributes.get("restored", False)
 
                                 if restored:
-                                    _LOGGER.info(
+                                    _LOGGER.debug(
                                         f"Entity {entity.name} restored | {entity_id}"
                                     )
 
@@ -264,7 +264,7 @@ class EntityManager:
                     async_add_entities(entities_to_add, True)
 
             if len(entities_to_delete) > 0:
-                _LOGGER.info(f"Following items will be deleted: {entities_to_delete}")
+                _LOGGER.debug(f"Following items will be deleted: {entities_to_delete}")
 
                 for domain in SIGNALS:
                     entities = dict(self.get_entities(domain))

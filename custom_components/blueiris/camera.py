@@ -66,7 +66,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
 
 async def async_unload_entry(_hass, config_entry):
-    _LOGGER.info(f"async_unload_entry {CURRENT_DOMAIN}: {config_entry}")
+    _LOGGER.debug(f"async_unload_entry {CURRENT_DOMAIN}: {config_entry}")
 
     return True
 
@@ -126,7 +126,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
     async def async_added_to_hass_local(self):
         """Subscribe MQTT events."""
-        _LOGGER.info(f"Added new {self.name}")
+        _LOGGER.debug(f"Added new {self.name}")
 
     @property
     def supported_features(self) -> CameraEntityFeature:
