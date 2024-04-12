@@ -58,4 +58,4 @@ class BlueIrisBinarySensor(BinarySensorEntity, BlueIrisEntity):
 
     async def async_added_to_hass_local(self):
         """Subscribe MQTT events."""
-        _LOGGER.info(f"Added new {self.name}")
+        _LOGGER.debug(f"Added new {self.name}")

@@ -27,7 +27,7 @@ class DeviceManager:
         dr.async_clear_config_entry(entry_id)
 
     async def delete_device(self, name):
-        _LOGGER.info(f"Deleting device {name}")
+        _LOGGER.debug(f"Deleting device {name}")
 
         device = self._devices[name]
 

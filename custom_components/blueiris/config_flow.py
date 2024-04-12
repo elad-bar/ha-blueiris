@@ -93,7 +93,7 @@ class DomainOptionsFlowHandler(config_entries.OptionsFlow):
         return await self.async_step_blue_iris_additional_settings(user_input)
 
     async def async_step_blue_iris_additional_settings(self, user_input=None):
-        _LOGGER.info(f"Starting additional settings step: {user_input}")
+        _LOGGER.debug(f"Starting additional settings step: {user_input}")
         errors = None
 
         await self._config_flow.initialize(self.hass, self._config_entry)

@@ -249,7 +249,7 @@ class ConfigFlowManager:
 
             await self._config_manager.update(entry)
         except InvalidToken:
-            _LOGGER.info("Reset password")
+            _LOGGER.debug("Reset password")
 
             del self._data[CONF_PASSWORD]
 

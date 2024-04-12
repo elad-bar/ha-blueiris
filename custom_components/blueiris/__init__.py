@@ -58,7 +58,7 @@ async def async_options_updated(hass: HomeAssistant, entry: ConfigEntry):
     """Triggered by config entry options updates."""
     await handle_log_level(hass, entry)
 
-    _LOGGER.info(f"async_options_updated, Entry: {entry.as_dict()} ")
+    _LOGGER.debug(f"async_options_updated, Entry: {entry.as_dict()} ")
 
     ha = get_ha(hass, entry.entry_id)
 

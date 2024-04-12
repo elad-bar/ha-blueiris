@@ -20,7 +20,7 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
 
     async def async_added_to_hass_local(self):
         """Subscribe MQTT events."""
-        _LOGGER.info(f"Added new {self.name}")
+        _LOGGER.debug(f"Added new {self.name}")
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
@@ -32,7 +32,7 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
         current_timestamp = datetime.now().timestamp()
 
         async def turn_off_automatically(now):
-            _LOGGER.info(f"Audio alert off | {self.name} @{now}")
+            _LOGGER.debug(f"Audio alert off | {self.name} @{now}")
 
             self.entity_manager.set_mqtt_state(self.topic, self.event_type, False)
 
@@ -58,7 +58,7 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
                     should_alert = False
 
             if should_alert:
-                _LOGGER.info(f"Audio alert on, {message} | {self.name}")
+                _LOGGER.debug(f"Audio alert on, {message} | {self.name}")
 
                 self._last_alert = current_timestamp
                 super()._immediate_update(previous_state)
