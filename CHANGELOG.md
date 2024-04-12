@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.18
+
+- Address supported features depredation for HA Core 2025.1
+- Replaced all info logging with debug
+
 ## 1.0.17
 
 - Fix future incompatibility HA Core 2025.1 [Issue #221](https://github.com/elad-bar/ha-blueiris/issues/221)
