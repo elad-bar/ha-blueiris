@@ -238,6 +238,7 @@ class ConfigFlowManager:
     async def _update_entry(self):
         try:
             entry = ConfigEntry(
+                unique_id="",
                 version=0,
                 minor_version=0,
                 domain="",
@@ -254,6 +255,7 @@ class ConfigFlowManager:
             del self._data[CONF_PASSWORD]
 
             entry = ConfigEntry(
+                unique_id="",
                 version=0,
                 minor_version=0,
                 domain="",
