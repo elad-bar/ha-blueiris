@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.19
+
+- Fix (band-aid) for the ConfigEntry unique_id issue caused by 2024.6
+
 ## 1.0.18
 
 - Address supported features depredation for HA Core 2025.1
