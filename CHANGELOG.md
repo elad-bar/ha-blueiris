@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.20
+
+- Fix (another band-aid) for the ConfigEntry discovery_keys issue caused by 2024.10
+
 ## 1.0.19
 
 - Fix (band-aid) for the ConfigEntry unique_id issue caused by 2024.6
