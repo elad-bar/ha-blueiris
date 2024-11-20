@@ -3,7 +3,6 @@ import logging
 
 import yaml
 
-from homeassistant.components.media_player import SUPPORT_PLAY_MEDIA
 from homeassistant.core import HomeAssistant
 from homeassistant.util import slugify
 
@@ -192,7 +191,7 @@ class AdvancedConfigurationGenerator:
                 name = state.name
 
             supported_features = state.attributes.get("supported_features", 0)
-            support_play_media = bool(supported_features & SUPPORT_PLAY_MEDIA)
+            support_play_media = bool(supported_features & MediaPlayerEntityFeature.PLAY_MEDIA)
 
             if support_play_media:
                 options.append(name)
@@ -264,7 +263,7 @@ class AdvancedConfigurationGenerator:
                 name = state.name
 
             supported_features = state.attributes.get("supported_features", 0)
-            support_play_media = bool(supported_features & SUPPORT_PLAY_MEDIA)
+            support_play_media = bool(supported_features & MediaPlayerEntityFeature.PLAY_MEDIA)
 
             if support_play_media:
                 media_player_item = f"""{name}"": ""{entity_id}"""
