@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.21
+
+- Fix deprecation warnings SUPPORT_PLAY_MEDIA and async_forward_entry_setup (thanks hkrogh!)
+
 ## 1.0.20
 
 - Fix (another band-aid) for the ConfigEntry discovery_keys issue caused by 2024.10
