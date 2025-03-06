@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.22
+
+- Fix (band-aid) for the ConfigEntry subentries_data issue caused by 2025.3
+
 ## 1.0.21
 
 - Fix deprecation warnings SUPPORT_PLAY_MEDIA and async_forward_entry_setup (thanks hkrogh!)
