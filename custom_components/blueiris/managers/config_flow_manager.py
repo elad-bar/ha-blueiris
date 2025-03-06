@@ -247,6 +247,7 @@ class ConfigFlowManager:
                 source="",
                 options=self._options,
                 discovery_keys={},
+                subentries_data={},
             )
 
             await self._config_manager.update(entry)
@@ -265,6 +266,7 @@ class ConfigFlowManager:
                 source="",
                 options=self._options,
                 discovery_keys={},
+                subentries_data={},
             )
 
             await self._config_manager.update(entry)
