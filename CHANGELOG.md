@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.23
+
+- API Updates (thanks garrywma)
+
 ## 1.0.22
 
 - Fix (band-aid) for the ConfigEntry subentries_data issue caused by 2025.3
