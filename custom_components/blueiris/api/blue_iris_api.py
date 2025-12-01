@@ -180,8 +180,9 @@ class BlueIrisApi:
         if response:
             data = response.get("data", {})
             if check_lock and data.get("lock") != 1:
+                _LOGGER.debug(f"Holding profile change (calling twice to hold)")
                 await self._set_profile(profile_id, False)
-                return
+                return            
             self.status.update(data)
 
     async def set_schedule(self, schedule_name):
