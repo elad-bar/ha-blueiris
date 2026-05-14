@@ -19,7 +19,8 @@ from homeassistant.components.camera import (
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import TemplateError
-from homeassistant.helpers import config_validation as cv, entity_platform
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.entity_platform import async_get_current_platform
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .helpers.const import (
@@ -50,7 +51,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     await async_setup_base_entry(
         hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_camera
     )
-    platform = entity_platform.current_platform.get()
+    platform = async_get_current_platform()
     platform.async_register_entity_service(
         SERVICE_TRIGGER_CAMERA,
         {},
@@ -151,7 +152,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
     ) -> Optional[bytes]:
         """Return a still image response from the camera."""
         try:
-            url = self._still_image_url.async_render()
+            url = self.entity.attributes.get(CONF_STILL_IMAGE_URL)
         except TemplateError as err:
             _LOGGER.error("Error parsing template %s: %s", self._still_image_url, err)
             return self._last_image
@@ -177,7 +178,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
     async def stream_source(self):
         """Return the source of the stream."""
-        return self._stream_source
+        return self.entity.details.get(CONF_STREAM_SOURCE)
 
     async def trigger_camera(self):
         if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
