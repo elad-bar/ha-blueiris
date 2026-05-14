@@ -152,7 +152,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
     ) -> Optional[bytes]:
         """Return a still image response from the camera."""
         try:
-            url = self._still_image_url.async_render()
+            url = self.entity.attributes.get(CONF_STILL_IMAGE_URL)
         except TemplateError as err:
             _LOGGER.error("Error parsing template %s: %s", self._still_image_url, err)
             return self._last_image
@@ -178,7 +178,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
     async def stream_source(self):
         """Return the source of the stream."""
-        return self._stream_source
+        return self.entity.details.get(CONF_STREAM_SOURCE)
 
     async def trigger_camera(self):
         if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
