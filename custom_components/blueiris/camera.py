@@ -19,7 +19,8 @@ from homeassistant.components.camera import (
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_VERIFY_SSL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import TemplateError
-from homeassistant.helpers import config_validation as cv, entity_platform
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.entity_platform import async_get_current_platform
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .helpers.const import (
@@ -50,7 +51,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     await async_setup_base_entry(
         hass, config_entry, async_add_devices, CURRENT_DOMAIN, get_camera
     )
-    platform = entity_platform.current_platform.get()
+    platform = async_get_current_platform()
     platform.async_register_entity_service(
         SERVICE_TRIGGER_CAMERA,
         {},
