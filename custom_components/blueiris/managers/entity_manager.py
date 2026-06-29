@@ -39,6 +39,7 @@ class EntityManager:
         self.domain_component_manager = {}
         self.entities = {}
         self.mqtt_states = {}
+        self._missing_entity_counts = {}
 
     @property
     def entity_registry(self) -> EntityRegistry:
@@ -226,6 +227,8 @@ class EntityManager:
                         if entity.unique_id in entities_to_delete:
                             entities_to_delete.remove(entity.unique_id)
 
+                        self._missing_entity_counts.pop(entity.unique_id, None)
+
                         step = f"Mark as created - {domain} -> {entity_key}"
 
                         entity_component = domain_component(
@@ -264,15 +267,32 @@ class EntityManager:
                     async_add_entities(entities_to_add, True)
 
             if len(entities_to_delete) > 0:
-                _LOGGER.debug(f"Following items will be deleted: {entities_to_delete}")
+                entities_to_delete_now = []
+                for unique_id in entities_to_delete:
+                    missing_count = self._missing_entity_counts.get(unique_id, 0) + 1
+                    self._missing_entity_counts[unique_id] = missing_count
+                    if missing_count >= 3:
+                        entities_to_delete_now.append(unique_id)
+                    else:
+                        _LOGGER.debug(
+                            "Deferring deletion of %s; missing from Blue Iris update %s/3",
+                            unique_id,
+                            missing_count,
+                        )
 
-                for domain in SIGNALS:
-                    entities = dict(self.get_entities(domain))
+                if len(entities_to_delete_now) > 0:
+                    _LOGGER.debug(
+                        f"Following items will be deleted: {entities_to_delete_now}"
+                    )
 
-                    for entity_key in entities:
-                        entity = entities[entity_key]
-                        if entity.unique_id in entities_to_delete:
-                            await self.ha.delete_entity(domain, entity.name)
+                    for domain in SIGNALS:
+                        entities = dict(self.get_entities(domain))
+
+                        for entity_key in entities:
+                            entity = entities[entity_key]
+                            if entity.unique_id in entities_to_delete_now:
+                                self._missing_entity_counts.pop(entity.unique_id, None)
+                                await self.ha.delete_entity(domain, entity.name)
 
         except Exception as ex:
             self.log_exception(ex, f"Failed to update, step: {step}")
