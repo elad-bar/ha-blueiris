@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 from typing import Optional
@@ -40,6 +41,8 @@ class EntityManager:
         self.entities = {}
         self.mqtt_states = {}
         self._missing_entity_counts = {}
+        self._update_lock = asyncio.Lock()
+        self._update_task = None
 
     @property
     def entity_registry(self) -> EntityRegistry:
@@ -186,9 +189,17 @@ class EntityManager:
             self.generate_main_binary_sensor()
 
     def update(self):
-        self.hass.async_create_task(self._async_update())
+        if self._update_task is not None and not self._update_task.done():
+            _LOGGER.debug("Skip entity update; previous update still running")
+            return
+
+        self._update_task = self.hass.async_create_task(self._async_update())
 
     async def _async_update(self):
+        async with self._update_lock:
+            await self._async_update_locked()
+
+    async def _async_update_locked(self):
         step = "Mark as ignore"
         try:
             entities_to_delete = []
@@ -282,7 +293,7 @@ class EntityManager:
 
                 if len(entities_to_delete_now) > 0:
                     _LOGGER.debug(
-                        f"Following items will be deleted: {entities_to_delete_now}"
+                        "Following items will be deleted: %s", entities_to_delete_now
                     )
 
                     for domain in SIGNALS:
@@ -290,9 +301,10 @@ class EntityManager:
 
                         for entity_key in entities:
                             entity = entities[entity_key]
-                            if entity.unique_id in entities_to_delete_now:
-                                self._missing_entity_counts.pop(entity.unique_id, None)
-                                await self.ha.delete_entity(domain, entity.name)
+                            unique_id = entity.unique_id
+                            if unique_id in entities_to_delete_now:
+                                if await self.ha.delete_entity(domain, entity.name):
+                                    self._missing_entity_counts.pop(unique_id, None)
 
         except Exception as ex:
             self.log_exception(ex, f"Failed to update, step: {step}")

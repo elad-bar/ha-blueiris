@@ -115,7 +115,9 @@ class BlueIrisHomeAssistant:
             _LOGGER.error(f"Failed to async_init, error: {ex}, line: {line_number}")
 
     async def _async_init(self):
-        await self._hass.config_entries.async_forward_entry_setups(self._config_manager.config_entry, list(SIGNALS.keys()))
+        await self._hass.config_entries.async_forward_entry_setups(
+            self._config_manager.config_entry, list(SIGNALS.keys())
+        )
 
         self._is_initialized = True
 
@@ -220,11 +222,15 @@ class BlueIrisHomeAssistant:
 
             if not device_in_use:
                 await self.device_manager.delete_device(device_name)
+
+            return True
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
             _LOGGER.error(f"Failed to delete_entity, Error: {ex}, Line: {line_number}")
+
+            return False
 
     async def dispatch_all(self):
         if not self._is_initialized:
