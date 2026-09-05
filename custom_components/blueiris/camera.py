@@ -6,7 +6,9 @@ https://home-assistant.io/components/camera.blueiris/
 from abc import ABC
 import asyncio
 import logging
+import time
 from typing import Optional
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import aiohttp
 import voluptuous as vol
@@ -43,6 +45,41 @@ DEPENDENCIES = [DOMAIN]
 _LOGGER = logging.getLogger(__name__)
 
 CURRENT_DOMAIN = DOMAIN_CAMERA
+
+# Minimum seconds between re-authentication attempts triggered by a failed image
+# fetch. Without it, an unreachable Blue Iris would have every camera asking for a
+# new session on every frame.
+RELOGIN_COOLDOWN = 30
+
+
+def _with_current_session(url: Optional[str], session_id: Optional[str]) -> Optional[str]:
+    """Return url with its `session` query parameter set to the current session ID.
+
+    Camera URLs are built once, when the entity is created, and carry the
+    session ID that was current at that moment. Blue Iris invalidates sessions
+    on restart and on its own session timeout, after which the API layer
+    silently re-authenticates and gets a new session ID -- but the entity keeps
+    requesting the dead one. Blue Iris answers a dead session with a redirect to
+    its login page, which aiohttp follows, so the entity ends up caching an HTML
+    page as its camera image and Home Assistant serves that to the frontend as
+    image/jpeg. Nothing errors and nothing goes unavailable; the pictures just
+    stop being pictures until the config entry is reloaded.
+
+    Rewriting the session parameter at request time keeps the URL in step with
+    whatever session the API layer currently holds.
+    """
+    if not url or not session_id:
+        return url
+
+    parts = urlsplit(url)
+    query = dict(parse_qsl(parts.query))
+
+    if "session" not in query or query["session"] == session_id:
+        return url
+
+    query["session"] = session_id
+
+    return urlunsplit(parts._replace(query=urlencode(query)))
 
 
 async def async_setup_entry(hass, config_entry, async_add_devices):
@@ -115,6 +152,7 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
         self._last_url = None
         self._last_image = None
+        self._last_relogin = 0.0
 
     def _immediate_update(self, previous_state: bool):
         if previous_state != self.entity.state:
@@ -146,6 +184,42 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
             self.async_camera_image(), self.hass.loop
         ).result()
 
+    def _may_relogin(self) -> bool:
+        """Rate limit re-authentication so a dead server is not hammered."""
+        return time.monotonic() - self._last_relogin >= RELOGIN_COOLDOWN
+
+    async def _async_fetch_image(self, url: str) -> Optional[bytes]:
+        """Fetch url, returning None if it did not yield an image."""
+        try:
+            websession = async_get_clientsession(self.hass, verify_ssl=self.verify_ssl)
+
+            response = await websession.get(url, auth=self._auth, timeout=10)
+
+            if response.status != 200:
+                _LOGGER.debug(
+                    f"{self.name} image request returned HTTP {response.status}"
+                )
+                return None
+
+            content_type = response.content_type or ""
+
+            if not content_type.startswith("image/"):
+                # Blue Iris redirects an expired session to its HTML login page,
+                # which aiohttp follows into a 200. Caching that as the camera
+                # image is what makes the failure silent, so reject it here.
+                _LOGGER.debug(
+                    f"{self.name} image request returned {content_type}, not an image"
+                )
+                return None
+
+            return await response.read()
+        except asyncio.TimeoutError:
+            _LOGGER.error("Timeout getting camera image from %s", self.name)
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error getting new camera image from %s: %s", self.name, err)
+
+        return None
+
     async def async_camera_image(
         self, width: Optional[int] = None, height: Optional[int] = None
     ) -> Optional[bytes]:
@@ -156,28 +230,40 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
             _LOGGER.error("Error parsing template %s: %s", self._still_image_url, err)
             return self._last_image
 
+        url = _with_current_session(url, self.api.session_id)
+
         if url == self._last_url and self._limit_refetch:
             return self._last_image
 
-        try:
-            websession = async_get_clientsession(self.hass, verify_ssl=self.verify_ssl)
+        image = await self._async_fetch_image(url)
 
-            response = await websession.get(url, auth=self._auth, timeout=10)
+        if image is None and self._may_relogin():
+            # The session the API layer holds may itself be stale -- it only
+            # notices when one of its own polls fails. Re-authenticate and try
+            # once more before giving up and serving the previous frame.
+            self._last_relogin = time.monotonic()
 
-            self._last_image = await response.read()
-        except asyncio.TimeoutError:
-            _LOGGER.error("Timeout getting camera image from %s", self.name)
+            await self.api.login()
+
+            retry_url = _with_current_session(url, self.api.session_id)
+
+            if retry_url != url:
+                image = await self._async_fetch_image(retry_url)
+
+                if image is not None:
+                    url = retry_url
+
+        if image is None:
             return self._last_image
-        except aiohttp.ClientError as err:
-            _LOGGER.error("Error getting new camera image from %s: %s", self.name, err)
-            return self._last_image
 
+        self._last_image = image
         self._last_url = url
+
         return self._last_image
 
     async def stream_source(self):
         """Return the source of the stream."""
-        return self._stream_source
+        return _with_current_session(self._stream_source, self.api.session_id)
 
     async def trigger_camera(self):
         if self.entity.attributes[BI_CAMERA_ATTR_GROUP_CAMERAS] == NOT_AVAILABLE:
