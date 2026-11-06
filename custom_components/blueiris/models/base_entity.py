@@ -109,7 +109,8 @@ class BlueIrisEntity(Entity):
 
     @callback
     def _schedule_immediate_update(self):
-        self.hass.async_create_task(self._async_schedule_immediate_update())
+        if self.hass is not None:
+            self.hass.async_create_task(self._async_schedule_immediate_update())
 
     async def _async_schedule_immediate_update(self):
         if self.entity_manager is None:
