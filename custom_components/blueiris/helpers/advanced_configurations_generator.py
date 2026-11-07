@@ -191,7 +191,9 @@ class AdvancedConfigurationGenerator:
                 name = state.name
 
             supported_features = state.attributes.get("supported_features", 0)
-            support_play_media = bool(supported_features & MediaPlayerEntityFeature.PLAY_MEDIA)
+            support_play_media = bool(
+                supported_features & MediaPlayerEntityFeature.PLAY_MEDIA
+            )
 
             if support_play_media:
                 options.append(name)
@@ -263,7 +265,9 @@ class AdvancedConfigurationGenerator:
                 name = state.name
 
             supported_features = state.attributes.get("supported_features", 0)
-            support_play_media = bool(supported_features & MediaPlayerEntityFeature.PLAY_MEDIA)
+            support_play_media = bool(
+                supported_features & MediaPlayerEntityFeature.PLAY_MEDIA
+            )
 
             if support_play_media:
                 media_player_item = f"""{name}"": ""{entity_id}"""

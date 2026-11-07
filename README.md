@@ -19,7 +19,7 @@ I switched to Shinobi Video, if there is an issue, feel free to report, suggest 
 kramttocs is working to maintain it but any assistance or PRs are welcome
 
 > **4/30/2026**
-> 
+>
 > I have created a separate Blue Iris integration for Home Assistant:
 >
 > https://github.com/kramttocs/ha-blueiris
