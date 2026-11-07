@@ -222,11 +222,15 @@ class BlueIrisHomeAssistant:
 
             if not device_in_use:
                 await self.device_manager.delete_device(device_name)
+
+            return True
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
             _LOGGER.error(f"Failed to delete_entity, Error: {ex}, Line: {line_number}")
+
+            return False
 
     async def dispatch_all(self):
         if not self._is_initialized:
