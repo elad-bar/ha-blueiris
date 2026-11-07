@@ -115,6 +115,18 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
         self._last_image = None
 
     def _immediate_update(self, previous_state: bool):
+        new_source = None
+        if getattr(self, "entity", None) is not None and getattr(
+            self.entity, "details", None
+        ):
+            new_source = self.entity.details.get(CONF_STREAM_SOURCE)
+
+        if new_source:
+            # HA retains its Stream object and does not request stream_source again.
+            if self.stream is not None and self.stream.source != new_source:
+                self.stream.update_source(new_source)
+            self._stream_source = new_source
+
         if previous_state != self.entity.state:
             _LOGGER.debug(
                 f"{self.name} updated from {previous_state} to {self.entity.state}"
