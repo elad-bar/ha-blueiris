@@ -118,7 +118,9 @@ class BlueIrisCamera(Camera, BlueIrisEntity, ABC):
 
     def _immediate_update(self, previous_state: bool):
         new_source = None
-        if getattr(self, "entity", None) is not None and getattr(self.entity, "details", None):
+        if getattr(self, "entity", None) is not None and getattr(
+            self.entity, "details", None
+        ):
             new_source = self.entity.details.get(CONF_STREAM_SOURCE)
 
         if new_source:
