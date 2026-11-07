@@ -1,0 +1,19 @@
+name: HACS validation
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate integration
+        uses: hacs/action@main
+        with:
+          category: integration
+          comment: false

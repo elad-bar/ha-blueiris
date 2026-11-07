@@ -1,6 +1,6 @@
+import asyncio
 from datetime import datetime
 import logging
-import asyncio
 
 from homeassistant.components.binary_sensor import STATE_OFF
 
@@ -64,6 +64,8 @@ class BlueIrisAudioBinarySensor(BlueIrisBinarySensor):
                 self._last_alert = current_timestamp
                 super()._immediate_update(previous_state)
 
-                self.hass.loop.call_later(2, asyncio.create_task, turn_off_automatically())
+                self.hass.loop.call_later(
+                    2, asyncio.create_task, turn_off_automatically()
+                )
             else:
                 _LOGGER.debug(f"Audio alert on, {message} | {self.name}")
