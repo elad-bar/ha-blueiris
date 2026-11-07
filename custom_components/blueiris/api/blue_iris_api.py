@@ -90,7 +90,7 @@ class BlueIrisApi:
 
         _LOGGER.error(f"All attempts to POST to {self.url} failed.")
         return None
-    
+
     async def async_verified_post(self, data):
         for i in range(2):
             result = await self.async_post(data)
