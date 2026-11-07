@@ -65,6 +65,7 @@ class StreamRefreshTests(unittest.TestCase):
         self.camera.entity.details["stream_source"] = None
         self.camera._immediate_update(True)
         self.camera.stream.update_source.assert_not_called()
+        self.assertEqual(self.camera._stream_source, self.old)
 
 
 if __name__ == "__main__":
